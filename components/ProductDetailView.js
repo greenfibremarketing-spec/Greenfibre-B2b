@@ -55,6 +55,11 @@ export const B2B_OCCASIONS = [
     key: "corporate",
     label: "Corporate Gifting",
     subtitle: "Enterprise & Client Gifting",
+    comesUnder: "Corporate Gifting & Client Hampers",
+    badgeText: "Corporate Gifting Edition",
+    plainExplanation: "This product comes under Corporate Gifting — tailored specifically for enterprise client gifts, business partner appreciation, executive welcome kits, and annual company conferences.",
+    bestSuitedFor: "Corporate Clients, Executive Kits, Business Partners, Sales Meets & Annual General Meetings",
+    packagingDetails: "Standard Recyclable Eco Kraft Gift Box with Custom Sleeve & Plantable Story Card",
     moq: 100,
     icon: Building2,
     leadTime: "7–10 Days",
@@ -158,6 +163,11 @@ export const B2B_OCCASIONS = [
     key: "anniversary",
     label: "Anniversary & Milestone",
     subtitle: "Celebrations & Long Service",
+    comesUnder: "Anniversary & Milestone Celebrations",
+    badgeText: "Anniversary Gifting Edition",
+    plainExplanation: "This product comes under Anniversary & Milestone Celebrations — specially curated for company foundation days, work anniversaries (5/10/25 years), and major milestone honors.",
+    bestSuitedFor: "Company Foundation Days, Work Anniversaries, Milestone Recognition & Long-Standing Clients",
+    packagingDetails: "Handcrafted Luxury Keepsake Ribbon Box with Milestone Plaque Tag",
     moq: 25,
     icon: Award,
     leadTime: "5–7 Days",
@@ -261,6 +271,11 @@ export const B2B_OCCASIONS = [
     key: "wedding",
     label: "Wedding & Celebrations",
     subtitle: "Bridal Favours & Trousseau",
+    comesUnder: "Wedding & Celebration Return Gifts",
+    badgeText: "Wedding & Celebrations Edition",
+    plainExplanation: "This product comes under Wedding & Celebrations — designed as premium, eco-luxury return gifts and bridesmaid / groomsmen celebration hampers.",
+    bestSuitedFor: "Wedding Return Favours, Bridal Favours, Mehendi & Sangeet Hampers, Destination Events",
+    packagingDetails: "Blush Bridal Gift Box with Silk Ribbon Wrap & Plantable Couple Note Card",
     moq: 50,
     icon: Heart,
     leadTime: "5–8 Days",
@@ -364,6 +379,11 @@ export const B2B_OCCASIONS = [
     key: "festive",
     label: "Festive Season Gifting",
     subtitle: "Diwali, Eid, New Year Hampers",
+    comesUnder: "Festive Season Gifting & Hampers",
+    badgeText: "Festive Season Edition",
+    plainExplanation: "This product comes under Festive Season Gifting — packaged with festive hampers, traditional motif screen prints, and greeting cards for Diwali, New Year, and festivals.",
+    bestSuitedFor: "Diwali Hampers, New Year Gifts, Employee Festive Packs, Family Celebrations & Eid/Christmas",
+    packagingDetails: "Decorative Festive Hamper Gift Box with Gold Motif & Greetings Card",
     moq: 50,
     icon: Flame,
     leadTime: "5–8 Days",
@@ -467,6 +487,11 @@ export const B2B_OCCASIONS = [
     key: "employee-onboarding",
     label: "Employee Onboarding",
     subtitle: "New Joiner Welcome Kits",
+    comesUnder: "Employee Onboarding & HR Welcome Kits",
+    badgeText: "Employee Onboarding Edition",
+    plainExplanation: "This product comes under Employee Onboarding & HR Kits — curated for welcoming new hires, campus recruits, and remote team packages with individual name monograms.",
+    bestSuitedFor: "HR New Joiner Welcome Kits, Induction Day Gifts, Campus Recruits & Remote Team Packs",
+    packagingDetails: "Branded New Hire Welcome Kit Box with HR Welcome Card & Monogram",
     moq: 20,
     icon: Users,
     leadTime: "3–5 Days",
@@ -607,7 +632,7 @@ function normalizeImageUrl(img) {
   return `http://localhost:5500/${img.replace(/^\/+/, "")}`;
 }
 
-export default function ProductDetailView({ product }) {
+export default function ProductDetailView({ product, context }) {
   const { add } = useQuote() || {};
 
   const unitLabel = product.unit || "set";
@@ -658,22 +683,43 @@ export default function ProductDetailView({ product }) {
 
   const initialColor = colorVariants[0]?.name || product.colours?.[0] || "Natural Sand";
 
-  // Context / Occasion state
-  const initialOccasionKey =
-    (product.activeContext && product.activeContext.key !== "default" && product.activeContext.key) ||
-    "corporate";
-
-  const [activeOccasionKey, setActiveOccasionKey] = useState(initialOccasionKey);
+  // Context / Occasion resolved from previous page selection
+  const resolvedOccasionKey = (function () {
+    const raw = context || product.activeContext?.key || (typeof product.category === "string" ? product.category : "");
+    const lower = String(raw).toLowerCase().trim();
+    if (lower === "anniversary" || lower.includes("anniv")) return "anniversary";
+    if (lower === "wedding" || lower.includes("wed")) return "wedding";
+    if (lower === "festive" || lower.includes("festiv") || lower.includes("birth") || lower.includes("house") || lower.includes("diwali")) return "festive";
+    if (lower === "employee-onboarding" || lower === "onboarding" || lower.includes("onboard") || lower.includes("employ") || lower.includes("inst")) return "employee-onboarding";
+    return "corporate";
+  })();
 
   // Find active occasion config
   const activeOccasion =
-    B2B_OCCASIONS.find((o) => o.key === activeOccasionKey) || B2B_OCCASIONS[0];
+    B2B_OCCASIONS.find((o) => o.key === resolvedOccasionKey) || B2B_OCCASIONS[0];
 
-  // Active customization menu (5 options for this occasion)
+  const productBasePrice = typeof product.price === "number" ? product.price : 0;
+
+  // Active customization menu (5 options for this selected occasion)
   const currentCustomizations = activeOccasion.customizations;
 
-  // Active tiers for this occasion
-  const currentTiers = activeOccasion.tiers;
+  // Active tiers for this selected occasion dynamically scaled from the product's actual price
+  const currentTiers = activeOccasion.tiers.map((t) => {
+    let tierPrice = 0;
+    if (productBasePrice > 0) {
+      if (t.tierNumber === 1) {
+        tierPrice = productBasePrice;
+      } else if (t.tierNumber === 2) {
+        tierPrice = Math.round(productBasePrice * (1 - (t.savingsPct || 10) / 100));
+      } else {
+        tierPrice = Math.round(productBasePrice * (1 - (t.savingsPct || 20) / 100));
+      }
+    }
+    return {
+      ...t,
+      price: tierPrice
+    };
+  });
   const currentMoq = activeOccasion.moq;
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -701,27 +747,6 @@ export default function ProductDetailView({ product }) {
     currentCustomizations[2] ? currentCustomizations[2].id : currentCustomizations[1].id
   ]);
   const [customizationNotice, setCustomizationNotice] = useState("");
-
-  // Handle Occasion switch
-  const handleSelectOccasion = (key) => {
-    setActiveOccasionKey(key);
-    const targetOccasion = B2B_OCCASIONS.find((o) => o.key === key) || B2B_OCCASIONS[0];
-    
-    // Adjust quantity to meet new context MOQ if needed
-    if (qty < targetOccasion.moq) {
-      setQty(targetOccasion.moq);
-    }
-    
-    // Default customizations for this occasion
-    const newDefaults = [
-      targetOccasion.customizations[0].id,
-      targetOccasion.customizations[2] ? targetOccasion.customizations[2].id : targetOccasion.customizations[1].id
-    ];
-    setSelectedCustomizations(newDefaults.slice(0, 2));
-
-    setCustomizationNotice(`Switched to ${targetOccasion.label} (MOQ: ${targetOccasion.moq} ${unitLabelPlural})`);
-    setTimeout(() => setCustomizationNotice(""), 3000);
-  };
 
   // Enforce tier limit whenever maxCustomizations changes
   useEffect(() => {
@@ -823,10 +848,10 @@ export default function ProductDetailView({ product }) {
       ? product.desc.split(".")[0]
       : `${product.name}`);
 
-  const retailMrp = product.retailPrice || product.originalPrice || Math.round(currentTiers[0].price * 1.35);
-  const hasRetailSavings = retailMrp > activeTierObj.price;
+  const retailMrp = product.retailPrice || product.originalPrice || (currentTiers[0]?.price > 0 ? Math.round(currentTiers[0].price * 1.35) : 0);
+  const hasRetailSavings = retailMrp > activeTierObj.price && activeTierObj.price > 0 && retailMrp > 0;
   const retailSavingsAmount = hasRetailSavings ? retailMrp - activeTierObj.price : 0;
-  const retailSavingsPct = hasRetailSavings ? Math.round((retailSavingsAmount / retailMrp) * 100) : 0;
+  const retailSavingsPct = (hasRetailSavings && retailMrp > 0) ? Math.round((retailSavingsAmount / retailMrp) * 100) : 0;
 
   // Build combined specs
   const rawSpecs = product.specs || {};
@@ -836,7 +861,12 @@ export default function ProductDetailView({ product }) {
   const hasWeightInSpecs = Object.keys(rawSpecs).some((k) => /weight/i.test(k));
   const hasMaterialInSpecs = Object.keys(rawSpecs).some((k) => /material/i.test(k));
 
-  const extraSpecs = {};
+  const extraSpecs = {
+    "Gifting Classification": activeOccasion.comesUnder,
+    "Best Suited For": activeOccasion.bestSuitedFor,
+    "Gift Packaging Format": activeOccasion.packagingDetails,
+    "Customization Allowance": `Tier 1: 2 of 5 | Tier 2: 3 of 5 | Tier 3: All 5`
+  };
   if (!hasMaterialInSpecs && product.material) {
     extraSpecs["Material Formulation"] = product.material;
   }
@@ -849,7 +879,7 @@ export default function ProductDetailView({ product }) {
     extraSpecs["Product Weight"] = `${product.productWeight.value} ${product.productWeight.unit || "gm"}`;
   }
 
-  const combinedSpecs = { ...rawSpecs, ...extraSpecs };
+  const combinedSpecs = { ...extraSpecs, ...rawSpecs };
 
   const giftItems =
     Array.isArray(product.giftSetContents?.products) && product.giftSetContents.products.length > 0
@@ -1013,15 +1043,19 @@ export default function ProductDetailView({ product }) {
         <div className="md:col-span-6 lg:col-span-6 space-y-4 min-w-0">
           
           {/* Header Badges & Title */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="badge-green text-[11px] py-0.5 px-2 inline-flex items-center gap-1">
                 <Package className="w-3 h-3 text-emerald-800" />
-                <span>{typeof product.category === "string" ? product.category : product.category?.name || "Gift Boxes & Hampers"}</span>
+                <span>{typeof product.category === "string" ? product.category : product.category?.name || "Gifting Collection"}</span>
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-brand-700 text-white shadow-xs">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold bg-brand-700 text-white shadow-xs">
                 <Gift className="w-3 h-3" />
                 <span>{activeOccasion.label}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <CheckCheck className="w-3 h-3 text-emerald-600" />
+                <span>{activeOccasion.subtitle}</span>
               </span>
             </div>
 
@@ -1034,10 +1068,10 @@ export default function ProductDetailView({ product }) {
             </p>
 
             {/* Wholesale Price vs MRP Strikethrough Callout */}
-            <div className="flex items-baseline gap-3 pt-1 flex-wrap">
+            <div className="flex items-baseline gap-3 pt-0.5 flex-wrap">
               <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 ₹{currentTiers[0]?.price}
-                <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (B2B Bulk Rate)</span>
+                <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (Wholesale Bulk Rate)</span>
               </div>
               {hasRetailSavings && (
                 <div className="flex items-center gap-2 text-xs">
@@ -1049,51 +1083,6 @@ export default function ProductDetailView({ product }) {
                   </span>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* OCCASION / EVENT CONTEXT SELECTOR PILLS */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-brand-700" />
-                <span>Select Gifting Event &amp; Occasion:</span>
-              </span>
-              <span className="text-[10px] text-brand-800 font-bold">
-                MOQ: {currentMoq} {unitLabelPlural}
-              </span>
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-              {B2B_OCCASIONS.map((occ) => {
-                const isSelected = activeOccasionKey === occ.key;
-                const OccIcon = occ.icon;
-                return (
-                  <button
-                    key={occ.key}
-                    type="button"
-                    onClick={() => handleSelectOccasion(occ.key)}
-                    className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex items-center gap-2 ${
-                      isSelected
-                        ? "bg-brand-50 border-brand-600 ring-1 ring-brand-600 shadow-xs text-brand-900"
-                        : "bg-slate-50/70 border-slate-200 hover:bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
-                      isSelected ? "bg-brand-600 text-white" : "bg-white text-slate-500 border border-slate-200"
-                    }`}>
-                      <OccIcon className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[11px] font-bold truncate leading-tight">
-                        {occ.label}
-                      </div>
-                      <div className="text-[9px] text-slate-500 truncate">
-                        MOQ: {occ.moq} {unitLabelPlural}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
             </div>
           </div>
 
@@ -1309,24 +1298,6 @@ export default function ProductDetailView({ product }) {
                   </button>
                 );
               })}
-            </div>
-
-            {/* Custom Notes / Instructions Field */}
-            <div className="pt-2 border-t border-slate-100 space-y-1.5">
-              <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <FileCheck2 className="w-3.5 h-3.5 text-brand-700" />
-                <span>Customization Instructions &amp; Artwork Notes (Optional):</span>
-              </label>
-              <textarea
-                rows={2}
-                value={brandingNotes}
-                onChange={(e) => setBrandingNotes(e.target.value)}
-                placeholder="e.g. Laser engrave logo on front center, Pantone guideline, recipient list will be provided via email."
-                className="w-full text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all placeholder:text-slate-400"
-              />
-              <span className="text-[10px] text-slate-400 block">
-                3D digital proof and laser engraving placement mockups will be emailed within 4 hours of RFQ submission.
-              </span>
             </div>
           </div>
 
@@ -1644,6 +1615,140 @@ export default function ProductDetailView({ product }) {
                   </div>
                 </div>
               )}
+
+              {/* Comprehensive Gifting Classification & Event Purpose Breakdown */}
+              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
+                <div className="flex items-center justify-between gap-2 flex-wrap pb-3 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-brand-700 text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                      <Gift className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                        <span>Gifting Classification &amp; Purpose</span>
+                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                          {activeOccasion.badgeText}
+                        </span>
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium">
+                        This product comes under: <strong className="text-brand-800">{activeOccasion.comesUnder}</strong>
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+                    Package Type: {activeOccasion.label}
+                  </span>
+                </div>
+
+                {/* Plain-English Explanation Banner */}
+                <div className="bg-white border border-emerald-200/80 rounded-xl p-3.5 shadow-2xs">
+                  <div className="flex items-start gap-2.5">
+                    <Info className="w-4 h-4 text-brand-700 mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-slate-900">
+                        Why this product is listed under {activeOccasion.label}:
+                      </div>
+                      <p className="text-xs text-slate-600 leading-relaxed">
+                        {activeOccasion.plainExplanation}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4 Detail Specification Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                      🏷️ Gifting Category
+                    </span>
+                    <span className="text-xs font-bold text-slate-900 block">
+                      {activeOccasion.label}
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      {activeOccasion.subtitle}
+                    </span>
+                  </div>
+
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                      🎯 Best Suited For
+                    </span>
+                    <span className="text-xs font-semibold text-slate-800 block line-clamp-2">
+                      {activeOccasion.bestSuitedFor}
+                    </span>
+                  </div>
+
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                      📦 Packaging Format
+                    </span>
+                    <span className="text-xs font-semibold text-slate-800 block line-clamp-2">
+                      {activeOccasion.packagingDetails}
+                    </span>
+                  </div>
+
+                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                      ⚡ MOQ &amp; Lead Time
+                    </span>
+                    <span className="text-xs font-bold text-emerald-800 block">
+                      MOQ: {currentMoq} {unitLabelPlural}
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Lead Time: {activeOccasion.leadTime || "5–7 Days"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 5 Gifting Categories Comparison Grid */}
+                <div className="pt-2 border-t border-slate-200/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                      <Gift className="w-3.5 h-3.5 text-brand-700" />
+                      <span>How this product serves different gifting occasions:</span>
+                    </h5>
+                    <span className="text-[10px] text-slate-400">5 Event Packages Available</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                    {B2B_OCCASIONS.map((occ) => {
+                      const isCurrent = occ.key === activeOccasion.key;
+                      const OccIcon = occ.icon;
+                      return (
+                        <Link
+                          key={occ.key}
+                          href={`/products/${product.slug}?context=${occ.key}`}
+                          className={`p-2.5 rounded-xl border text-left transition-all block ${
+                            isCurrent
+                              ? "bg-emerald-50 border-brand-600 ring-1 ring-brand-600 shadow-xs"
+                              : "bg-white border-slate-200 hover:border-brand-400 hover:bg-slate-50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <div className={`w-5 h-5 rounded flex items-center justify-center ${isCurrent ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-600"}`}>
+                              <OccIcon className="w-3 h-3" />
+                            </div>
+                            {isCurrent ? (
+                              <span className="text-[8px] font-extrabold uppercase bg-brand-700 text-white px-1.5 py-0.2 rounded">
+                                Current
+                              </span>
+                            ) : (
+                              <span className="text-[9px] font-semibold text-slate-400">
+                                MOQ {occ.moq}
+                              </span>
+                            )}
+                          </div>
+                          <div className={`text-xs font-bold leading-tight ${isCurrent ? "text-brand-900" : "text-slate-800"}`}>
+                            {occ.label}
+                          </div>
+                          <div className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-1">
+                            {occ.subtitle}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
 
               {/* Master Technical Specifications & Dimensions Table */}
               <div>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Card from "@/components/Card";
-import { categories, getProducts } from "@/lib/products";
+import { categories, getProducts, normalizeContextKey } from "@/lib/products";
 import { Search } from "lucide-react";
 
 export const metadata = {
@@ -10,23 +10,24 @@ export const metadata = {
 };
 
 export default async function ProductsPage({ searchParams = {} } = {}) {
-  const { q = "", category = "" } = searchParams || {};
+  const { q = "", category = "", type = "", context = "" } = searchParams || {};
   const searchTerm = q.toLowerCase().trim();
-  const allProducts = await getProducts();
 
   const giftingSubTypes = ["Corporate", "Anniversary", "Birthday", "Institutional", "House Warming", "Wedding"];
   const isGiftingSubType = giftingSubTypes.includes(category);
-  const giftingType = isGiftingSubType ? category.toLowerCase().replace(/\s+/g, "") : null;
+  const activeOccasionParam = type || context || (isGiftingSubType ? category : null);
+  const activeContext = activeOccasionParam ? normalizeContextKey(activeOccasionParam) : null;
+
+  const allProducts = await getProducts(activeContext);
 
   const filtered = allProducts.filter((p) => {
     const isGiftingCat = category === "Gifting" || category === "Gift Boxes & Hampers";
 
-    // For a gifting sub-type (e.g. Corporate), show all gifting products for now
-    // (until products have a 'type' field, all gifting products show under any sub-type)
     const matchesCategory =
       !category ||
       category === "All Products" ||
-      isGiftingSubType ||  // show all products for sub-type (filter by type when data supports it)
+      isGiftingSubType ||
+      Boolean(type || context) ||
       (isGiftingCat
         ? p.category === "Gifting" ||
           p.category === "Gift Boxes & Hampers" ||
@@ -40,6 +41,7 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
       `${p.name} ${p.sku} ${p.category} ${p.tagline || ""} ${p.desc}`.toLowerCase().includes(searchTerm);
     return matchesCategory && matchesSearch;
   });
+
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 pb-12 sm:pb-16 space-y-6">
@@ -134,7 +136,7 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filtered.map((p) => (
-            <Card key={p.slug} p={p} />
+            <Card key={p.slug} p={p} context={activeContext} />
           ))}
         </div>
       ) : (

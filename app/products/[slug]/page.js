@@ -25,11 +25,12 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function ProductDetailPage({ params }) {
-  const p = await getProduct(params.slug);
+export default async function ProductDetailPage({ params, searchParams = {} }) {
+  const rawContext = searchParams.context || searchParams.type || searchParams.category || searchParams.event || null;
+  const p = await getProduct(params.slug, rawContext);
   if (!p) notFound();
 
-  const allProducts = await getProducts();
+  const allProducts = await getProducts(rawContext);
   const relatedProducts = allProducts
     .filter((x) => x.slug !== p.slug && (x.category === p.category || x.popular))
     .slice(0, 4);
@@ -77,18 +78,41 @@ export default async function ProductDetailPage({ params }) {
           Products
         </Link>
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <Link
-          href={`/products?category=${encodeURIComponent(typeof p.category === "string" ? p.category : p.category?.name || "All Products")}`}
-          className="hover:text-slate-900 transition-colors"
-        >
-          {typeof p.category === "string" ? p.category : p.category?.name || "All Products"}
-        </Link>
+        {rawContext ? (
+          <>
+            <Link href="/products?category=Gifting" className="hover:text-slate-900 transition-colors">
+              Gifting
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <Link
+              href={`/products?category=Gifting&type=${encodeURIComponent(rawContext)}`}
+              className="hover:text-slate-900 transition-colors capitalize"
+            >
+              {rawContext === "employee-onboarding"
+                ? "Employee Onboarding"
+                : rawContext === "anniversary"
+                ? "Anniversary Gifting"
+                : rawContext === "wedding"
+                ? "Wedding Celebrations"
+                : rawContext === "festive"
+                ? "Festive Season"
+                : "Corporate Gifting"}
+            </Link>
+          </>
+        ) : (
+          <Link
+            href={`/products?category=${encodeURIComponent(typeof p.category === "string" ? p.category : p.category?.name || "All Products")}`}
+            className="hover:text-slate-900 transition-colors"
+          >
+            {typeof p.category === "string" ? p.category : p.category?.name || "All Products"}
+          </Link>
+        )}
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
         <span className="text-slate-900 font-bold">{p.name}</span>
       </nav>
 
       {/* Complete Interactive Product View (Synchronized Multi-Image Gallery + Customizer) */}
-      <ProductDetailView product={p} />
+      <ProductDetailView product={p} context={rawContext} />
 
       {/* Related Products Section */}
       {relatedProducts.length > 0 && (

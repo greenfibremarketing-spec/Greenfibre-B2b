@@ -1,7 +1,22 @@
 import Link from "next/link";
 import { AddToQuote } from "./Quote";
 
-export default function Card({ p }) {
+export default function Card({ p, context }) {
+  const targetContext =
+    context ||
+    p.activeContext?.key ||
+    (p.category === "Corporate"
+      ? "corporate"
+      : p.category === "Anniversary"
+      ? "anniversary"
+      : p.category === "Wedding"
+      ? "wedding"
+      : null);
+
+  const productHref = targetContext
+    ? `/products/${p.slug}?context=${encodeURIComponent(targetContext)}`
+    : `/products/${p.slug}`;
+
   return (
     <article className="group bg-white rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-sm hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col overflow-hidden">
       {/* Media & Badges */}
@@ -22,7 +37,7 @@ export default function Card({ p }) {
           </span>
         </div>
 
-        <Link href={`/products/${p.slug}`} className="block w-full h-full" aria-label={`View ${p.name}`}>
+        <Link href={productHref} className="block w-full h-full" aria-label={`View ${p.name}`}>
           {p.image ? (
             <img
               src={p.image}
@@ -51,10 +66,11 @@ export default function Card({ p }) {
           </div>
 
           <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">
-            <Link href={`/products/${p.slug}`}>
+            <Link href={productHref}>
               {p.name}
             </Link>
           </h3>
+
 
           <p className="mt-1 text-xs text-slate-500 line-clamp-2 leading-relaxed">
             {p.tagline || p.desc}
@@ -68,7 +84,7 @@ export default function Card({ p }) {
               <span className="text-[11px] font-medium text-slate-400 block">From</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-lg font-bold text-slate-900 tracking-tight">
-                  {p.price ? `₹${p.price}` : "Custom Quote"}
+                  {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
                 </span>
                 <span className="text-xs text-slate-500 font-semibold">
                   /gift set
