@@ -1,0 +1,162 @@
+@import "swiper/css";
+@import "swiper/css/effect-fade";
+@import "swiper/css/pagination";
+@import "swiper/css/navigation";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-corporate: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-white text-slate-800 font-sans antialiased min-h-screen flex flex-col;
+  }
+
+  ::selection {
+    background-color: #16a34a;
+    color: #ffffff;
+  }
+
+  /* Clean subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Universal suppression of native browser number input spinners */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* Completely suppress 3D Model Viewer default brown loading progress bar & mask */
+  model-viewer::part(default-progress-bar),
+  model-viewer::part(default-progress-mask),
+  model-viewer > [slot="progress-bar"] {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    height: 0px !important;
+  }
+}
+
+@layer components {
+
+  /* Luxury High-End B2B Buttons with Subtle Light Sheen Animation */
+  .btn-primary {
+    @apply relative overflow-hidden inline-flex items-center justify-center font-semibold text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 border border-brand-700 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 active:scale-[0.98];
+  }
+
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -60%;
+    width: 20%;
+    height: 200%;
+    background: linear-gradient(to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.25) 50%,
+        rgba(255, 255, 255, 0) 100%);
+    transform: rotate(25deg);
+    transition: all 0.75s cubic-bezier(0.19, 1, 0.22, 1);
+    pointer-events: none;
+  }
+
+  .btn-primary:hover::after {
+    left: 140%;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center font-semibold text-slate-800 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-300 shadow-sm hover:shadow-sm hover:border-slate-400 transition-all duration-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 active:scale-[0.98];
+  }
+
+  .btn-light-green {
+    @apply inline-flex items-center justify-center font-semibold text-brand-800 bg-brand-100 hover:bg-brand-200 border border-brand-200 rounded-lg px-4 py-2 text-sm transition-all duration-200 active:scale-[0.98];
+  }
+
+  /* Luxury Light-Green Badge with Micro Glow */
+  .badge-green {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 shadow-sm;
+  }
+
+  .badge-cream {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] shadow-sm;
+  }
+
+  .badge-slate {
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200;
+  }
+
+  /* Luxury Card Styles with Subtle Lift */
+  .luxury-card {
+    @apply bg-white border border-slate-200/90 rounded-2xl shadow-card hover:shadow-card-hover hover:border-brand-300 transition-all duration-300;
+  }
+
+  /* Marquee Gradient Masks */
+  .mask-marquee {
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+}
+
+/* Swiper Pagination Styling */
+.swiper-pagination-bullet {
+  background: #cbd5e1 !important;
+  opacity: 1 !important;
+  width: 8px !important;
+  height: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.swiper-pagination-bullet-active {
+  background: #16a34a !important;
+  width: 24px !important;
+  border-radius: 4px !important;
+}
+
+.hero-bullet {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-bullet-active {
+  background: #22c55e !important;
+  width: 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+}
