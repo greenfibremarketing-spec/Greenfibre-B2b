@@ -242,12 +242,15 @@ export default function QuotePage() {
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <div className="flex items-center gap-1">
                         <input
-                          type="number"
-                          min={item.moq || 1}
-                          step={10}
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={item.qty}
-                          onChange={(e) => setQty(item.key, parseInt(e.target.value, 10) || 1)}
-                          className="w-14 text-center text-xs font-bold py-1 px-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none"
+                          onChange={(e) => {
+                            const cleaned = e.target.value.replace(/\D/g, "");
+                            setQty(item.key, cleaned ? parseInt(cleaned, 10) : (item.moq || 1));
+                          }}
+                          className="w-14 text-center text-xs font-bold py-1 px-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none select-all"
                           aria-label={`Quantity for ${item.name}`}
                         />
                         <span className="text-[10px] text-slate-500">{item.unit}</span>

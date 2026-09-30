@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useQuote } from "./Quote";
 import {
@@ -46,7 +47,8 @@ import {
   MapPin,
   Building2,
   Heart,
-  Users
+  Users,
+  Eye
 } from "lucide-react";
 
 // Standard 5 Contexts & Occasions for B2B Gifting
@@ -60,7 +62,7 @@ export const B2B_OCCASIONS = [
     plainExplanation: "This product comes under Corporate Gifting — tailored specifically for enterprise client gifts, business partner appreciation, executive welcome kits, and annual company conferences.",
     bestSuitedFor: "Corporate Clients, Executive Kits, Business Partners, Sales Meets & Annual General Meetings",
     packagingDetails: "Standard Recyclable Eco Kraft Gift Box with Custom Sleeve & Plantable Story Card",
-    moq: 100,
+    moq: 10,
     icon: Building2,
     leadTime: "7–10 Days",
     tiers: [
@@ -68,35 +70,35 @@ export const B2B_OCCASIONS = [
         id: "tier-1",
         tierNumber: 1,
         title: "Tier 1 Starter",
-        badge: "MOQ Entry",
+        badge: "MOQ 10",
         isPopular: false,
-        min: 100,
-        max: 499,
-        rangeLabel: "100–499 Sets",
+        min: 10,
+        max: 49,
+        rangeLabel: "10–49 Sets",
         price: 1700,
-        savingsPct: 26,
+        savingsPct: 20,
         leadTime: "7–10 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 complimentary customizations below.",
-        nextTierUnlockText: "Tier 2 unlocks 3 →",
-        perks: ["26% Off MRP", "2 Free Customizations", "Standard 7-10 Day Production"]
+        nextTierUnlockText: "Tier 2 (50+) unlocks 3 →",
+        perks: ["20% Off MRP", "2 Free Customizations", "Standard 7-10 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
-        title: "Tier 2 Partner",
+        title: "Tier 2 Growth",
         badge: "★ POPULAR",
         isPopular: true,
-        min: 500,
-        max: 999,
-        rangeLabel: "500–999 Sets",
+        min: 50,
+        max: 99,
+        rangeLabel: "50–99 Sets",
         price: 1530,
-        savingsPct: 33,
+        savingsPct: 30,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
-        nextTierUnlockText: "Tier 3 unlocks all 5 →",
-        perks: ["33% Off MRP", "3 Free Customizations", "Priority Dispatch"]
+        nextTierUnlockText: "Tier 3 (100+) unlocks all 5 →",
+        perks: ["30% Off MRP", "3 Free Customizations", "Priority Dispatch"]
       },
       {
         id: "tier-3",
@@ -104,16 +106,16 @@ export const B2B_OCCASIONS = [
         title: "Tier 3 Enterprise",
         badge: "Max Value",
         isPopular: false,
-        min: 1000,
+        min: 100,
         max: null,
-        rangeLabel: "1000+ Sets",
+        rangeLabel: "100+ Sets",
         price: 1360,
-        savingsPct: 41,
+        savingsPct: 40,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["41% Off MRP", "All 5 Free", "Dedicated Account Manager", "Eco Certificate"]
+        perks: ["40% Off MRP", "All 5 Free", "Dedicated Account Manager", "Eco Certificate"]
       }
     ],
     customizations: [
@@ -168,7 +170,7 @@ export const B2B_OCCASIONS = [
     plainExplanation: "This product comes under Anniversary & Milestone Celebrations — specially curated for company foundation days, work anniversaries (5/10/25 years), and major milestone honors.",
     bestSuitedFor: "Company Foundation Days, Work Anniversaries, Milestone Recognition & Long-Standing Clients",
     packagingDetails: "Handcrafted Luxury Keepsake Ribbon Box with Milestone Plaque Tag",
-    moq: 25,
+    moq: 10,
     icon: Award,
     leadTime: "5–7 Days",
     tiers: [
@@ -176,17 +178,17 @@ export const B2B_OCCASIONS = [
         id: "tier-1",
         tierNumber: 1,
         title: "Milestone Starter",
-        badge: "MOQ Entry",
+        badge: "MOQ 10",
         isPopular: false,
-        min: 25,
-        max: 99,
-        rangeLabel: "25–99 Sets",
+        min: 10,
+        max: 49,
+        rangeLabel: "10–49 Sets",
         price: 1900,
-        savingsPct: 17,
+        savingsPct: 18,
         leadTime: "5–7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 anniversary customizations below.",
-        nextTierUnlockText: "Silver Jubilee unlocks 3 →",
+        nextTierUnlockText: "Silver Jubilee (50+) unlocks 3 →",
         perks: ["Gold Satin Ribbon", "Anniversary Commemorative Print", "5-7 Day Production"]
       },
       {
@@ -195,15 +197,15 @@ export const B2B_OCCASIONS = [
         title: "Silver Jubilee",
         badge: "★ POPULAR",
         isPopular: true,
-        min: 100,
-        max: 299,
-        rangeLabel: "100–299 Sets",
+        min: 50,
+        max: 99,
+        rangeLabel: "50–99 Sets",
         price: 1600,
         savingsPct: 30,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 anniversary customizations below.",
-        nextTierUnlockText: "Platinum unlocks all 5 →",
+        nextTierUnlockText: "Platinum (100+) unlocks all 5 →",
         perks: ["30% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
       },
       {
@@ -212,16 +214,16 @@ export const B2B_OCCASIONS = [
         title: "Platinum Jubilee",
         badge: "Max Value",
         isPopular: false,
-        min: 300,
+        min: 100,
         max: null,
-        rangeLabel: "300+ Sets",
+        rangeLabel: "100+ Sets",
         price: 1400,
-        savingsPct: 39,
+        savingsPct: 40,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 anniversary customizations included complimentary.",
         nextTierUnlockText: "",
-        perks: ["39% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
+        perks: ["40% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
       }
     ],
     customizations: [
@@ -276,7 +278,7 @@ export const B2B_OCCASIONS = [
     plainExplanation: "This product comes under Wedding & Celebrations — designed as premium, eco-luxury return gifts and bridesmaid / groomsmen celebration hampers.",
     bestSuitedFor: "Wedding Return Favours, Bridal Favours, Mehendi & Sangeet Hampers, Destination Events",
     packagingDetails: "Blush Bridal Gift Box with Silk Ribbon Wrap & Plantable Couple Note Card",
-    moq: 50,
+    moq: 10,
     icon: Heart,
     leadTime: "5–8 Days",
     tiers: [
@@ -284,17 +286,17 @@ export const B2B_OCCASIONS = [
         id: "tier-1",
         tierNumber: 1,
         title: "Intimate Wedding",
-        badge: "MOQ Entry",
+        badge: "MOQ 10",
         isPopular: false,
-        min: 50,
-        max: 199,
-        rangeLabel: "50–199 Sets",
+        min: 10,
+        max: 49,
+        rangeLabel: "10–49 Sets",
         price: 1800,
-        savingsPct: 22,
+        savingsPct: 20,
         leadTime: "7–8 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 wedding customizations below.",
-        nextTierUnlockText: "Grand Wedding unlocks 3 →",
+        nextTierUnlockText: "Grand Wedding (50+) unlocks 3 →",
         perks: ["Blush Ribbon", "Couple Monogram", "7-Day Production"]
       },
       {
@@ -303,16 +305,16 @@ export const B2B_OCCASIONS = [
         title: "Grand Wedding",
         badge: "★ POPULAR",
         isPopular: true,
-        min: 200,
-        max: 499,
-        rangeLabel: "200–499 Sets",
+        min: 50,
+        max: 99,
+        rangeLabel: "50–99 Sets",
         price: 1550,
-        savingsPct: 33,
+        savingsPct: 32,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 wedding customizations below.",
-        nextTierUnlockText: "Royal Wedding unlocks all 5 →",
-        perks: ["33% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
+        nextTierUnlockText: "Royal Wedding (100+) unlocks all 5 →",
+        perks: ["32% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
       },
       {
         id: "tier-3",
@@ -320,16 +322,16 @@ export const B2B_OCCASIONS = [
         title: "Royal Wedding",
         badge: "Max Value",
         isPopular: false,
-        min: 500,
+        min: 100,
         max: null,
-        rangeLabel: "500+ Sets",
+        rangeLabel: "100+ Sets",
         price: 1350,
-        savingsPct: 41,
+        savingsPct: 42,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 wedding customizations included free.",
         nextTierUnlockText: "",
-        perks: ["41% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
+        perks: ["42% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
       }
     ],
     customizations: [
@@ -384,7 +386,7 @@ export const B2B_OCCASIONS = [
     plainExplanation: "This product comes under Festive Season Gifting — packaged with festive hampers, traditional motif screen prints, and greeting cards for Diwali, New Year, and festivals.",
     bestSuitedFor: "Diwali Hampers, New Year Gifts, Employee Festive Packs, Family Celebrations & Eid/Christmas",
     packagingDetails: "Decorative Festive Hamper Gift Box with Gold Motif & Greetings Card",
-    moq: 50,
+    moq: 10,
     icon: Flame,
     leadTime: "5–8 Days",
     tiers: [
@@ -392,17 +394,17 @@ export const B2B_OCCASIONS = [
         id: "tier-1",
         tierNumber: 1,
         title: "Festive Starter",
-        badge: "MOQ Entry",
+        badge: "MOQ 10",
         isPopular: false,
-        min: 50,
-        max: 299,
-        rangeLabel: "50–299 Sets",
+        min: 10,
+        max: 49,
+        rangeLabel: "10–49 Sets",
         price: 1750,
-        savingsPct: 24,
+        savingsPct: 20,
         leadTime: "7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 festive customizations below.",
-        nextTierUnlockText: "Festive Bulk unlocks 3 →",
+        nextTierUnlockText: "Festive Bulk (50+) unlocks 3 →",
         perks: ["Festive Hamper Box", "2 Free Customizations", "7-Day Production"]
       },
       {
@@ -411,16 +413,16 @@ export const B2B_OCCASIONS = [
         title: "Festive Bulk",
         badge: "★ POPULAR",
         isPopular: true,
-        min: 300,
-        max: 699,
-        rangeLabel: "300–699 Sets",
+        min: 50,
+        max: 99,
+        rangeLabel: "50–99 Sets",
         price: 1500,
-        savingsPct: 35,
+        savingsPct: 32,
         leadTime: "5 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 festive customizations free.",
-        nextTierUnlockText: "Mega Festive unlocks all 5 →",
-        perks: ["35% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
+        nextTierUnlockText: "Mega Festive (100+) unlocks all 5 →",
+        perks: ["32% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -428,16 +430,16 @@ export const B2B_OCCASIONS = [
         title: "Mega Festive",
         badge: "Max Value",
         isPopular: false,
-        min: 700,
+        min: 100,
         max: null,
-        rangeLabel: "700+ Sets",
+        rangeLabel: "100+ Sets",
         price: 1300,
-        savingsPct: 43,
+        savingsPct: 42,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 festive customizations included free.",
         nextTierUnlockText: "",
-        perks: ["43% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
+        perks: ["42% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
       }
     ],
     customizations: [
@@ -492,25 +494,25 @@ export const B2B_OCCASIONS = [
     plainExplanation: "This product comes under Employee Onboarding & HR Kits — curated for welcoming new hires, campus recruits, and remote team packages with individual name monograms.",
     bestSuitedFor: "HR New Joiner Welcome Kits, Induction Day Gifts, Campus Recruits & Remote Team Packs",
     packagingDetails: "Branded New Hire Welcome Kit Box with HR Welcome Card & Monogram",
-    moq: 20,
+    moq: 10,
     icon: Users,
     leadTime: "3–5 Days",
     tiers: [
       {
         id: "tier-1",
         tierNumber: 1,
-        title: "Small Team",
-        badge: "MOQ Entry",
+        title: "Starter Team",
+        badge: "MOQ 10",
         isPopular: false,
-        min: 20,
+        min: 10,
         max: 49,
-        rangeLabel: "20–49 Sets",
+        rangeLabel: "10–49 Sets",
         price: 1700,
-        savingsPct: 26,
+        savingsPct: 20,
         leadTime: "5 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "2 complimentary onboarding customizations included.",
-        nextTierUnlockText: "Growing Team unlocks 3 →",
+        nextTierUnlockText: "Growing Team (50+) unlocks 3 →",
         perks: ["Suitable for startups", "2 Free Customizations", "5-Day Express"]
       },
       {
@@ -520,14 +522,14 @@ export const B2B_OCCASIONS = [
         badge: "★ POPULAR",
         isPopular: true,
         min: 50,
-        max: 199,
-        rangeLabel: "50–199 Sets",
+        max: 99,
+        rangeLabel: "50–99 Sets",
         price: 1550,
         savingsPct: 32,
         leadTime: "4 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 onboarding customizations free.",
-        nextTierUnlockText: "Enterprise unlocks all 5 →",
+        nextTierUnlockText: "Enterprise (100+) unlocks all 5 →",
         perks: ["32% Off MRP", "3 Free Customizations", "Priority Production"]
       },
       {
@@ -536,16 +538,16 @@ export const B2B_OCCASIONS = [
         title: "Enterprise Hiring",
         badge: "Max Value",
         isPopular: false,
-        min: 200,
+        min: 100,
         max: null,
-        rangeLabel: "200+ Sets",
+        rangeLabel: "100+ Sets",
         price: 1350,
-        savingsPct: 41,
+        savingsPct: 42,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 onboarding customizations included.",
         nextTierUnlockText: "",
-        perks: ["41% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
+        perks: ["42% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
       }
     ],
     customizations: [
@@ -632,16 +634,21 @@ function normalizeImageUrl(img) {
   return `http://localhost:5500/${img.replace(/^\/+/, "")}`;
 }
 
-export default function ProductDetailView({ product, context }) {
-  const { add } = useQuote() || {};
+export default function ProductDetailView({ product, context, relatedProducts = [] }) {
+  const { add, updateCustomizations } = useQuote() || {};
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const unitLabel = product.unit || "set";
   const unitLabelPlural =
     unitLabel.toLowerCase() === "set"
       ? "Sets"
       : unitLabel.toLowerCase() === "piece"
-      ? "Pieces"
-      : `${unitLabel}s`;
+        ? "Pieces"
+        : `${unitLabel}s`;
 
   // Extract all unique images
   const rawImagesList = [
@@ -662,24 +669,24 @@ export default function ProductDetailView({ product, context }) {
   // Normalize colors
   const colorVariants = Array.isArray(product.colors) && product.colors.length > 0
     ? product.colors.map((c) => {
-        if (typeof c === "string") return { name: c, stock: product.totalStock || product.stockQuantity || 100, images: [] };
-        const cImgs = Array.isArray(c.images)
-          ? c.images.map(normalizeImageUrl)
-          : c.image
+      if (typeof c === "string") return { name: c, stock: product.totalStock || product.stockQuantity || 100, images: [] };
+      const cImgs = Array.isArray(c.images)
+        ? c.images.map(normalizeImageUrl)
+        : c.image
           ? [normalizeImageUrl(c.image)]
           : [];
-        return {
-          ...c,
-          name: c.name || "Natural Sand",
-          stock: c.stock ?? product.totalStock ?? product.stockQuantity ?? 100,
-          images: cImgs
-        };
-      })
+      return {
+        ...c,
+        name: c.name || "Natural Sand",
+        stock: c.stock ?? product.totalStock ?? product.stockQuantity ?? 100,
+        images: cImgs
+      };
+    })
     : (Array.isArray(product.colours) ? product.colours : ["Natural Sand"]).map((c) => ({
-        name: typeof c === "string" ? c : c.name || "Natural Sand",
-        stock: product.totalStock || product.stockQuantity || 100,
-        images: []
-      }));
+      name: typeof c === "string" ? c : c.name || "Natural Sand",
+      stock: product.totalStock || product.stockQuantity || 100,
+      images: []
+    }));
 
   const initialColor = colorVariants[0]?.name || product.colours?.[0] || "Natural Sand";
 
@@ -724,12 +731,52 @@ export default function ProductDetailView({ product, context }) {
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedColour, setSelectedColour] = useState(initialColor);
-  const [qty, setQty] = useState(currentMoq);
+  const [qty, setQty] = useState(currentMoq || 10);
+  const [qtyInput, setQtyInput] = useState(String(currentMoq || 10));
   const [brandingNotes, setBrandingNotes] = useState("");
   const [packagingOption, setPackagingOption] = useState("Standard Recyclable Eco Kraft Box");
   const [added, setAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("set_contents"); // "set_contents" | "sustainability" | "ordering"
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [modalStep, setModalStep] = useState(1); // 1 = customize, 2 = suggested
+  const [activeTab, setActiveTab] = useState("set_contents");
+
+  // Pair additions & custom quantity state for Step 2 modal
+  const [pairQtys, setPairQtys] = useState({});
+  const [pairAdded, setPairAdded] = useState({});
+
+  const getPairQty = (slug) => pairQtys[slug] ?? 1;
+
+  const handlePairQtyChange = (slug, newQty) => {
+    const min = 1;
+    const raw = typeof newQty === "string" ? newQty.replace(/\D/g, "") : newQty;
+    const parsed = typeof raw === "number" ? raw : parseInt(raw, 10);
+    setPairQtys((prev) => ({
+      ...prev,
+      [slug]: isNaN(parsed) ? min : Math.max(min, parsed)
+    }));
+  };
+
+  const handleAddPairToQuote = (rel) => {
+    if (!add) return;
+    const relQty = getPairQty(rel.slug);
+    const originalPrice = rel.price || 0;
+    const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
+
+    const pairPayload = {
+      ...rel,
+      price: discountedPrice > 0 ? discountedPrice : originalPrice,
+      originalBasePrice: originalPrice,
+      activeTierTitle: "Bundle 5% Off Pairing",
+      bundleDiscountApplied: true
+    };
+
+    add(pairPayload, rel.colours ? rel.colours[0] : "Standard", relQty);
+    setPairAdded((prev) => ({ ...prev, [rel.slug]: true }));
+    setTimeout(() => {
+      setPairAdded((prev) => ({ ...prev, [rel.slug]: false }));
+    }, 2500);
+  };
 
   // Determine active tier based on quantity
   const activeTierObj =
@@ -781,14 +828,46 @@ export default function ProductDetailView({ product, context }) {
   const effectiveUnitPrice = unitPrice + brandingFeePerUnit;
   const estimatedSubtotal = effectiveUnitPrice * qty;
 
-  const handleQtyChange = (val) => {
-    const minMoq = currentMoq;
-    const num = Math.max(minMoq, parseInt(val, 10) || minMoq);
-    setQty(num);
+  const handleQtyInputChange = (val) => {
+    // Strictly allow only numeric digits (0-9)
+    const cleaned = val.replace(/\D/g, "");
+    setQtyInput(cleaned);
+    if (cleaned !== "") {
+      const parsed = parseInt(cleaned, 10);
+      if (!isNaN(parsed) && parsed > 0) {
+        setQty(parsed);
+      }
+    }
+  };
+
+  const handleQtyInputBlur = () => {
+    const minMoq = currentMoq || 10;
+    const parsed = parseInt(qtyInput, 10);
+    if (isNaN(parsed) || parsed < minMoq) {
+      setQty(minMoq);
+      setQtyInput(String(minMoq));
+    } else {
+      setQty(parsed);
+      setQtyInput(String(parsed));
+    }
+  };
+
+  const handleAdjustQty = (delta) => {
+    const minMoq = currentMoq || 10;
+    const newQty = Math.max(minMoq, (qty || minMoq) + delta);
+    setQty(newQty);
+    setQtyInput(String(newQty));
+  };
+
+  const handleSetExactQty = (targetQty) => {
+    const minMoq = currentMoq || 10;
+    const finalQty = Math.max(minMoq, targetQty);
+    setQty(finalQty);
+    setQtyInput(String(finalQty));
   };
 
   const handleSelectTier = (tier) => {
-    setQty(tier.min);
+    handleSetExactQty(tier.min);
   };
 
   const handleSelectImage = (idx) => {
@@ -810,32 +889,56 @@ export default function ProductDetailView({ product, context }) {
     setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-  const handleAddToCart = () => {
-    if (!add) return;
+  const buildProductPayload = () => {
     const selectedCustomizationObjs = currentCustomizations.filter((c) =>
       selectedCustomizations.includes(c.id)
     );
+    return {
+      ...product,
+      price: effectiveUnitPrice,
+      customBranding: selectedCustomizations.length > 0,
+      selectedCustomizations: selectedCustomizationObjs.map((c) => c.name),
+      customizationCount: selectedCustomizations.length,
+      maxAllowedCustomizations: maxCustomizations,
+      brandingNotes,
+      packagingOption,
+      activeOccasion: activeOccasion.label,
+      activeOccasionKey: activeOccasion.key,
+      activeTierTitle: activeTierObj.title,
+      activeTierNumber: activeTierObj.tierNumber
+    };
+  };
 
-    add(
-      {
-        ...product,
-        price: effectiveUnitPrice,
-        customBranding: selectedCustomizations.length > 0,
-        selectedCustomizations: selectedCustomizationObjs.map((c) => c.name),
-        customizationCount: selectedCustomizations.length,
-        maxAllowedCustomizations: maxCustomizations,
-        brandingNotes,
-        packagingOption,
-        activeOccasion: activeOccasion.label,
-        activeOccasionKey: activeOccasion.key,
-        activeTierTitle: activeTierObj.title,
-        activeTierNumber: activeTierObj.tierNumber
-      },
-      selectedColour,
-      qty
-    );
+  const handleAddToCart = () => {
+    if (!add) return;
+    // Immediately add to basket
+    add(buildProductPayload(), selectedColour, qty);
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    setTimeout(() => setAdded(false), 3000);
+    // Open step-1 modal
+    setModalStep(1);
+    setIsCustomizeModalOpen(true);
+    if (typeof document !== "undefined") document.body.style.overflow = "hidden";
+  };
+
+  const handleSaveCustomizations = () => {
+    const payload = buildProductPayload();
+    const key = `${product.slug}-${selectedColour || "standard"}`;
+    if (updateCustomizations) {
+      updateCustomizations(key, payload);
+    }
+    handleCloseModal();
+  };
+
+  const handleCloseModal = () => {
+    const payload = buildProductPayload();
+    const key = `${product.slug}-${selectedColour || "standard"}`;
+    if (updateCustomizations) {
+      updateCustomizations(key, payload);
+    }
+    setIsCustomizeModalOpen(false);
+    setModalStep(1);
+    if (typeof document !== "undefined") document.body.style.overflow = "";
   };
 
   const activeImage = images[activeImageIndex] || images[0];
@@ -885,17 +988,17 @@ export default function ProductDetailView({ product, context }) {
     Array.isArray(product.giftSetContents?.products) && product.giftSetContents.products.length > 0
       ? product.giftSetContents.products
       : Array.isArray(product.giftBox?.products) && product.giftBox.products.length > 0
-      ? product.giftBox.products
-      : [];
+        ? product.giftBox.products
+        : [];
 
   return (
     <div className="space-y-8">
       {/* TOP SECTION: Gallery & Gifting Customization */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
-        
+
         {/* LEFT COLUMN: Large Gallery & Compliance Trust Bar */}
         <div className="md:col-span-6 lg:col-span-6 space-y-4 w-full max-w-[540px] mx-auto md:mx-0 min-w-0 md:sticky md:top-24">
-          
+
           {/* Gallery Canvas with Left Vertical Thumbnails */}
           <div className="flex flex-col-reverse sm:flex-row gap-3 items-start min-w-0 w-full">
             {/* Left Vertical Thumbnails Strip */}
@@ -908,11 +1011,10 @@ export default function ProductDetailView({ product, context }) {
                       key={img + idx}
                       type="button"
                       onClick={() => handleSelectImage(idx)}
-                      className={`relative w-15 h-15 sm:w-16 sm:h-16 aspect-square rounded-xl overflow-hidden border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${
-                        isActive
-                          ? "ring-2 ring-brand-600 border-brand-600 shadow-sm scale-102 bg-white"
-                          : "border-slate-200 hover:border-brand-400 opacity-75 hover:opacity-100 bg-slate-50"
-                      }`}
+                      className={`relative w-15 h-15 sm:w-16 sm:h-16 aspect-square rounded-xl overflow-hidden border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${isActive
+                        ? "ring-2 ring-brand-600 border-brand-600 shadow-sm scale-102 bg-white"
+                        : "border-slate-200 hover:border-brand-400 opacity-75 hover:opacity-100 bg-slate-50"
+                        }`}
                       aria-label={`View angle ${idx + 1}`}
                     >
                       <img
@@ -1041,7 +1143,7 @@ export default function ProductDetailView({ product, context }) {
 
         {/* RIGHT COLUMN: Product Details & Gifting Customizer */}
         <div className="md:col-span-6 lg:col-span-6 space-y-4 min-w-0">
-          
+
           {/* Header Badges & Title */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
@@ -1118,11 +1220,10 @@ export default function ProductDetailView({ product, context }) {
                       key={tier.id}
                       type="button"
                       onClick={() => handleSelectTier(tier)}
-                      className={`p-2 rounded-xl text-left transition-all relative border cursor-pointer ${
-                        isActive
-                          ? "bg-white text-slate-900 border-white shadow-xl ring-2 ring-emerald-300 scale-[1.02]"
-                          : "bg-brand-700/40 hover:bg-brand-700/60 text-white border-white/25 hover:border-white/40 shadow-xs"
-                      }`}
+                      className={`p-2 rounded-xl text-left transition-all relative border cursor-pointer ${isActive
+                        ? "bg-white text-slate-900 border-white shadow-xl ring-2 ring-emerald-300 scale-[1.02]"
+                        : "bg-brand-700/40 hover:bg-brand-700/60 text-white border-white/25 hover:border-white/40 shadow-xs"
+                        }`}
                     >
                       <div className="flex items-center justify-between gap-1 mb-0.5">
                         <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? "text-brand-800" : "text-emerald-100"}`}>
@@ -1154,154 +1255,7 @@ export default function ProductDetailView({ product, context }) {
             </div>
           </div>
 
-          {/* 1. TIER-BASED B2B CUSTOMIZATION BOX (DIRECTLY UNDER GREEN VOLUME PRICING TIERS) */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
-            {/* Header: Title & Dynamic Allowance Counter */}
-            <div className="flex items-center justify-between gap-2 flex-wrap pb-1 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-brand-800 border border-emerald-200 flex items-center justify-center shadow-xs">
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 leading-tight">
-                    Customization Options
-                  </h3>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    Tier {activeTierObj.tierNumber} ({activeTierObj.title}) included customization allowance
-                  </p>
-                </div>
-              </div>
-
-              {/* Allowance Badge */}
-              <div className="flex items-center gap-1.5">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border transition-all ${
-                  selectedCustomizations.length === maxCustomizations
-                    ? "bg-emerald-100/90 text-emerald-900 border-emerald-300 shadow-2xs"
-                    : "bg-slate-100 text-slate-700 border-slate-200"
-                }`}>
-                  <CheckCircle2 className={`w-3.5 h-3.5 ${selectedCustomizations.length === maxCustomizations ? "text-emerald-700" : "text-slate-400"}`} />
-                  <span>{selectedCustomizations.length} of {maxCustomizations} Selected</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Tier Allowance Info Pill & Interactive Upgrade Link */}
-            <div className={`p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 transition-colors ${
-              activeTierObj.tierNumber === 1
-                ? "bg-amber-50/70 border-amber-200/90 text-amber-900"
-                : activeTierObj.tierNumber === 2
-                ? "bg-brand-50/70 border-brand-200 text-brand-900"
-                : "bg-emerald-50 border-emerald-300 text-emerald-950"
-            }`}>
-              <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className="w-3.5 h-3.5 flex-shrink-0 text-brand-700" />
-                <span className="text-[11px] font-medium leading-tight">
-                  {activeTierObj.tierNumber === 1 && (
-                    <><strong>Tier 1:</strong> Choose any <strong>2 of 5</strong> complimentary customizations below.</>
-                  )}
-                  {activeTierObj.tierNumber === 2 && (
-                    <><strong>Tier 2:</strong> Choose any <strong>3 of 5</strong> complimentary customizations below.</>
-                  )}
-                  {activeTierObj.tierNumber >= 3 && (
-                    <><strong>Tier 3:</strong> All <strong>5 of 5</strong> customizations unlocked &amp; included free!</>
-                  )}
-                </span>
-              </div>
-
-              {activeTierObj.tierNumber < 3 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextTier = currentTiers[activeTierObj.tierNumber];
-                    if (nextTier) handleSelectTier(nextTier);
-                  }}
-                  className="text-[11px] font-bold text-brand-700 hover:text-brand-800 underline flex-shrink-0 cursor-pointer whitespace-nowrap"
-                  title="Switch to next volume tier"
-                >
-                  {activeTierObj.tierNumber === 1 ? "Tier 2 unlocks 3 →" : "Tier 3 unlocks all 5 →"}
-                </button>
-              )}
-            </div>
-
-            {/* Live feedback alert when selection is updated */}
-            {customizationNotice && (
-              <div className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-medium flex items-center gap-1.5 animate-in fade-in">
-                <Info className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                <span>{customizationNotice}</span>
-              </div>
-            )}
-
-            {/* 5 Interactive Customization Cards */}
-            <div className="space-y-2 pt-0.5">
-              {currentCustomizations.map((opt) => {
-                const isSelected = selectedCustomizations.includes(opt.id);
-                const OptIcon = opt.icon;
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => handleToggleCustomization(opt.id)}
-                    className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 group ${
-                      isSelected
-                        ? "bg-emerald-50/60 border-brand-600 ring-1 ring-brand-600 shadow-xs"
-                        : "bg-slate-50/60 border-slate-200 hover:bg-slate-50 hover:border-brand-300"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Checkbox indicator */}
-                      <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${
-                        isSelected
-                          ? "bg-brand-600 text-white shadow-xs"
-                          : "border-2 border-slate-300 bg-white group-hover:border-brand-500"
-                      }`}>
-                        {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-
-                      {/* Icon */}
-                      <div className={`w-7 h-7 rounded-lg border flex items-center justify-center flex-shrink-0 shadow-2xs transition-colors ${
-                        isSelected
-                          ? "bg-white border-brand-200 text-brand-700"
-                          : "bg-white border-slate-200 text-slate-500 group-hover:text-brand-700"
-                      }`}>
-                        <OptIcon className="w-3.5 h-3.5" />
-                      </div>
-
-                      {/* Details */}
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-xs font-bold ${isSelected ? "text-slate-900" : "text-slate-800"}`}>
-                            {opt.name}
-                          </span>
-                          <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100/70 px-1.5 py-0.2 rounded border border-emerald-200/60">
-                            {opt.tag}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-tight">
-                          {opt.desc}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Status Pill */}
-                    <div className="flex-shrink-0">
-                      {isSelected ? (
-                        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
-                          <Check className="w-3 h-3 stroke-[3]" />
-                          <span>Included</span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-medium text-slate-400 group-hover:text-brand-700 px-2 py-0.5 rounded-full border border-transparent group-hover:border-brand-200 group-hover:bg-brand-50/50 transition-all">
-                          Select
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 2. PACKAGING & PRESENTATION BOX */}
+          {/* PACKAGING & PRESENTATION BOX */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
               <Box className="w-3.5 h-3.5 text-brand-700" />
@@ -1319,57 +1273,154 @@ export default function ProductDetailView({ product, context }) {
           </div>
 
           {/* 3. ORDER QUANTITY & PRICE CALCULATION CARD */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
-            
-            {/* Set Quantity Stepper & Price Calculation */}
-            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <label className="text-[11px] font-bold text-slate-600 uppercase tracking-wider block mb-1">
-                  Order Quantity ({unitLabelPlural}):
-                </label>
-                <div className="inline-flex items-center bg-white rounded-lg p-1 border border-[#D5CABB] shadow-xs">
-                  <button
-                    type="button"
-                    onClick={() => handleQtyChange(qty - 25)}
-                    disabled={qty <= currentMoq}
-                    className="w-7 h-7 rounded flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                    title="Decrease quantity"
-                  >
-                    <Minus className="w-3.5 h-3.5" />
-                  </button>
-                  <input
-                    type="number"
-                    min={currentMoq}
-                    step={25}
-                    value={qty}
-                    onChange={(e) => handleQtyChange(e.target.value)}
-                    className="w-16 bg-transparent text-center font-bold text-slate-900 text-sm focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    aria-label={`Order quantity in ${unitLabelPlural}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleQtyChange(qty + 25)}
-                    className="w-7 h-7 rounded flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                    title="Increase quantity"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                  </button>
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
+
+            {/* Set Quantity Stepper, Quick Addons & Price Calculation */}
+            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-3.5 sm:p-4 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                    <span>Order Quantity ({unitLabelPlural}):</span>
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.2 rounded-full border border-emerald-200">
+                      MOQ: {currentMoq} {unitLabelPlural}
+                    </span>
+                  </label>
+
+                  {/* Stepper + Free Typing Input + Quick Addons */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="inline-flex items-center bg-white rounded-xl p-1 border-2 border-[#D5CABB] shadow-xs focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-200 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => handleAdjustQty(-1)}
+                        disabled={qty <= (currentMoq || 10)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                        title="Decrease quantity by 1"
+                        aria-label="Decrease quantity by 1"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={qtyInput}
+                        onChange={(e) => handleQtyInputChange(e.target.value)}
+                        onBlur={handleQtyInputBlur}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleQtyInputBlur();
+                        }}
+                        className="w-16 bg-transparent text-center font-extrabold text-slate-900 text-sm sm:text-base focus:outline-none select-all"
+                        aria-label={`Order quantity in ${unitLabelPlural}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAdjustQty(1)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                        title="Increase quantity by 1"
+                        aria-label="Increase quantity by 1"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Quick Add-ons (+10, +50, +100) */}
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => handleAdjustQty(10)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                        title="Add 10 more sets"
+                      >
+                        +10
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAdjustQty(50)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                        title="Add 50 more sets"
+                      >
+                        +50
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAdjustQty(100)}
+                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                        title="Add 100 more sets"
+                      >
+                        +100
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-[10px] text-slate-500 block mt-1">
-                  Min. Order: {currentMoq} {unitLabelPlural} ({activeOccasion.label})
-                </span>
+
+                <div className="text-left sm:text-right pt-1 sm:pt-0">
+                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block">
+                    Estimated Subtotal for {qty} {unitLabelPlural}:
+                  </span>
+                  <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                    ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                  </div>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    (₹{effectiveUnitPrice} per {unitLabel} • Excl. {product.tax?.gstRate || 18}% GST)
+                  </span>
+                </div>
               </div>
 
-              <div className="text-left sm:text-right">
-                <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block">
-                  Estimated Subtotal for {qty} {unitLabelPlural}:
+              {/* Quick Preset Volume Shortcuts */}
+              <div className="pt-2 border-t border-[#E5DAC8]/70 flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">
+                  Quick Select:
                 </span>
-                <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                  ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                </div>
-                <span className="text-[11px] text-slate-500 font-medium">
-                  (₹{effectiveUnitPrice} per {unitLabel} • Excl. {product.tax?.gstRate || 18}% GST)
-                </span>
+                <button
+                  type="button"
+                  onClick={() => handleSetExactQty(10)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 10
+                    ? "bg-brand-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                >
+                  10 (Tier 1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetExactQty(50)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 50
+                    ? "bg-brand-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                >
+                  50 (Tier 2 ★)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetExactQty(100)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 100
+                    ? "bg-brand-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                >
+                  100 (Tier 3)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetExactQty(250)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 250
+                    ? "bg-brand-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                >
+                  250
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetExactQty(500)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 500
+                    ? "bg-brand-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                    }`}
+                >
+                  500+
+                </button>
               </div>
             </div>
 
@@ -1378,9 +1429,8 @@ export default function ProductDetailView({ product, context }) {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className={`btn-primary w-full py-2.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer ${
-                  added ? "bg-emerald-600 border-emerald-700" : ""
-                }`}
+                className={`btn-primary w-full py-2.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer ${added ? "bg-brand-500 border-brand-600" : ""
+                  }`}
               >
                 {added ? (
                   <>
@@ -1531,11 +1581,10 @@ export default function ProductDetailView({ product, context }) {
           <button
             type="button"
             onClick={() => setActiveTab("set_contents")}
-            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === "set_contents"
-                ? "border-brand-600 text-brand-800 bg-white shadow-xs"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-            }`}
+            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "set_contents"
+              ? "border-brand-600 text-brand-800 bg-white shadow-xs"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+              }`}
           >
             <Layers className="w-4 h-4" />
             <span>Product Details &amp; All Specifications</span>
@@ -1544,11 +1593,10 @@ export default function ProductDetailView({ product, context }) {
           <button
             type="button"
             onClick={() => setActiveTab("sustainability")}
-            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === "sustainability"
-                ? "border-brand-600 text-brand-800 bg-white shadow-xs"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-            }`}
+            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "sustainability"
+              ? "border-brand-600 text-brand-800 bg-white shadow-xs"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+              }`}
           >
             <Leaf className="w-4 h-4" />
             <span>Sustainability &amp; Footprint</span>
@@ -1557,11 +1605,10 @@ export default function ProductDetailView({ product, context }) {
           <button
             type="button"
             onClick={() => setActiveTab("ordering")}
-            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === "ordering"
-                ? "border-brand-600 text-brand-800 bg-white shadow-xs"
-                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-            }`}
+            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "ordering"
+              ? "border-brand-600 text-brand-800 bg-white shadow-xs"
+              : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+              }`}
           >
             <Truck className="w-4 h-4" />
             <span>B2B Ordering &amp; Logistics</span>
@@ -1717,11 +1764,10 @@ export default function ProductDetailView({ product, context }) {
                         <Link
                           key={occ.key}
                           href={`/products/${product.slug}?context=${occ.key}`}
-                          className={`p-2.5 rounded-xl border text-left transition-all block ${
-                            isCurrent
-                              ? "bg-emerald-50 border-brand-600 ring-1 ring-brand-600 shadow-xs"
-                              : "bg-white border-slate-200 hover:border-brand-400 hover:bg-slate-50"
-                          }`}
+                          className={`p-2.5 rounded-xl border text-left transition-all block ${isCurrent
+                            ? "bg-emerald-50 border-brand-600 ring-1 ring-brand-600 shadow-xs"
+                            : "bg-white border-slate-200 hover:border-brand-400 hover:bg-slate-50"
+                            }`}
                         >
                           <div className="flex items-center justify-between gap-1 mb-1">
                             <div className={`w-5 h-5 rounded flex items-center justify-center ${isCurrent ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-600"}`}>
@@ -1939,6 +1985,584 @@ export default function ProductDetailView({ product, context }) {
           </div>
         </div>
       )}
+
+      {/* ── 2-STEP CUSTOMIZATION & RECOMMENDATION MODAL ── */}
+      {mounted && isCustomizeModalOpen && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 999999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "16px",
+            backgroundColor: "rgba(0, 0, 0, 0.72)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+            animation: "gfModalBackdrop 0.25s ease-out forwards"
+          }}
+          onClick={handleCloseModal}
+        >
+          {/* Modal Container */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "relative",
+              width: "100%",
+              maxWidth: "860px",
+              maxHeight: "80vh",
+              background: "#ffffff",
+              borderRadius: "24px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08)",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              animation: "gfModalBox 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+            }}
+          >
+            {/* Step indicator bar */}
+            <div className="flex items-center gap-2 px-6 pt-4 pb-2 flex-shrink-0 bg-white">
+              <div
+                style={{
+                  flex: 1,
+                  height: 4,
+                  borderRadius: 99,
+                  background: "#22c55e"
+                }}
+              />
+              <div
+                style={{
+                  flex: 1,
+                  height: 4,
+                  borderRadius: 99,
+                  background: modalStep >= 2 ? "#22c55e" : "#e2e8f0",
+                  transition: "background 0.3s"
+                }}
+              />
+              <span className="text-[11px] font-bold text-slate-500 ml-1">
+                Step {modalStep} of 2
+              </span>
+            </div>
+
+            {/* Header */}
+            <div
+              className="mx-5 mb-2 px-4 py-3 rounded-2xl flex items-center justify-between flex-shrink-0"
+              style={{
+                background: "linear-gradient(135deg, #16a34a, #22c55e)"
+              }}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "rgba(255,255,255,0.2)" }}
+                >
+                  {modalStep === 1 ? (
+                    <Sparkles className="w-4 h-4 text-white" />
+                  ) : (
+                    <SlidersHorizontal className="w-4 h-4 text-white" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  {modalStep === 1 ? (
+                    <>
+                      <h2 className="text-sm font-extrabold text-white leading-tight">
+                        Frequently Bought Together &amp; Bundle Sets
+                      </h2>
+                      <p className="text-[11px] font-medium text-emerald-100 truncate">
+                        Extra 5% bundle discount unlocked for paired items (Total up to 15% OFF)
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-sm font-extrabold text-white leading-tight">
+                        Branding &amp; Customization Options
+                      </h2>
+                      <p className="text-[11px] font-medium text-emerald-100 truncate">
+                        Select complimentary corporate personalization for your quote
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all hover:bg-white/20 text-white"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* ── STEP 1: FREQUENTLY BOUGHT TOGETHER & BUNDLE DEALS ── */}
+            {modalStep === 1 && (
+              <>
+                <div className="overflow-y-auto flex-1 px-5 py-3 space-y-3.5">
+                  {/* Order added confirmation */}
+                  <div
+                    className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
+                  >
+                    <span className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0 text-white shadow-xs">
+                      <Check className="w-4 h-4 stroke-[3]" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-extrabold text-emerald-950 leading-tight">
+                        {qty} {unitLabelPlural} added to your basket!
+                      </p>
+                      <p className="text-[11px] text-emerald-800">
+                        Pair with complementary sets below to maximize your bulk savings.
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs font-extrabold text-slate-900">
+                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-medium">
+                        {activeTierObj.title}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Light & Vibrant Executive Bundle Savings Stacking Banner */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-[#fbfdf7] to-amber-50/60 border-2 border-emerald-300 text-slate-800 shadow-sm relative overflow-hidden">
+                    {/* Subtle decorative background gradient circles */}
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-emerald-200/40 rounded-full blur-xl pointer-events-none" />
+                    <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-amber-200/30 rounded-full blur-xl pointer-events-none" />
+
+                    <div className="relative space-y-2.5">
+                      {/* Top Header Row */}
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+                          </div>
+                          <div>
+                            <span className="text-xs sm:text-sm font-black text-slate-900 tracking-tight block">
+                              Executive Bundle Savings Stacking
+                            </span>
+                            <span className="text-[11px] text-slate-600 font-medium">
+                              Add paired sets below to unlock your maximum volume tier
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-300 text-amber-950 shadow-xs border border-amber-300 tracking-wide uppercase">
+                          🔥 Total 15% OFF
+                        </span>
+                      </div>
+
+                      {/* 3-Step Visual Discount Stacking Meter */}
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Step 1: Base Discount */}
+                        <div className="bg-white border border-emerald-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
+                            Step 1 • Base Item
+                          </span>
+                          <span className="text-xs sm:text-sm font-black text-brand-700 block mt-0.5">
+                            10% OFF
+                          </span>
+                          <span className="text-[9px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
+                            Applied to primary
+                          </span>
+                        </div>
+
+                        {/* Step 2: Add-on Discount */}
+                        <div className="bg-white border border-amber-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs relative">
+                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
+                            Step 2 • Add-on
+                          </span>
+                          <span className="text-xs sm:text-sm font-black text-amber-600 block mt-0.5">
+                            +5% EXTRA
+                          </span>
+                          <span className="text-[9px] text-amber-900 font-semibold bg-amber-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
+                            On paired items
+                          </span>
+                        </div>
+
+                        {/* Step 3: Total Combined Savings */}
+                        <div className="bg-gradient-to-br from-emerald-600 to-brand-700 text-white rounded-xl p-2 sm:p-2.5 text-center shadow-xs">
+                          <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-wider block">
+                            Total Unlocked
+                          </span>
+                          <span className="text-xs sm:text-sm font-black text-white block mt-0.5 tracking-tight">
+                            15% SAVINGS
+                          </span>
+                          <span className="text-[9px] text-emerald-950 font-bold bg-amber-300 px-1.5 py-0.2 rounded inline-block mt-0.5">
+                            Max Enterprise Deal
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Frequently bought together grid */}
+                  {relatedProducts.length > 0 ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                          <Boxes className="w-3.5 h-3.5 text-brand-600" />
+                          <span>Frequently Ordered With This Set</span>
+                        </p>
+                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                          Extra 5% Bundle Discount
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {relatedProducts.slice(0, 4).map((rel) => {
+                          const itemQty = getPairQty(rel.slug);
+                          const isItemAdded = Boolean(pairAdded[rel.slug]);
+                          const originalPrice = rel.price || 0;
+                          const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
+                          const savingsPerUnit = originalPrice > 0 ? originalPrice - discountedPrice : 0;
+
+                          return (
+                            <div
+                              key={rel.slug}
+                              className="group flex flex-col justify-between bg-white rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md border border-slate-200 hover:border-brand-400 p-3 relative"
+                            >
+                              {/* 5% Discount Badge */}
+                              <div className="absolute top-2.5 right-2.5 z-10 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-[9.5px] font-black px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1 border border-emerald-400/30">
+                                <Sparkles className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
+                                <span>+5% OFF</span>
+                              </div>
+
+                              <div>
+                                <div className="flex gap-2.5 items-center">
+                                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 group/img">
+                                    <img
+                                      src={rel.image || "/images/gift-set-classic.jpg"}
+                                      alt={rel.name}
+                                      className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+                                      onError={(e) => {
+                                        e.currentTarget.src = "/images/gift-set-classic.jpg";
+                                      }}
+                                    />
+                                    <Link
+                                      href={`/products/${rel.slug}`}
+                                      onClick={handleCloseModal}
+                                      className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white"
+                                      title="Preview product"
+                                    >
+                                      <Eye className="w-4 h-4" />
+                                    </Link>
+                                  </div>
+                                  <div className="flex-1 min-w-0 pr-12">
+                                    <Link
+                                      href={`/products/${rel.slug}`}
+                                      onClick={handleCloseModal}
+                                      className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug hover:text-brand-600 transition-colors"
+                                    >
+                                      {rel.name}
+                                    </Link>
+
+                                    <div className="mt-0.5 flex items-baseline gap-1.5 flex-wrap">
+                                      {discountedPrice > 0 ? (
+                                        <>
+                                          <span className="text-xs font-black text-brand-700">
+                                            ₹{discountedPrice}
+                                          </span>
+                                          <span className="text-[10px] text-slate-400 line-through font-semibold">
+                                            ₹{originalPrice}
+                                          </span>
+                                          <span className="text-[10px] font-semibold text-slate-500">
+                                            /{rel.unit || "set"}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        <span className="text-xs font-bold text-brand-600">
+                                          Custom Tier
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    <div className="mt-0.5 text-[10px] font-semibold text-emerald-700 flex items-center gap-1">
+                                      <Sparkles className="w-2.5 h-2.5 text-amber-500 flex-shrink-0" />
+                                      <span>Save ₹{(savingsPerUnit * itemQty).toLocaleString("en-IN")} on {itemQty}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Stepper + Compact Light Green Add Button */}
+                              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-2">
+                                {/* Quantity Stepper */}
+                                <div className="h-8 inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5 flex-shrink-0 shadow-2xs">
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePairQtyChange(rel.slug, itemQty - 1)}
+                                    disabled={itemQty <= 1}
+                                    className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold cursor-pointer"
+                                    title="Decrease quantity by 1"
+                                  >
+                                    <Minus className="w-3 h-3" />
+                                  </button>
+                                  <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    value={itemQty}
+                                    onChange={(e) => {
+                                      const cleaned = e.target.value.replace(/\D/g, "");
+                                      handlePairQtyChange(rel.slug, cleaned);
+                                    }}
+                                    className="w-8 text-center text-xs font-bold text-slate-800 bg-transparent outline-none select-all"
+                                    aria-label="Quantity"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handlePairQtyChange(rel.slug, itemQty + 1)}
+                                    className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 transition-all font-bold cursor-pointer"
+                                    title="Increase quantity by 1"
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                  </button>
+                                </div>
+
+                                {/* Compact Light Green ADD Button */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddPairToQuote(rel)}
+                                  className={`h-8 flex-1 px-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${isItemAdded
+                                    ? "bg-brand-500 text-white ring-2 ring-brand-300 shadow-xs"
+                                    : "bg-brand-600 hover:bg-brand-500 text-white hover:shadow-xs"
+                                    }`}
+                                >
+                                  {isItemAdded ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                      <span>Added ({itemQty})</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                      <span>Add {itemQty} (+5% Off)</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-slate-400">
+                      <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-40 text-slate-400" />
+                      <p className="text-xs font-semibold text-slate-600">No suggestions right now</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 1 Footer: Navigate to Step 2 (Branding) */}
+                <div
+                  className="flex-shrink-0 px-5 py-3 border-t border-slate-100 space-y-2.5"
+                  style={{ background: "#f8fafc" }}
+                >
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(2)}
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+                    >
+                      Skip to Branding
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(2)}
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
+                    >
+                      <span>Next: Branding Options</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── STEP 2: BRANDING & CUSTOMIZATION OPTIONS ── */}
+            {modalStep === 2 && (
+              <>
+                <div className="overflow-y-auto flex-1 px-5 py-2 space-y-3.5">
+                  {/* Tier Allowance Banner */}
+                  <div
+                    className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${activeTierObj.tierNumber === 1
+                      ? "bg-amber-50/80 border-amber-200 text-amber-900"
+                      : activeTierObj.tierNumber === 2
+                        ? "bg-brand-50/80 border-brand-200 text-brand-900"
+                        : "bg-emerald-50 border-emerald-300 text-emerald-950"
+                      }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Sparkles className="w-4 h-4 flex-shrink-0 text-brand-600" />
+                      <span className="font-medium text-[11px] leading-tight">
+                        {activeTierObj.tierNumber === 1 && (
+                          <>
+                            <strong>Tier 1:</strong> Select any <strong>2 of 5</strong> complimentary customizations.
+                          </>
+                        )}
+                        {activeTierObj.tierNumber === 2 && (
+                          <>
+                            <strong>Tier 2:</strong> Select any <strong>3 of 5</strong> complimentary customizations.
+                          </>
+                        )}
+                        {activeTierObj.tierNumber >= 3 && (
+                          <>
+                            <strong>Tier 3:</strong> All <strong>5 of 5</strong> customizations complimentary!
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full flex-shrink-0 ${selectedCustomizations.length === maxCustomizations
+                        ? "bg-brand-600 text-white shadow-xs"
+                        : "bg-white border border-slate-200 text-slate-700"
+                        }`}
+                    >
+                      {selectedCustomizations.length}/{maxCustomizations} Selected
+                    </span>
+                  </div>
+
+                  {/* Customization Options Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {currentCustomizations.map((opt) => {
+                      const isSelected = selectedCustomizations.includes(opt.id);
+                      const OptIcon = opt.icon;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => handleToggleCustomization(opt.id)}
+                          className={`w-full text-left p-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer flex items-center gap-3 group ${isSelected
+                            ? "border-brand-500 shadow-sm"
+                            : "border-slate-200 hover:border-brand-300"
+                            }`}
+                          style={{ background: isSelected ? "#f0fdf4" : "#f8fafc" }}
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected
+                              ? "bg-brand-600 text-white"
+                              : "border-2 border-slate-300 bg-white group-hover:border-brand-400"
+                              }`}
+                          >
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
+                          <div
+                            className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 ${isSelected
+                              ? "bg-white border-brand-200 text-brand-600"
+                              : "bg-white border-slate-200 text-slate-400 group-hover:text-brand-600"
+                              }`}
+                          >
+                            <OptIcon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-bold text-slate-900">
+                                {opt.name}
+                              </span>
+                              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">
+                                {opt.tag}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
+                              {opt.desc}
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0">
+                            {isSelected ? (
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-1 rounded-full flex items-center gap-1">
+                                <Check className="w-3 h-3 stroke-[3]" />
+                                Included
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 group-hover:text-brand-700 px-2 py-1 rounded-full border border-transparent group-hover:border-brand-200 group-hover:bg-brand-50 transition-all">
+                                Select
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Branding notes */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-brand-600" /> Branding Notes (Optional)
+                    </label>
+                    <textarea
+                      value={brandingNotes}
+                      onChange={(e) => setBrandingNotes(e.target.value)}
+                      rows={2}
+                      placeholder="E.g. 'Logo file will be emailed — please center on front lid.'"
+                      className="w-full text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 focus:bg-white placeholder:text-slate-400 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Step 2 Footer: Save & Proceed */}
+                <div
+                  className="flex-shrink-0 px-5 py-3 border-t border-slate-100 space-y-2.5"
+                  style={{ background: "#f8fafc" }}
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="flex items-center gap-1.5 text-slate-500">
+                      <Clock className="w-3.5 h-3.5 text-brand-600" />
+                      <strong className="text-slate-700">Lead Time:</strong> {activeOccasion.leadTime || "5–7 Days"}
+                    </span>
+                    <span className="font-extrabold text-slate-900">
+                      Total: ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(1)}
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>← Back to Bundles</span>
+                    </button>
+                    <Link
+                      href="/quote"
+                      onClick={handleSaveCustomizations}
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
+                    >
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Review Basket &amp; Quote</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+
+      <style>{`
+        @keyframes gfModalBackdrop {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes gfModalBox {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

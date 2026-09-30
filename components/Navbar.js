@@ -143,11 +143,10 @@ export default function Navbar() {
               {/* All Products */}
               <Link
                 href="/products"
-                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${
-                  isAllProductsActive
+                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isAllProductsActive
                     ? "text-brand-900 bg-brand-50/80 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                }`}
+                  }`}
               >
                 <span className="relative z-10">All Products</span>
                 {isAllProductsActive && (
@@ -163,17 +162,15 @@ export default function Navbar() {
               >
                 <Link
                   href="/products?category=Gifting"
-                  className={`flex items-center gap-1 whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${
-                    isGiftingActive
+                  className={`flex items-center gap-1 whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
                       ? "text-brand-900 bg-brand-50/80 font-bold"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                  }`}
+                    }`}
                 >
                   <span className="relative z-10">Gifting</span>
                   <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-300 ${
-                      giftingOpen ? "rotate-180" : "rotate-0"
-                    }`}
+                    className={`w-3.5 h-3.5 transition-transform duration-300 ${giftingOpen ? "rotate-180" : "rotate-0"
+                      }`}
                   />
                   {isGiftingActive && (
                     <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-600 rounded-full" />
@@ -182,11 +179,10 @@ export default function Navbar() {
 
                 {/* Dropdown */}
                 <div
-                  className={`absolute top-full left-0 mt-2 w-[420px] transition-all duration-300 ease-out origin-top-left ${
-                    giftingOpen
+                  className={`absolute top-full left-0 mt-2 w-[420px] transition-all duration-300 ease-out origin-top-left ${giftingOpen
                       ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                       : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-                  }`}
+                    }`}
                 >
                   {/* Invisible hover bridge */}
                   <div className="absolute -top-2 left-0 right-0 h-2" />
@@ -252,11 +248,10 @@ export default function Navbar() {
               {/* Our Story */}
               <Link
                 href="/story"
-                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${
-                  isStoryActive
+                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isStoryActive
                     ? "text-brand-900 bg-brand-50/80 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                }`}
+                  }`}
               >
                 <span className="relative z-10">Our Story</span>
                 {isStoryActive && (
@@ -326,11 +321,10 @@ export default function Navbar() {
                 <Link
                   href="/products"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${
-                    isAllProductsActive
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isAllProductsActive
                       ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
                       : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isAllProductsActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
@@ -346,11 +340,10 @@ export default function Navbar() {
                   <button
                     type="button"
                     onClick={() => setMobileGiftingOpen(!mobileGiftingOpen)}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                      isGiftingActive
+                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${isGiftingActive
                         ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
                         : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
@@ -390,11 +383,10 @@ export default function Navbar() {
                 <Link
                   href="/story"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${
-                    isStoryActive
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isStoryActive
                       ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
                       : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isStoryActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>

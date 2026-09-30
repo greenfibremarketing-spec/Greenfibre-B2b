@@ -1,4 +1,22 @@
 import { NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import crypto from "crypto";
+import { SignJWT } from "jose";
+
+function hashPassword(password) {
+  return crypto.createHash("sha256").update(password).digest("hex");
+}
+
+async function signToken(payload) {
+  const secret = new TextEncoder().encode(
+    process.env.JWT_SECRET || "greenfibre_b2b_secret_key_2024"
+  );
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("30d")
+    .sign(secret);
+}
 
 export async function POST(req) {
   try {
@@ -19,7 +37,21 @@ export async function POST(req) {
       );
     }
 
-    const payload = {
+    const database = await db();
+    const users = database.collection("b2b_users");
+
+    // Check if email already exists
+    const existing = await users.findOne({ email });
+    if (existing) {
+      return NextResponse.json(
+        { success: false, message: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    const hashedPassword = hashPassword(password);
+
+    const newUser = {
       fullName,
       full_name: fullName,
       companyName,
@@ -27,79 +59,47 @@ export async function POST(req) {
       phone,
       businessType,
       gstin,
-      password,
-      rememberMe: Boolean(body.rememberMe ?? true)
+      password: hashedPassword,
+      role: "b2b_client",
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    const backendBase = process.env.B2B_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5500";
-    const endpoints = [
-      `${backendBase}/api/b2b/register`,
-      `${backendBase}/api/users/register`,
-      `${backendBase}/api/b2b/auth/register`,
-      `${backendBase}/api/auth/register`
-    ];
+    const result = await users.insertOne(newUser);
 
-    let backendRes = null;
-    let backendData = null;
+    const safeUser = {
+      _id: result.insertedId.toString(),
+      fullName,
+      email,
+      companyName,
+      phone,
+      businessType,
+      gstin,
+      role: "b2b_client",
+    };
 
-    for (const url of endpoints) {
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(3000)
-        });
+    const token = await signToken({ userId: safeUser._id, email: safeUser.email });
 
-        if (res.status !== 404) {
-          backendRes = res;
-          backendData = await res.json().catch(() => ({}));
-          break;
-        }
-      } catch (err) {
-        // Continue to next endpoint if failed
-      }
-    }
-
-    if (backendRes) {
-      if (backendRes.ok && backendData.success !== false) {
-        const response = NextResponse.json({
-          success: true,
-          message: backendData.message || "Enterprise account registered successfully",
-          token: backendData.token,
-          user: backendData.user || backendData.data
-        }, { status: 201 });
-
-        if (backendData.token) {
-          response.cookies.set("b2b_token", backendData.token, {
-            path: "/",
-            maxAge: 30 * 24 * 60 * 60,
-            sameSite: "lax",
-            httpOnly: false
-          });
-        }
-        return response;
-      }
-
-      // Backend returned real database error (e.g. 409 user already exists, 400 validation)
-      return NextResponse.json(
-        {
-          success: false,
-          message: backendData.message || backendData.error || "Registration failed"
-        },
-        { status: backendRes.status || 400 }
-      );
-    }
-
-    // Backend server on port 5500 is NOT running
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
-        success: false,
-        message: "Backend server is offline. Please start your Express backend on port 5500."
+        success: true,
+        message: "Enterprise account registered successfully",
+        token,
+        user: safeUser,
       },
-      { status: 503 }
+      { status: 201 }
     );
+
+    response.cookies.set("b2b_token", token, {
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
+      sameSite: "lax",
+      httpOnly: false,
+    });
+
+    return response;
   } catch (err) {
+    console.error("[B2B Register]", err);
     return NextResponse.json(
       { success: false, message: err.message || "Registration error" },
       { status: 500 }

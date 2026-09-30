@@ -22,23 +22,45 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
 
   const filtered = allProducts.filter((p) => {
     const isGiftingCat = category === "Gifting" || category === "Gift Boxes & Hampers";
+    const targetOccasion = type || context || (isGiftingSubType ? category : null);
 
-    const matchesCategory =
-      !category ||
-      category === "All Products" ||
-      isGiftingSubType ||
-      Boolean(type || context) ||
-      (isGiftingCat
-        ? p.category === "Gifting" ||
+    let matchesCategory = true;
+    if (targetOccasion) {
+      const occKey = targetOccasion.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const pCategory = (p.category || "").toLowerCase();
+      const pSubCategory = (p.subCategory || "").toLowerCase();
+      const pOccasions = (Array.isArray(p.occasions) ? p.occasions : []).map((o) => o.toLowerCase());
+      const pTags = (Array.isArray(p.tags) ? p.tags : []).map((t) => t.toLowerCase());
+      const pName = (p.name || "").toLowerCase();
+      const pDesc = (p.desc || p.tagline || "").toLowerCase();
+
+      matchesCategory =
+        pCategory.includes(occKey) ||
+        pSubCategory.includes(occKey) ||
+        pOccasions.some((o) => o.replace(/[^a-z0-9]/g, "").includes(occKey) || occKey.includes(o.replace(/[^a-z0-9]/g, ""))) ||
+        pTags.some((t) => t.replace(/[^a-z0-9]/g, "").includes(occKey) || occKey.includes(t.replace(/[^a-z0-9]/g, ""))) ||
+        pName.includes(occKey) ||
+        pDesc.includes(occKey) ||
+        (occKey.includes("corp") && (pCategory.includes("gift") || pCategory.includes("corp")));
+    } else if (category && category !== "All Products") {
+      if (isGiftingCat) {
+        matchesCategory =
+          p.category === "Gifting" ||
           p.category === "Gift Boxes & Hampers" ||
           (typeof p.category === "string" && p.category.toLowerCase().includes("gift")) ||
           (typeof p.name === "string" && p.name.toLowerCase().includes("gift")) ||
-          (typeof p.name === "string" && p.name.toLowerCase().includes("pack"))
-        : p.category === category);
+          (typeof p.name === "string" && p.name.toLowerCase().includes("pack"));
+      } else {
+        matchesCategory =
+          p.category?.toLowerCase() === category.toLowerCase() ||
+          p.subCategory?.toLowerCase() === category.toLowerCase();
+      }
+    }
 
     const matchesSearch =
       !searchTerm ||
       `${p.name} ${p.sku} ${p.category} ${p.tagline || ""} ${p.desc}`.toLowerCase().includes(searchTerm);
+
     return matchesCategory && matchesSearch;
   });
 

@@ -61,7 +61,7 @@
   /* Completely suppress 3D Model Viewer default brown loading progress bar & mask */
   model-viewer::part(default-progress-bar),
   model-viewer::part(default-progress-mask),
-  model-viewer > [slot="progress-bar"] {
+  model-viewer>[slot="progress-bar"] {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
@@ -73,7 +73,7 @@
 
   /* Luxury High-End B2B Buttons with Subtle Light Sheen Animation */
   .btn-primary {
-    @apply relative overflow-hidden inline-flex items-center justify-center font-semibold text-white bg-brand-600 hover:bg-brand-700 active:bg-brand-800 border border-brand-700 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 active:scale-[0.98];
+    @apply relative overflow-hidden inline-flex items-center justify-center font-semibold text-white bg-brand-600 hover:bg-brand-500 active:bg-brand-700 border border-brand-500 shadow-sm hover:shadow-md transition-all duration-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 active:scale-[0.98];
   }
 
   .btn-primary::after {

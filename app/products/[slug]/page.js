@@ -91,12 +91,12 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
               {rawContext === "employee-onboarding"
                 ? "Employee Onboarding"
                 : rawContext === "anniversary"
-                ? "Anniversary Gifting"
-                : rawContext === "wedding"
-                ? "Wedding Celebrations"
-                : rawContext === "festive"
-                ? "Festive Season"
-                : "Corporate Gifting"}
+                  ? "Anniversary Gifting"
+                  : rawContext === "wedding"
+                    ? "Wedding Celebrations"
+                    : rawContext === "festive"
+                      ? "Festive Season"
+                      : "Corporate Gifting"}
             </Link>
           </>
         ) : (
@@ -112,7 +112,7 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
       </nav>
 
       {/* Complete Interactive Product View (Synchronized Multi-Image Gallery + Customizer) */}
-      <ProductDetailView product={p} context={rawContext} />
+      <ProductDetailView product={p} context={rawContext} relatedProducts={relatedProducts} />
 
       {/* Related Products Section */}
       {relatedProducts.length > 0 && (

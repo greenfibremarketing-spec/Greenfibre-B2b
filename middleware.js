@@ -21,12 +21,17 @@ export function middleware(request) {
   const token = request.cookies.get("b2b_token")?.value;
   const isAuthenticated = Boolean(token && token.trim().length > 0);
 
-  // If user is NOT authenticated and trying to access protected routes (e.g. /, /products, /quote)
-  if (!isAuthenticated && !isAuthPage) {
+  // Public pages that do not require authentication for browsing
+  const isPublicPage =
+    pathname === "/" ||
+    pathname.startsWith("/products") ||
+    pathname.startsWith("/story") ||
+    isAuthPage;
+
+  // If user is NOT authenticated and trying to access strictly protected routes (e.g. /quote)
+  if (!isAuthenticated && !isPublicPage) {
     const signupUrl = new URL("/signup", request.url);
-    if (pathname !== "/") {
-      signupUrl.searchParams.set("redirect", pathname);
-    }
+    signupUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(signupUrl);
   }
 

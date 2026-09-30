@@ -111,6 +111,13 @@ export function QuoteProvider({ children }) {
     saveItems([]);
   };
 
+  const updateCustomizations = (key, data) => {
+    const updated = items.map((x) =>
+      x.key === key ? { ...x, ...data } : x
+    );
+    saveItems(updated);
+  };
+
   const totalUnits = items.reduce((acc, item) => acc + (item.qty || 0), 0);
   const estimatedTotal = items.reduce(
     (acc, item) => acc + (item.price ? item.price * item.qty : 0),
@@ -125,6 +132,7 @@ export function QuoteProvider({ children }) {
         setQty,
         remove,
         clear,
+        updateCustomizations,
         count: items.length,
         totalUnits,
         estimatedTotal,

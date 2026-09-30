@@ -40,7 +40,13 @@ export default async function Home() {
           {categories
             .filter((c) => c !== "All Products")
             .map((c) => {
-              const count = allProducts.filter((p) => p.category === c).length;
+              const count = allProducts.filter((p) => {
+                if (p.category?.toLowerCase() === c.toLowerCase() || p.subCategory?.toLowerCase() === c.toLowerCase()) return true;
+                if (Array.isArray(p.occasions) && p.occasions.some((o) => o.toLowerCase().includes(c.toLowerCase()))) return true;
+                if (Array.isArray(p.tags) && p.tags.some((t) => t.toLowerCase().includes(c.toLowerCase()))) return true;
+                if (c === "Gifting" && (p.category === "Gifting" || p.category?.toLowerCase().includes("gift"))) return true;
+                return false;
+              }).length;
               return (
                 <Link
                   key={c}

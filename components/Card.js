@@ -8,10 +8,10 @@ export default function Card({ p, context }) {
     (p.category === "Corporate"
       ? "corporate"
       : p.category === "Anniversary"
-      ? "anniversary"
-      : p.category === "Wedding"
-      ? "wedding"
-      : null);
+        ? "anniversary"
+        : p.category === "Wedding"
+          ? "wedding"
+          : null);
 
   const productHref = targetContext
     ? `/products/${p.slug}?context=${encodeURIComponent(targetContext)}`
