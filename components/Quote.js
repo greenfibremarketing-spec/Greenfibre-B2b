@@ -42,15 +42,33 @@ export function QuoteProvider({ children }) {
 
   const add = (product, colour, qty) => {
     const key = `${product.slug}-${colour || "standard"}`;
+    const isBundle = Boolean(product.bundleDiscountApplied || product.activeTierTitle?.toLowerCase().includes("bundle"));
+    const tierNum = isBundle ? 0 : (qty >= 100 ? 3 : qty >= 50 ? 2 : 1);
+    const discountPct = isBundle ? 5 : (tierNum === 3 ? 15 : tierNum === 2 ? 12 : 10);
+    const baseMRP = product.originalBasePrice || product.retailPrice || (product.price > 0 ? Math.round(product.price / (1 - discountPct / 100)) : 500);
+    const unitPrice = product.price && product.price > 0 ? product.price : Math.round(baseMRP * (1 - discountPct / 100));
+
     const existing = items.find((x) => x.key === key);
     let updated;
     if (existing) {
+      const newQty = existing.qty + qty;
+      const newTierNum = isBundle ? 0 : (newQty >= 100 ? 3 : newQty >= 50 ? 2 : 1);
+      const newDiscountPct = isBundle ? 5 : (newTierNum === 3 ? 15 : newTierNum === 2 ? 12 : 10);
+      const newUnitPrice = isBundle ? (existing.price || unitPrice) : Math.round(baseMRP * (1 - newDiscountPct / 100));
+      const tierTitle = isBundle ? "Bundle 5% Off Pairing" : `Tier ${newTierNum} (${newDiscountPct}% OFF)`;
+
       updated = items.map((x) =>
         x.key === key
           ? {
               ...x,
-              qty: x.qty + qty,
-              price: product.price ?? x.price,
+              qty: newQty,
+              price: newUnitPrice,
+              originalBasePrice: baseMRP,
+              retailPrice: baseMRP,
+              discountPct: newDiscountPct,
+              activeTierNumber: newTierNum,
+              activeTierTitle: tierTitle,
+              bundleDiscountApplied: isBundle,
               customBranding: product.customBranding ?? x.customBranding,
               selectedCustomizations:
                 product.selectedCustomizations ?? x.selectedCustomizations,
@@ -59,23 +77,27 @@ export function QuoteProvider({ children }) {
               maxAllowedCustomizations:
                 product.maxAllowedCustomizations ?? x.maxAllowedCustomizations,
               brandingNotes: product.brandingNotes ?? x.brandingNotes,
-              packagingOption: product.packagingOption ?? x.packagingOption,
-              activeTierTitle: product.activeTierTitle ?? x.activeTierTitle,
-              activeTierNumber: product.activeTierNumber ?? x.activeTierNumber
+              packagingOption: product.packagingOption ?? x.packagingOption
             }
           : x
       );
     } else {
+      const tierTitle = isBundle ? "Bundle 5% Off Pairing" : (product.activeTierTitle || `Tier ${tierNum} (${discountPct}% OFF)`);
       updated = [
         ...items,
         {
           key,
           slug: product.slug,
-          sku: product.sku,
+          sku: product.sku || "GF-B2B",
           name: product.name,
-          unit: product.unit,
-          price: product.price,
-          moq: product.moq,
+          unit: product.unit || "piece",
+          price: unitPrice,
+          wholesalePrice: product.wholesalePrice || product.originalBasePrice || baseMRP,
+          originalBasePrice: baseMRP,
+          retailPrice: baseMRP,
+          discountPct,
+          bundleDiscountApplied: isBundle,
+          moq: product.moq || 10,
           image: product.image,
           colour: colour || "Standard",
           qty,
@@ -85,19 +107,37 @@ export function QuoteProvider({ children }) {
           maxAllowedCustomizations: product.maxAllowedCustomizations,
           brandingNotes: product.brandingNotes,
           packagingOption: product.packagingOption,
-          activeTierTitle: product.activeTierTitle,
-          activeTierNumber: product.activeTierNumber
+          activeTierTitle: tierTitle,
+          activeTierNumber: tierNum
         }
       ];
     }
     saveItems(updated);
-    showToast(`Added ${qty}× ${product.name} (${product.activeTierTitle || "Volume Order"}) to basket.`);
+    showToast(`Added ${qty}× ${product.name} to quote basket.`);
   };
 
-  const setQty = (key, qty) => {
-    const updated = items.map((x) =>
-      x.key === key ? { ...x, qty: Math.max(1, qty) } : x
-    );
+  const setQty = (key, rawQty) => {
+    const parsedQty = Math.max(1, parseInt(rawQty, 10) || 1);
+    const updated = items.map((x) => {
+      if (x.key !== key) return x;
+      const isBundle = Boolean(x.bundleDiscountApplied || x.activeTierTitle?.toLowerCase().includes("bundle"));
+      const tierNum = isBundle ? 0 : (parsedQty >= 100 ? 3 : parsedQty >= 50 ? 2 : 1);
+      const discountPct = isBundle ? 5 : (tierNum === 3 ? 15 : tierNum === 2 ? 12 : 10);
+      const baseMRP = x.originalBasePrice || x.retailPrice || (x.price > 0 ? Math.round(x.price / (1 - (x.discountPct || 10) / 100)) : 500);
+      const newUnitPrice = isBundle ? (x.price || Math.round(baseMRP * 0.95)) : Math.round(baseMRP * (1 - discountPct / 100));
+      const tierTitle = isBundle ? "Bundle 5% Off Pairing" : (tierNum === 3 ? "Tier 3 Enterprise (15% OFF)" : tierNum === 2 ? "Tier 2 Growth (12% OFF)" : "Tier 1 Starter (10% OFF)");
+
+      return {
+        ...x,
+        qty: parsedQty,
+        price: newUnitPrice,
+        originalBasePrice: baseMRP,
+        retailPrice: baseMRP,
+        discountPct,
+        activeTierNumber: tierNum,
+        activeTierTitle: tierTitle
+      };
+    });
     saveItems(updated);
   };
 

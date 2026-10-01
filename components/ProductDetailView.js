@@ -76,12 +76,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1700,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "7–10 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 2 (50+) unlocks 3 →",
-        perks: ["20% Off MRP", "2 Free Customizations", "Standard 7-10 Day Production"]
+        perks: ["10% Off MRP", "2 Free Customizations", "Standard 7-10 Day Production"]
       },
       {
         id: "tier-2",
@@ -93,12 +93,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1530,
-        savingsPct: 30,
+        savingsPct: 12,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 3 (100+) unlocks all 5 →",
-        perks: ["30% Off MRP", "3 Free Customizations", "Priority Dispatch"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Priority Dispatch"]
       },
       {
         id: "tier-3",
@@ -110,12 +110,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1360,
-        savingsPct: 40,
+        savingsPct: 15,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["40% Off MRP", "All 5 Free", "Dedicated Account Manager", "Eco Certificate"]
+        perks: ["15% Off MRP", "All 5 Free", "Dedicated Account Manager", "Eco Certificate"]
       }
     ],
     customizations: [
@@ -184,12 +184,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1900,
-        savingsPct: 18,
+        savingsPct: 10,
         leadTime: "5–7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 anniversary customizations below.",
         nextTierUnlockText: "Silver Jubilee (50+) unlocks 3 →",
-        perks: ["Gold Satin Ribbon", "Anniversary Commemorative Print", "5-7 Day Production"]
+        perks: ["10% Off MRP", "Gold Satin Ribbon", "5-7 Day Production"]
       },
       {
         id: "tier-2",
@@ -201,12 +201,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1600,
-        savingsPct: 30,
+        savingsPct: 12,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 anniversary customizations below.",
         nextTierUnlockText: "Platinum (100+) unlocks all 5 →",
-        perks: ["30% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -218,12 +218,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1400,
-        savingsPct: 40,
+        savingsPct: 15,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 anniversary customizations included complimentary.",
         nextTierUnlockText: "",
-        perks: ["40% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
+        perks: ["15% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
       }
     ],
     customizations: [
@@ -292,12 +292,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1800,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "7–8 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 wedding customizations below.",
         nextTierUnlockText: "Grand Wedding (50+) unlocks 3 →",
-        perks: ["Blush Ribbon", "Couple Monogram", "7-Day Production"]
+        perks: ["10% Off MRP", "Blush Ribbon", "7-Day Production"]
       },
       {
         id: "tier-2",
@@ -309,12 +309,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1550,
-        savingsPct: 32,
+        savingsPct: 12,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 wedding customizations below.",
         nextTierUnlockText: "Royal Wedding (100+) unlocks all 5 →",
-        perks: ["32% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
       },
       {
         id: "tier-3",
@@ -326,12 +326,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1350,
-        savingsPct: 42,
+        savingsPct: 15,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 wedding customizations included free.",
         nextTierUnlockText: "",
-        perks: ["42% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
+        perks: ["15% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
       }
     ],
     customizations: [
@@ -400,12 +400,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1750,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 festive customizations below.",
         nextTierUnlockText: "Festive Bulk (50+) unlocks 3 →",
-        perks: ["Festive Hamper Box", "2 Free Customizations", "7-Day Production"]
+        perks: ["10% Off MRP", "Festive Hamper Box", "2 Free Customizations"]
       },
       {
         id: "tier-2",
@@ -417,12 +417,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1500,
-        savingsPct: 32,
+        savingsPct: 12,
         leadTime: "5 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 festive customizations free.",
         nextTierUnlockText: "Mega Festive (100+) unlocks all 5 →",
-        perks: ["32% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -434,12 +434,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1300,
-        savingsPct: 42,
+        savingsPct: 15,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 festive customizations included free.",
         nextTierUnlockText: "",
-        perks: ["42% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
+        perks: ["15% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
       }
     ],
     customizations: [
@@ -508,12 +508,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1700,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "5 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "2 complimentary onboarding customizations included.",
         nextTierUnlockText: "Growing Team (50+) unlocks 3 →",
-        perks: ["Suitable for startups", "2 Free Customizations", "5-Day Express"]
+        perks: ["10% Off MRP", "Suitable for startups", "2 Free Customizations"]
       },
       {
         id: "tier-2",
@@ -525,12 +525,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1550,
-        savingsPct: 32,
+        savingsPct: 12,
         leadTime: "4 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 onboarding customizations free.",
         nextTierUnlockText: "Enterprise (100+) unlocks all 5 →",
-        perks: ["32% Off MRP", "3 Free Customizations", "Priority Production"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Priority Production"]
       },
       {
         id: "tier-3",
@@ -542,12 +542,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1350,
-        savingsPct: 42,
+        savingsPct: 15,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 onboarding customizations included.",
         nextTierUnlockText: "",
-        perks: ["42% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
+        perks: ["15% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
       }
     ],
     customizations: [
@@ -706,25 +706,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     B2B_OCCASIONS.find((o) => o.key === resolvedOccasionKey) || B2B_OCCASIONS[0];
 
   const productBasePrice = typeof product.price === "number" ? product.price : 0;
-
-  // Active customization menu (5 options for this selected occasion)
   const currentCustomizations = activeOccasion.customizations;
+  const wholesaleUnitPrice = productBasePrice;
 
-  // Active tiers for this selected occasion dynamically scaled from the product's actual price
+  // Tiers: same discount percentages but now just for unlocking perks / displaying the tier.
+  // The actual final price = wholesaleUnitPrice × qty × (1 - discountPct/100)
   const currentTiers = activeOccasion.tiers.map((t) => {
-    let tierPrice = 0;
-    if (productBasePrice > 0) {
-      if (t.tierNumber === 1) {
-        tierPrice = productBasePrice;
-      } else if (t.tierNumber === 2) {
-        tierPrice = Math.round(productBasePrice * (1 - (t.savingsPct || 10) / 100));
-      } else {
-        tierPrice = Math.round(productBasePrice * (1 - (t.savingsPct || 20) / 100));
-      }
-    }
+    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 12 : 15;
+    // Effective per-unit after discount (for display in tier chips)
+    const effectivePricePerUnit = wholesaleUnitPrice > 0
+      ? Math.round(wholesaleUnitPrice * (1 - discountPct / 100))
+      : t.price;
     return {
       ...t,
-      price: tierPrice
+      savingsPct: discountPct,
+      price: effectivePricePerUnit // shown in tier chips as "after discount" per unit
     };
   });
   const currentMoq = activeOccasion.moq;
@@ -823,10 +819,16 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     });
   };
 
-  const unitPrice = activeTierObj.price;
-  const brandingFeePerUnit = 0; // Included in B2B Tiers
-  const effectiveUnitPrice = unitPrice + brandingFeePerUnit;
-  const estimatedSubtotal = effectiveUnitPrice * qty;
+  // Pricing breakdown:
+  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 12 : 15;
+  // Gross wholesale subtotal before discount
+  const grossWholesaleSubtotal = wholesaleUnitPrice * qty;
+  // Discount amount on the total
+  const mainDiscountAmount = Math.round(grossWholesaleSubtotal * activeTierDiscountPct / 100);
+  // Final amount to pay
+  const estimatedSubtotal = grossWholesaleSubtotal - mainDiscountAmount;
+  // Effective per-unit after discount (for breakdown display)
+  const effectiveUnitPrice = wholesaleUnitPrice > 0 ? Math.round(wholesaleUnitPrice * (1 - activeTierDiscountPct / 100)) : activeTierObj.price;
 
   const handleQtyInputChange = (val) => {
     // Strictly allow only numeric digits (0-9)
@@ -895,7 +897,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     );
     return {
       ...product,
-      price: effectiveUnitPrice,
+      price: effectiveUnitPrice,                   // after-discount per-unit price
+      wholesalePrice: wholesaleUnitPrice,           // original wholesale unit price
+      discountPct: activeTierDiscountPct,           // tier discount applied on total
+      grossTotal: grossWholesaleSubtotal,           // qty × wholesale (before discount)
+      discountAmount: mainDiscountAmount,           // discount deducted from gross
+      originalBasePrice: wholesaleUnitPrice,        // for quote page calculations
       customBranding: selectedCustomizations.length > 0,
       selectedCustomizations: selectedCustomizationObjs.map((c) => c.name),
       customizationCount: selectedCustomizations.length,
@@ -951,10 +958,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       ? product.desc.split(".")[0]
       : `${product.name}`);
 
-  const retailMrp = product.retailPrice || product.originalPrice || (currentTiers[0]?.price > 0 ? Math.round(currentTiers[0].price * 1.35) : 0);
-  const hasRetailSavings = retailMrp > activeTierObj.price && activeTierObj.price > 0 && retailMrp > 0;
-  const retailSavingsAmount = hasRetailSavings ? retailMrp - activeTierObj.price : 0;
-  const retailSavingsPct = (hasRetailSavings && retailMrp > 0) ? Math.round((retailSavingsAmount / retailMrp) * 100) : 0;
+  // Total savings = the discount amount applied on wholesale subtotal
+  const totalSavings = mainDiscountAmount;
+  const effectiveSavingsPct = activeTierDiscountPct;
 
   // Build combined specs
   const rawSpecs = product.specs || {};
@@ -1169,21 +1175,24 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               {product.shortDescription || product.tagline || product.desc}
             </p>
 
-            {/* Wholesale Price vs MRP Strikethrough Callout */}
-            <div className="flex items-baseline gap-3 pt-0.5 flex-wrap">
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                ₹{currentTiers[0]?.price}
-                <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (Wholesale Bulk Rate)</span>
-              </div>
-              {hasRetailSavings && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400 line-through font-medium">
-                    MRP ₹{retailMrp}
-                  </span>
-                  <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[11px]">
-                    Save ₹{retailSavingsAmount}/{unitLabel} ({retailSavingsPct}% Off)
-                  </span>
+            {/* Wholesale Price + Tier Discount Callout */}
+            <div className="pt-1 space-y-1.5">
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice : activeTierObj.price}
+                  <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (B2B Wholesale Price)</span>
                 </div>
+                {wholesaleUnitPrice > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                    <Percent className="w-3 h-3" />
+                    {activeTierDiscountPct}% Bulk Discount Applied on Total
+                  </span>
+                )}
+              </div>
+              {wholesaleUnitPrice > 0 && (
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Example: {qty} {unitLabelPlural} × ₹{wholesaleUnitPrice} = ₹{grossWholesaleSubtotal.toLocaleString("en-IN")} → <strong className="text-emerald-700">{activeTierDiscountPct}% off = −₹{mainDiscountAmount.toLocaleString("en-IN")}</strong> → <strong className="text-slate-900">You pay ₹{estimatedSubtotal.toLocaleString("en-IN")}</strong>
+                </p>
               )}
             </div>
           </div>
@@ -1248,6 +1257,11 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       <div className={`text-[10px] truncate ${isActive ? "text-brand-900 font-bold" : "text-emerald-100/90 font-medium"}`}>
                         {tier.rangeLabel}
                       </div>
+                      {isActive && wholesaleUnitPrice > 0 && (
+                        <div className="text-[9px] text-brand-600 font-semibold mt-0.5">
+                          Save {tier.savingsPct}% on total
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -1353,15 +1367,73 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   </div>
                 </div>
 
-                <div className="text-left sm:text-right pt-1 sm:pt-0">
-                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block">
-                    Estimated Subtotal for {qty} {unitLabelPlural}:
+                {/* Price Breakdown: Gross → Discount → Net */}
+                <div className="text-left sm:text-right pt-1 sm:pt-0 min-w-[200px]">
+                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block mb-2">
+                    Price Breakdown:
                   </span>
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    ₹{estimatedSubtotal.toLocaleString("en-IN")}
+
+                  {/* Row 1: Gross wholesale */}
+                  <div className="flex items-center sm:justify-end gap-2 text-xs text-slate-600">
+                    <span className="text-slate-500">{qty} {unitLabelPlural} × ₹{wholesaleUnitPrice}</span>
+                    <span className="font-semibold text-slate-800">= ₹{grossWholesaleSubtotal.toLocaleString("en-IN")}</span>
                   </div>
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    (₹{effectiveUnitPrice} per {unitLabel} • Excl. {product.tax?.gstRate || 18}% GST)
+
+                  {/* Row 2: Discount deduction */}
+                  {mainDiscountAmount > 0 && (
+                    <div className="flex items-center sm:justify-end gap-2 text-xs text-emerald-700 font-bold mt-0.5">
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        <span>{activeTierDiscountPct}% Bulk Discount</span>
+                      </span>
+                      <span>− ₹{mainDiscountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+
+                  {/* Divider + You Pay */}
+                  <div className="mt-1.5 pt-1.5 border-t border-[#D5CABB]">
+                    <div className="flex items-baseline sm:justify-end gap-2">
+                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">You Pay:</span>
+                      <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div className="flex items-center sm:justify-end gap-1.5 mt-0.5 flex-wrap">
+                      {totalSavings > 0 && (
+                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                          Save ₹{totalSavings.toLocaleString("en-IN")} ({effectiveSavingsPct}% OFF)
+                        </span>
+                      )}
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        Excl. {product.tax?.gstRate || 18}% GST
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Discount & Checkout Breakdown Banner */}
+              <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-50 via-[#f8faf2] to-amber-50/60 border border-emerald-200/90 text-xs text-slate-800 space-y-1.5 shadow-2xs">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
+                      <Sparkles className="w-3 h-3 text-amber-300 fill-amber-300" />
+                    </span>
+                    <span className="font-extrabold text-emerald-950 text-xs">
+                      {activeTierObj.title}: {activeTierDiscountPct}% off on ₹{grossWholesaleSubtotal.toLocaleString("en-IN")} = Save ₹{mainDiscountAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-black text-emerald-900 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                    {activeTierDiscountPct}% OFF Total
+                  </span>
+                </div>
+                <div className="text-[11px] text-emerald-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-1 pt-1 border-t border-emerald-200/60">
+                  <span className="flex items-center gap-1">
+                    <Check className="w-3.5 h-3.5 text-emerald-700 stroke-[2.5]" />
+                    <span><strong>Add-on items:</strong> Each add-on gets a separate +5% off on its own total (not combined with main discount).</span>
+                  </span>
+                  <span className="text-slate-500 text-[10px]">
+                    18% GST input credit tax invoice issued upon checkout
                   </span>
                 </div>
               </div>
@@ -2154,7 +2226,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         </div>
 
                         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-300 text-amber-950 shadow-xs border border-amber-300 tracking-wide uppercase">
-                          🔥 Total 15% OFF
+                          🔥 {activeTierDiscountPct}% Main + 5% Add-On OFF
                         </span>
                       </div>
 
@@ -2163,39 +2235,39 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         {/* Step 1: Base Discount */}
                         <div className="bg-white border border-emerald-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs">
                           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Step 1 • Base Item
+                            Main Product
                           </span>
                           <span className="text-xs sm:text-sm font-black text-brand-700 block mt-0.5">
-                            10% OFF
+                            {activeTierDiscountPct}% OFF
                           </span>
                           <span className="text-[9px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            Applied to primary
+                            On main total
                           </span>
                         </div>
 
                         {/* Step 2: Add-on Discount */}
                         <div className="bg-white border border-amber-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs relative">
                           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Step 2 • Add-on
+                            Add-On Items
                           </span>
                           <span className="text-xs sm:text-sm font-black text-amber-600 block mt-0.5">
-                            +5% EXTRA
+                            5% OFF
                           </span>
                           <span className="text-[9px] text-amber-900 font-semibold bg-amber-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            On paired items
+                            Add-on total only
                           </span>
                         </div>
 
-                        {/* Step 3: Total Combined Savings */}
+                        {/* Step 3: Separate Savings */}
                         <div className="bg-gradient-to-br from-emerald-600 to-brand-700 text-white rounded-xl p-2 sm:p-2.5 text-center shadow-xs">
                           <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-wider block">
-                            Total Unlocked
+                            Separate Discounts
                           </span>
                           <span className="text-xs sm:text-sm font-black text-white block mt-0.5 tracking-tight">
-                            15% SAVINGS
+                            {activeTierDiscountPct}% + 5%
                           </span>
                           <span className="text-[9px] text-emerald-950 font-bold bg-amber-300 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            Max Enterprise Deal
+                            Main • Add-on
                           </span>
                         </div>
                       </div>
@@ -2372,14 +2444,14 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       onClick={() => setModalStep(2)}
                       className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
                     >
-                      Skip to Branding
+                      Skip
                     </button>
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
                       className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
                     >
-                      <span>Next: Branding Options</span>
+                      <span>Next</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -2527,7 +2599,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       onClick={() => setModalStep(1)}
                       className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      <span>← Back to Bundles</span>
+                      <span>← Back</span>
                     </button>
                     <Link
                       href="/quote"
