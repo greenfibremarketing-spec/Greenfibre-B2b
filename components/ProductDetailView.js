@@ -48,7 +48,9 @@ import {
   Building2,
   Heart,
   Users,
-  Eye
+  Eye,
+  Lock,
+  PhoneCall
 } from "lucide-react";
 
 // Standard 5 Contexts & Occasions for B2B Gifting
@@ -69,53 +71,53 @@ export const B2B_OCCASIONS = [
       {
         id: "tier-1",
         tierNumber: 1,
-        title: "Tier 1 Starter",
+        title: "Tier 1 — Starter",
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1700,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "7–10 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 2 (50+) unlocks 3 →",
-        perks: ["20% Off MRP", "2 Free Customizations", "Standard 7-10 Day Production"]
+        perks: ["10% Off MRP", "Welcome & Thank-You Kit Included", "Standard 7-10 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
-        title: "Tier 2 Growth",
+        title: "Tier 2 — Personalized",
         badge: "★ POPULAR",
         isPopular: true,
         min: 50,
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1530,
-        savingsPct: 30,
+        savingsPct: 12,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 3 (100+) unlocks all 5 →",
-        perks: ["30% Off MRP", "3 Free Customizations", "Priority Dispatch"]
+        perks: ["12% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
-        title: "Tier 3 Enterprise",
+        title: "Tier 3 — Fully Custom",
         badge: "Max Value",
         isPopular: false,
         min: 100,
         max: null,
         rangeLabel: "100+ Sets",
         price: 1360,
-        savingsPct: 40,
+        savingsPct: 15,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["40% Off MRP", "All 5 Free", "Dedicated Account Manager", "Eco Certificate"]
+        perks: ["15% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
       }
     ],
     customizations: [
@@ -184,12 +186,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1900,
-        savingsPct: 18,
+        savingsPct: 10,
         leadTime: "5–7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 anniversary customizations below.",
         nextTierUnlockText: "Silver Jubilee (50+) unlocks 3 →",
-        perks: ["Gold Satin Ribbon", "Anniversary Commemorative Print", "5-7 Day Production"]
+        perks: ["10% Off MRP", "Gold Satin Ribbon", "5-7 Day Production"]
       },
       {
         id: "tier-2",
@@ -201,12 +203,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1600,
-        savingsPct: 30,
+        savingsPct: 12,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 anniversary customizations below.",
         nextTierUnlockText: "Platinum (100+) unlocks all 5 →",
-        perks: ["30% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -218,12 +220,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1400,
-        savingsPct: 40,
+        savingsPct: 15,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 anniversary customizations included complimentary.",
         nextTierUnlockText: "",
-        perks: ["40% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
+        perks: ["15% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
       }
     ],
     customizations: [
@@ -292,12 +294,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1800,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "7–8 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 wedding customizations below.",
         nextTierUnlockText: "Grand Wedding (50+) unlocks 3 →",
-        perks: ["Blush Ribbon", "Couple Monogram", "7-Day Production"]
+        perks: ["10% Off MRP", "Blush Ribbon", "7-Day Production"]
       },
       {
         id: "tier-2",
@@ -309,12 +311,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1550,
-        savingsPct: 32,
+        savingsPct: 12,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 wedding customizations below.",
         nextTierUnlockText: "Royal Wedding (100+) unlocks all 5 →",
-        perks: ["32% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
       },
       {
         id: "tier-3",
@@ -326,12 +328,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1350,
-        savingsPct: 42,
+        savingsPct: 15,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 wedding customizations included free.",
         nextTierUnlockText: "",
-        perks: ["42% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
+        perks: ["15% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
       }
     ],
     customizations: [
@@ -400,12 +402,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1750,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 festive customizations below.",
         nextTierUnlockText: "Festive Bulk (50+) unlocks 3 →",
-        perks: ["Festive Hamper Box", "2 Free Customizations", "7-Day Production"]
+        perks: ["10% Off MRP", "Festive Hamper Box", "2 Free Customizations"]
       },
       {
         id: "tier-2",
@@ -417,12 +419,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1500,
-        savingsPct: 32,
+        savingsPct: 12,
         leadTime: "5 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 festive customizations free.",
         nextTierUnlockText: "Mega Festive (100+) unlocks all 5 →",
-        perks: ["32% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -434,12 +436,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1300,
-        savingsPct: 42,
+        savingsPct: 15,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 festive customizations included free.",
         nextTierUnlockText: "",
-        perks: ["42% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
+        perks: ["15% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
       }
     ],
     customizations: [
@@ -508,12 +510,12 @@ export const B2B_OCCASIONS = [
         max: 49,
         rangeLabel: "10–49 Sets",
         price: 1700,
-        savingsPct: 20,
+        savingsPct: 10,
         leadTime: "5 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "2 complimentary onboarding customizations included.",
         nextTierUnlockText: "Growing Team (50+) unlocks 3 →",
-        perks: ["Suitable for startups", "2 Free Customizations", "5-Day Express"]
+        perks: ["10% Off MRP", "Suitable for startups", "2 Free Customizations"]
       },
       {
         id: "tier-2",
@@ -525,12 +527,12 @@ export const B2B_OCCASIONS = [
         max: 99,
         rangeLabel: "50–99 Sets",
         price: 1550,
-        savingsPct: 32,
+        savingsPct: 12,
         leadTime: "4 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 onboarding customizations free.",
         nextTierUnlockText: "Enterprise (100+) unlocks all 5 →",
-        perks: ["32% Off MRP", "3 Free Customizations", "Priority Production"]
+        perks: ["12% Off MRP", "3 Free Customizations", "Priority Production"]
       },
       {
         id: "tier-3",
@@ -542,12 +544,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1350,
-        savingsPct: 42,
+        savingsPct: 15,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 onboarding customizations included.",
         nextTierUnlockText: "",
-        perks: ["42% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
+        perks: ["15% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
       }
     ],
     customizations: [
@@ -706,25 +708,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     B2B_OCCASIONS.find((o) => o.key === resolvedOccasionKey) || B2B_OCCASIONS[0];
 
   const productBasePrice = typeof product.price === "number" ? product.price : 0;
-
-  // Active customization menu (5 options for this selected occasion)
   const currentCustomizations = activeOccasion.customizations;
+  const wholesaleUnitPrice = productBasePrice;
 
-  // Active tiers for this selected occasion dynamically scaled from the product's actual price
+  // Tiers: same discount percentages but now just for unlocking perks / displaying the tier.
+  // The actual final price = wholesaleUnitPrice × qty × (1 - discountPct/100)
   const currentTiers = activeOccasion.tiers.map((t) => {
-    let tierPrice = 0;
-    if (productBasePrice > 0) {
-      if (t.tierNumber === 1) {
-        tierPrice = productBasePrice;
-      } else if (t.tierNumber === 2) {
-        tierPrice = Math.round(productBasePrice * (1 - (t.savingsPct || 10) / 100));
-      } else {
-        tierPrice = Math.round(productBasePrice * (1 - (t.savingsPct || 20) / 100));
-      }
-    }
+    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 12 : 15;
+    // Effective per-unit after discount (for display in tier chips)
+    const effectivePricePerUnit = wholesaleUnitPrice > 0
+      ? Math.round(wholesaleUnitPrice * (1 - discountPct / 100))
+      : t.price;
     return {
       ...t,
-      price: tierPrice
+      savingsPct: discountPct,
+      price: effectivePricePerUnit // shown in tier chips as "after discount" per unit
     };
   });
   const currentMoq = activeOccasion.moq;
@@ -734,6 +732,11 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const [qty, setQty] = useState(currentMoq || 10);
   const [qtyInput, setQtyInput] = useState(String(currentMoq || 10));
   const [brandingNotes, setBrandingNotes] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [receiverName, setReceiverName] = useState("");
+  const [giftMessage, setGiftMessage] = useState("");
+  const [engravingName, setEngravingName] = useState("");
+  const [customProductName, setCustomProductName] = useState("");
   const [packagingOption, setPackagingOption] = useState("Standard Recyclable Eco Kraft Box");
   const [added, setAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -760,7 +763,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const handleAddPairToQuote = (rel) => {
     if (!add) return;
     const relQty = getPairQty(rel.slug);
-    const originalPrice = rel.price || 0;
+    const originalPrice =
+      rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
     const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
 
     const pairPayload = {
@@ -823,10 +827,16 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     });
   };
 
-  const unitPrice = activeTierObj.price;
-  const brandingFeePerUnit = 0; // Included in B2B Tiers
-  const effectiveUnitPrice = unitPrice + brandingFeePerUnit;
-  const estimatedSubtotal = effectiveUnitPrice * qty;
+  // Pricing breakdown:
+  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 12 : 15;
+  // Gross wholesale subtotal before discount
+  const grossWholesaleSubtotal = wholesaleUnitPrice * qty;
+  // Discount amount on the total
+  const mainDiscountAmount = Math.round(grossWholesaleSubtotal * activeTierDiscountPct / 100);
+  // Final amount to pay
+  const estimatedSubtotal = grossWholesaleSubtotal - mainDiscountAmount;
+  // Effective per-unit after discount (for breakdown display)
+  const effectiveUnitPrice = wholesaleUnitPrice > 0 ? Math.round(wholesaleUnitPrice * (1 - activeTierDiscountPct / 100)) : activeTierObj.price;
 
   const handleQtyInputChange = (val) => {
     // Strictly allow only numeric digits (0-9)
@@ -895,13 +905,23 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     );
     return {
       ...product,
-      price: effectiveUnitPrice,
+      price: effectiveUnitPrice,                   // after-discount per-unit price
+      wholesalePrice: wholesaleUnitPrice,           // original wholesale unit price
+      discountPct: activeTierDiscountPct,           // tier discount applied on total
+      grossTotal: grossWholesaleSubtotal,           // qty × wholesale (before discount)
+      discountAmount: mainDiscountAmount,           // discount deducted from gross
+      originalBasePrice: wholesaleUnitPrice,        // for quote page calculations
       customBranding: selectedCustomizations.length > 0,
       selectedCustomizations: selectedCustomizationObjs.map((c) => c.name),
       customizationCount: selectedCustomizations.length,
       maxAllowedCustomizations: maxCustomizations,
       brandingNotes,
       packagingOption,
+      senderName: senderName.trim(),
+      receiverName: receiverName.trim(),
+      giftMessage: giftMessage.trim(),
+      engravingName: engravingName.trim(),
+      customProductName: customProductName.trim(),
       activeOccasion: activeOccasion.label,
       activeOccasionKey: activeOccasion.key,
       activeTierTitle: activeTierObj.title,
@@ -951,10 +971,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       ? product.desc.split(".")[0]
       : `${product.name}`);
 
-  const retailMrp = product.retailPrice || product.originalPrice || (currentTiers[0]?.price > 0 ? Math.round(currentTiers[0].price * 1.35) : 0);
-  const hasRetailSavings = retailMrp > activeTierObj.price && activeTierObj.price > 0 && retailMrp > 0;
-  const retailSavingsAmount = hasRetailSavings ? retailMrp - activeTierObj.price : 0;
-  const retailSavingsPct = (hasRetailSavings && retailMrp > 0) ? Math.round((retailSavingsAmount / retailMrp) * 100) : 0;
+  // Total savings = the discount amount applied on wholesale subtotal
+  const totalSavings = mainDiscountAmount;
+  const effectiveSavingsPct = activeTierDiscountPct;
 
   // Build combined specs
   const rawSpecs = product.specs || {};
@@ -1169,22 +1188,20 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               {product.shortDescription || product.tagline || product.desc}
             </p>
 
-            {/* Wholesale Price vs MRP Strikethrough Callout */}
-            <div className="flex items-baseline gap-3 pt-0.5 flex-wrap">
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                ₹{currentTiers[0]?.price}
-                <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (Wholesale Bulk Rate)</span>
-              </div>
-              {hasRetailSavings && (
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-400 line-through font-medium">
-                    MRP ₹{retailMrp}
-                  </span>
-                  <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[11px]">
-                    Save ₹{retailSavingsAmount}/{unitLabel} ({retailSavingsPct}% Off)
-                  </span>
+            {/* Wholesale Price + Tier Discount Callout */}
+            <div className="pt-1 space-y-1.5">
+              <div className="flex items-baseline gap-3 flex-wrap">
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                  ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice : activeTierObj.price}
+                  <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (B2B Wholesale Price)</span>
                 </div>
-              )}
+                {wholesaleUnitPrice > 0 && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                    <Percent className="w-3 h-3" />
+                    {activeTierDiscountPct}% Bulk Discount Applied on Total
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -1248,6 +1265,11 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       <div className={`text-[10px] truncate ${isActive ? "text-brand-900 font-bold" : "text-emerald-100/90 font-medium"}`}>
                         {tier.rangeLabel}
                       </div>
+                      {isActive && wholesaleUnitPrice > 0 && (
+                        <div className="text-[9px] text-brand-600 font-semibold mt-0.5">
+                          Save {tier.savingsPct}% on total
+                        </div>
+                      )}
                     </button>
                   );
                 })}
@@ -1255,33 +1277,16 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             </div>
           </div>
 
-          {/* PACKAGING & PRESENTATION BOX */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-              <Box className="w-3.5 h-3.5 text-brand-700" />
-              <span>Packaging &amp; Presentation:</span>
-            </label>
-            <div className="p-3 bg-brand-50/70 border border-brand-200 rounded-xl flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 font-bold text-slate-900">
-                <Box className="w-4 h-4 text-brand-700" />
-                <span>Standard Recyclable Eco Kraft Gift Box</span>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                Included FREE
-              </span>
-            </div>
-          </div>
-
           {/* 3. ORDER QUANTITY & PRICE CALCULATION CARD */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
 
             {/* Set Quantity Stepper, Quick Addons & Price Calculation */}
-            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-3.5 sm:p-4 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
                     <span>Order Quantity ({unitLabelPlural}):</span>
-                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.2 rounded-full border border-emerald-200">
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
                       MOQ: {currentMoq} {unitLabelPlural}
                     </span>
                   </label>
@@ -1353,74 +1358,49 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   </div>
                 </div>
 
-                <div className="text-left sm:text-right pt-1 sm:pt-0">
-                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block">
-                    Estimated Subtotal for {qty} {unitLabelPlural}:
+                {/* Price Breakdown: Gross → Discount → Net */}
+                <div className="text-left sm:text-right pt-2 sm:pt-0 min-w-[220px] sm:pl-4 space-y-1">
+                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block mb-1.5">
+                    Price Breakdown:
                   </span>
-                  <div className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                  </div>
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    (₹{effectiveUnitPrice} per {unitLabel} • Excl. {product.tax?.gstRate || 18}% GST)
-                  </span>
-                </div>
-              </div>
 
-              {/* Quick Preset Volume Shortcuts */}
-              <div className="pt-2 border-t border-[#E5DAC8]/70 flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">
-                  Quick Select:
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(10)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 10
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  10 (Tier 1)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(50)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 50
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  50 (Tier 2 ★)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(100)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 100
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  100 (Tier 3)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(250)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 250
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  250
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(500)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 500
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  500+
-                </button>
+                  {/* Row 1: Gross wholesale */}
+                  <div className="flex items-center sm:justify-end gap-2 text-xs text-slate-600">
+                    <span className="text-slate-500">{qty} {unitLabelPlural} × ₹{wholesaleUnitPrice}</span>
+                    <span className="font-semibold text-slate-800">= ₹{grossWholesaleSubtotal.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {/* Row 2: Discount deduction */}
+                  {mainDiscountAmount > 0 && (
+                    <div className="flex items-center sm:justify-end gap-2 text-xs text-emerald-700 font-bold">
+                      <span className="flex items-center gap-1">
+                        <Tag className="w-3 h-3" />
+                        <span>{activeTierDiscountPct}% Bulk Discount</span>
+                      </span>
+                      <span>− ₹{mainDiscountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+
+                  {/* Divider + You Pay */}
+                  <div className="mt-1.5 pt-1.5 border-t border-[#D5CABB]">
+                    <div className="flex items-baseline sm:justify-end gap-2">
+                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">You Pay:</span>
+                      <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div className="flex items-center sm:justify-end gap-1.5 mt-0.5 flex-wrap">
+                      {totalSavings > 0 && (
+                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                          Save ₹{totalSavings.toLocaleString("en-IN")} ({effectiveSavingsPct}% OFF)
+                        </span>
+                      )}
+                      <span className="text-[10px] text-slate-500 font-medium">
+                        Excl. {product.tax?.gstRate || 18}% GST
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1473,6 +1453,23 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <span>
                   <strong>Tax Invoice:</strong> {product.tax?.gstRate || 18}% GST Credit
                 </span>
+              </span>
+            </div>
+          </div>
+
+          {/* PACKAGING & PRESENTATION BOX (Located under Quantity & Price Calculation Card) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+              <Box className="w-3.5 h-3.5 text-brand-700" />
+              <span>Packaging &amp; Presentation:</span>
+            </label>
+            <div className="p-3 bg-brand-50/70 border border-brand-200 rounded-xl flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-900">
+                <Box className="w-4 h-4 text-brand-700" />
+                <span>Standard Recyclable Eco Kraft Gift Box</span>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                Included FREE
               </span>
             </div>
           </div>
@@ -1986,7 +1983,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         </div>
       )}
 
-      {/* ── 2-STEP CUSTOMIZATION & RECOMMENDATION MODAL ── */}
+      {/* ── 2-STEP BUNDLE ADD-ONS & CELEBRATORY UNLOCKED TIER PERKS MODAL ── */}
       {mounted && isCustomizeModalOpen && createPortal(
         <div
           style={{
@@ -2002,9 +1999,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             alignItems: "center",
             justifyContent: "center",
             padding: "16px",
-            backgroundColor: "rgba(0, 0, 0, 0.72)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.72)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             animation: "gfModalBackdrop 0.25s ease-out forwards"
           }}
           onClick={handleCloseModal}
@@ -2015,371 +2012,437 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: "860px",
-              maxHeight: "80vh",
+              maxWidth: "520px",
+              maxHeight: "90vh",
               background: "#ffffff",
-              borderRadius: "24px",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08)",
+              borderRadius: "28px",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06)",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
               animation: "gfModalBox 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards"
             }}
           >
-            {/* Step indicator bar */}
-            <div className="flex items-center gap-2 px-6 pt-4 pb-2 flex-shrink-0 bg-white">
-              <div
-                style={{
-                  flex: 1,
-                  height: 4,
-                  borderRadius: 99,
-                  background: "#22c55e"
-                }}
-              />
-              <div
-                style={{
-                  flex: 1,
-                  height: 4,
-                  borderRadius: 99,
-                  background: modalStep >= 2 ? "#22c55e" : "#e2e8f0",
-                  transition: "background 0.3s"
-                }}
-              />
-              <span className="text-[11px] font-bold text-slate-500 ml-1">
-                Step {modalStep} of 2
-              </span>
-            </div>
+            {/* ── STEP 1: BUNDLE OFFER (MATCHING USER SCREENSHOT DESIGN) ── */}
+            {modalStep === 1 && (() => {
+              const primaryAddon = relatedProducts && relatedProducts.length > 0 ? relatedProducts[0] : null;
+              const hasAddons = relatedProducts && relatedProducts.length > 0;
+              const anyItemAdded = Object.values(pairAdded).some(Boolean);
+              const primaryIsAdded = primaryAddon ? Boolean(pairAdded[primaryAddon.slug]) : false;
 
-            {/* Header */}
-            <div
-              className="mx-5 mb-2 px-4 py-3 rounded-2xl flex items-center justify-between flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #16a34a, #22c55e)"
-              }}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "rgba(255,255,255,0.2)" }}
-                >
-                  {modalStep === 1 ? (
-                    <Sparkles className="w-4 h-4 text-white" />
-                  ) : (
-                    <SlidersHorizontal className="w-4 h-4 text-white" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  {modalStep === 1 ? (
-                    <>
-                      <h2 className="text-sm font-extrabold text-white leading-tight">
-                        Frequently Bought Together &amp; Bundle Sets
-                      </h2>
-                      <p className="text-[11px] font-medium text-emerald-100 truncate">
-                        Extra 5% bundle discount unlocked for paired items (Total up to 15% OFF)
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-sm font-extrabold text-white leading-tight">
-                        Branding &amp; Customization Options
-                      </h2>
-                      <p className="text-[11px] font-medium text-emerald-100 truncate">
-                        Select complimentary corporate personalization for your quote
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all hover:bg-white/20 text-white"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+              // Price math
+              const addonOrigPrice = primaryAddon
+                ? (primaryAddon.price || primaryAddon.discountedPrice || primaryAddon.originalPrice || primaryAddon.retailPrice || 0)
+                : 0;
+              const addonDiscPrice = addonOrigPrice > 0 ? Math.round(addonOrigPrice * 0.95) : 0;
+              const addonSavings = addonOrigPrice > 0 ? (addonOrigPrice - addonDiscPrice) : 0;
 
-            {/* ── STEP 1: FREQUENTLY BOUGHT TOGETHER & BUNDLE DEALS ── */}
-            {modalStep === 1 && (
-              <>
-                <div className="overflow-y-auto flex-1 px-5 py-3 space-y-3.5">
-                  {/* Order added confirmation */}
-                  <div
-                    className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
-                  >
-                    <span className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0 text-white shadow-xs">
-                      <Check className="w-4 h-4 stroke-[3]" />
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-extrabold text-emerald-950 leading-tight">
-                        {qty} {unitLabelPlural} added to your basket!
-                      </p>
-                      <p className="text-[11px] text-emerald-800">
-                        Pair with complementary sets below to maximize your bulk savings.
-                      </p>
+              // Extra 5% bundle discount calculation
+              const extra5PctDiscountAmount = Math.round(grossWholesaleSubtotal * 0.05) + (primaryIsAdded ? addonSavings : addonSavings);
+              const totalDisplaySubtotal = primaryIsAdded ? (estimatedSubtotal + addonDiscPrice) : estimatedSubtotal;
+
+              return (
+                <div className="p-5 sm:p-7 space-y-4 bg-white overflow-y-auto flex-1">
+                  {/* Top row: Bundle Offer Pill & Close Button */}
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex items-center gap-2 text-[#9b6f38] text-xs sm:text-[13px] font-semibold tracking-wide">
+                      <span className="w-5 h-[2px] bg-[#9b6f38] rounded-full inline-block"></span>
+                      <span>Bundle offer</span>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs font-extrabold text-slate-900">
-                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                      </p>
-                      <p className="text-[10px] text-slate-500 font-medium">
-                        {activeTierObj.title}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Light & Vibrant Executive Bundle Savings Stacking Banner */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-[#fbfdf7] to-amber-50/60 border-2 border-emerald-300 text-slate-800 shadow-sm relative overflow-hidden">
-                    {/* Subtle decorative background gradient circles */}
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-emerald-200/40 rounded-full blur-xl pointer-events-none" />
-                    <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-amber-200/30 rounded-full blur-xl pointer-events-none" />
-
-                    <div className="relative space-y-2.5">
-                      {/* Top Header Row */}
-                      <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                          </div>
-                          <div>
-                            <span className="text-xs sm:text-sm font-black text-slate-900 tracking-tight block">
-                              Executive Bundle Savings Stacking
-                            </span>
-                            <span className="text-[11px] text-slate-600 font-medium">
-                              Add paired sets below to unlock your maximum volume tier
-                            </span>
-                          </div>
-                        </div>
-
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-300 text-amber-950 shadow-xs border border-amber-300 tracking-wide uppercase">
-                          🔥 Total 15% OFF
-                        </span>
-                      </div>
-
-                      {/* 3-Step Visual Discount Stacking Meter */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {/* Step 1: Base Discount */}
-                        <div className="bg-white border border-emerald-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs">
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Step 1 • Base Item
-                          </span>
-                          <span className="text-xs sm:text-sm font-black text-brand-700 block mt-0.5">
-                            10% OFF
-                          </span>
-                          <span className="text-[9px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            Applied to primary
-                          </span>
-                        </div>
-
-                        {/* Step 2: Add-on Discount */}
-                        <div className="bg-white border border-amber-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs relative">
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Step 2 • Add-on
-                          </span>
-                          <span className="text-xs sm:text-sm font-black text-amber-600 block mt-0.5">
-                            +5% EXTRA
-                          </span>
-                          <span className="text-[9px] text-amber-900 font-semibold bg-amber-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            On paired items
-                          </span>
-                        </div>
-
-                        {/* Step 3: Total Combined Savings */}
-                        <div className="bg-gradient-to-br from-emerald-600 to-brand-700 text-white rounded-xl p-2 sm:p-2.5 text-center shadow-xs">
-                          <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-wider block">
-                            Total Unlocked
-                          </span>
-                          <span className="text-xs sm:text-sm font-black text-white block mt-0.5 tracking-tight">
-                            15% SAVINGS
-                          </span>
-                          <span className="text-[9px] text-emerald-950 font-bold bg-amber-300 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            Max Enterprise Deal
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Frequently bought together grid */}
-                  {relatedProducts.length > 0 ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <Boxes className="w-3.5 h-3.5 text-brand-600" />
-                          <span>Frequently Ordered With This Set</span>
-                        </p>
-                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                          Extra 5% Bundle Discount
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {relatedProducts.slice(0, 4).map((rel) => {
-                          const itemQty = getPairQty(rel.slug);
-                          const isItemAdded = Boolean(pairAdded[rel.slug]);
-                          const originalPrice = rel.price || 0;
-                          const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
-                          const savingsPerUnit = originalPrice > 0 ? originalPrice - discountedPrice : 0;
-
-                          return (
-                            <div
-                              key={rel.slug}
-                              className="group flex flex-col justify-between bg-white rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md border border-slate-200 hover:border-brand-400 p-3 relative"
-                            >
-                              {/* 5% Discount Badge */}
-                              <div className="absolute top-2.5 right-2.5 z-10 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-[9.5px] font-black px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1 border border-emerald-400/30">
-                                <Sparkles className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
-                                <span>+5% OFF</span>
-                              </div>
-
-                              <div>
-                                <div className="flex gap-2.5 items-center">
-                                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 group/img">
-                                    <img
-                                      src={rel.image || "/images/gift-set-classic.jpg"}
-                                      alt={rel.name}
-                                      className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
-                                      onError={(e) => {
-                                        e.currentTarget.src = "/images/gift-set-classic.jpg";
-                                      }}
-                                    />
-                                    <Link
-                                      href={`/products/${rel.slug}`}
-                                      onClick={handleCloseModal}
-                                      className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white"
-                                      title="Preview product"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Link>
-                                  </div>
-                                  <div className="flex-1 min-w-0 pr-12">
-                                    <Link
-                                      href={`/products/${rel.slug}`}
-                                      onClick={handleCloseModal}
-                                      className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug hover:text-brand-600 transition-colors"
-                                    >
-                                      {rel.name}
-                                    </Link>
-
-                                    <div className="mt-0.5 flex items-baseline gap-1.5 flex-wrap">
-                                      {discountedPrice > 0 ? (
-                                        <>
-                                          <span className="text-xs font-black text-brand-700">
-                                            ₹{discountedPrice}
-                                          </span>
-                                          <span className="text-[10px] text-slate-400 line-through font-semibold">
-                                            ₹{originalPrice}
-                                          </span>
-                                          <span className="text-[10px] font-semibold text-slate-500">
-                                            /{rel.unit || "set"}
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <span className="text-xs font-bold text-brand-600">
-                                          Custom Tier
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    <div className="mt-0.5 text-[10px] font-semibold text-emerald-700 flex items-center gap-1">
-                                      <Sparkles className="w-2.5 h-2.5 text-amber-500 flex-shrink-0" />
-                                      <span>Save ₹{(savingsPerUnit * itemQty).toLocaleString("en-IN")} on {itemQty}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Stepper + Compact Light Green Add Button */}
-                              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-2">
-                                {/* Quantity Stepper */}
-                                <div className="h-8 inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5 flex-shrink-0 shadow-2xs">
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePairQtyChange(rel.slug, itemQty - 1)}
-                                    disabled={itemQty <= 1}
-                                    className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold cursor-pointer"
-                                    title="Decrease quantity by 1"
-                                  >
-                                    <Minus className="w-3 h-3" />
-                                  </button>
-                                  <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    value={itemQty}
-                                    onChange={(e) => {
-                                      const cleaned = e.target.value.replace(/\D/g, "");
-                                      handlePairQtyChange(rel.slug, cleaned);
-                                    }}
-                                    className="w-8 text-center text-xs font-bold text-slate-800 bg-transparent outline-none select-all"
-                                    aria-label="Quantity"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePairQtyChange(rel.slug, itemQty + 1)}
-                                    className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 transition-all font-bold cursor-pointer"
-                                    title="Increase quantity by 1"
-                                  >
-                                    <Plus className="w-3 h-3" />
-                                  </button>
-                                </div>
-
-                                {/* Compact Light Green ADD Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleAddPairToQuote(rel)}
-                                  className={`h-8 flex-1 px-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${isItemAdded
-                                    ? "bg-brand-500 text-white ring-2 ring-brand-300 shadow-xs"
-                                    : "bg-brand-600 hover:bg-brand-500 text-white hover:shadow-xs"
-                                    }`}
-                                >
-                                  {isItemAdded ? (
-                                    <>
-                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                      <span>Added ({itemQty})</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                                      <span>Add {itemQty} (+5% Off)</span>
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-slate-400">
-                      <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-40 text-slate-400" />
-                      <p className="text-xs font-semibold text-slate-600">No suggestions right now</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Step 1 Footer: Navigate to Step 2 (Branding) */}
-                <div
-                  className="flex-shrink-0 px-5 py-3 border-t border-slate-100 space-y-2.5"
-                  style={{ background: "#f8fafc" }}
-                >
-                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
-                      onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+                      onClick={handleCloseModal}
+                      className="w-8 h-8 rounded-full border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer"
+                      aria-label="Close"
                     >
-                      Skip to Branding
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Headline & Subtitle */}
+                  <div className="space-y-1.5 pt-0.5">
+                    <h2 className="text-2xl sm:text-[26px] font-bold text-[#0f3428] tracking-tight leading-tight">
+                      Enjoy an Extra 5% Savings
+                    </h2>
+                    <p className="text-slate-500 text-xs sm:text-[13px] leading-relaxed">
+                      You&apos;re already saving {activeTierDiscountPct}% on your cart. Add {primaryAddon ? (primaryAddon.name.match(/^[aeiou]/i) ? `an ${primaryAddon.name}` : `a ${primaryAddon.name}`) : "a companion product"} and{" "}
+                      <strong className="font-semibold text-slate-800">save 5% more on your overall order.</strong>
+                    </p>
+                  </div>
+
+                  {/* Progress Bar (10% unlocked -> 15% with bundle) */}
+                  <div className="pt-2 pb-1 space-y-2">
+                    <div className="relative flex items-center">
+                      <div className="h-1 bg-slate-100 w-full rounded-full overflow-hidden">
+                        <div className={`h-full bg-[#1b5e3f] transition-all duration-300 ${primaryIsAdded || anyItemAdded ? "w-full" : "w-[4%]"}`} />
+                      </div>
+                      {/* Left Dot */}
+                      <div className="absolute left-0 w-3 h-3 rounded-full bg-[#1b5e3f] ring-4 ring-[#1b5e3f]/20 -translate-x-0.5" />
+                      {/* Right Dot */}
+                      <div className={`absolute right-0 w-3 h-3 rounded-full transition-all duration-300 translate-x-0.5 ${
+                        primaryIsAdded || anyItemAdded
+                          ? "bg-[#1b5e3f] ring-4 ring-[#1b5e3f]/20"
+                          : "border-2 border-slate-300 bg-white"
+                      }`} />
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-medium">
+                      <span className="text-[#1b5e3f] font-semibold text-[11.5px]">
+                        {activeTierDiscountPct}% off • unlocked
+                      </span>
+                      <span className={`text-[11.5px] transition-colors ${primaryIsAdded || anyItemAdded ? "text-[#1b5e3f] font-bold" : "text-slate-400 font-normal"}`}>
+                        {activeTierDiscountPct + 5}% off with bundle
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Add-on Product Card(s) */}
+                  {hasAddons ? (
+                    <div className="space-y-2.5 pt-1">
+                      {relatedProducts.slice(0, 2).map((rel) => {
+                        const isAdded = Boolean(pairAdded[rel.slug]);
+                        const origP = rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
+                        const discP = origP > 0 ? Math.round(origP * 0.95) : 0;
+
+                        return (
+                          <div
+                            key={rel.slug}
+                            className={`rounded-2xl border p-3 sm:p-3.5 flex items-center justify-between gap-3 transition-all ${
+                              isAdded
+                                ? "border-emerald-500 bg-emerald-50/20 shadow-xs"
+                                : "border-slate-200/90 bg-[#fafbfc] hover:border-slate-300"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
+                                <img
+                                  src={rel.image || "/images/gift-set-classic.jpg"}
+                                  alt={rel.name}
+                                  className="w-full h-full object-contain"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/images/gift-set-classic.jpg";
+                                  }}
+                                />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-sm font-semibold text-slate-900 truncate leading-snug">
+                                  {rel.name}
+                                </h4>
+                                <div className="flex items-baseline gap-1.5 mt-0.5">
+                                  <span className="text-sm font-bold text-slate-900">
+                                    ₹{discP.toLocaleString("en-IN")}
+                                  </span>
+                                  {origP > 0 && discP < origP && (
+                                    <span className="text-xs text-slate-400 line-through">
+                                      ₹{origP.toLocaleString("en-IN")}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="inline-block mt-1 text-[10px] font-medium text-[#8c5e28] border border-[#dfc3a1] bg-[#fefbf7] px-2 py-0.5 rounded-full">
+                                  +5% more off on all items
+                                </span>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleAddPairToQuote(rel)}
+                              className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all flex-shrink-0 ${
+                                isAdded
+                                  ? "bg-[#1b5e3f] text-white shadow-xs"
+                                  : "border border-[#1b5e3f] text-[#1b5e3f] hover:bg-[#1b5e3f] hover:text-white"
+                              }`}
+                              aria-label={isAdded ? "Added to order" : `Add ${rel.name}`}
+                            >
+                              {isAdded ? (
+                                <Check className="w-4 h-4 stroke-[3]" />
+                              ) : (
+                                <Plus className="w-4 h-4 stroke-[2.5]" />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+
+                  {/* Pricing Breakdown Rows */}
+                  <div className="space-y-2 pt-2 text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Your items ({activeTierDiscountPct}% off each)</span>
+                      <span className="font-medium text-slate-900">
+                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {primaryAddon && (
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>{primaryAddon.name}</span>
+                        <span className="font-medium text-slate-900">
+                          ₹{addonOrigPrice.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between text-[#1b5e3f] font-semibold">
+                      <span>Extra 5% bundle discount</span>
+                      <span>-₹{extra5PctDiscountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-2 flex items-baseline justify-between">
+                      <span className="font-bold text-slate-900 text-sm">Subtotal</span>
+                      <span className="text-2xl sm:text-[26px] font-extrabold text-[#0d3b2e] tracking-tight">
+                        ₹{totalDisplaySubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Action CTAs */}
+                  <div className="space-y-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (primaryAddon && !pairAdded[primaryAddon.slug]) {
+                          handleAddPairToQuote(primaryAddon);
+                        }
+                        setModalStep(2);
+                      }}
+                      className="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-[#1b5e3f] hover:bg-[#154c32] shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2"
+                    >
+                      <span>
+                        Add {primaryAddon ? primaryAddon.name.toLowerCase() : "companion"} &amp; get {activeTierDiscountPct + 5}% off
+                      </span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
+                      className="w-full py-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-center"
                     >
-                      <span>Next: Branding Options</span>
+                      No thanks, continue
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── STEP 2: CELEBRATORY UNLOCKED TIER PERKS ── */}
+            {modalStep === 2 && (
+              <>
+                {/* Step 2 Header: Slim Dark Brand Green */}
+                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                    <span>🎉</span>
+                    <span>You&apos;ve unlocked {activeTierObj.tierNumber === 1 ? "Tier 1 — Starter" : activeTierObj.tierNumber === 2 ? "Tier 2 — Personalized" : "Tier 3 — Fully Custom"}!</span>
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    aria-label="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Step 2 Body: Checklist of Included Perks */}
+                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-3 bg-slate-50/50">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                      Included Perks Checklist
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Cumulative Value
+                    </span>
+                  </div>
+
+                  {/* Perk 1: Tier 1 Starter (Always Unlocked at MOQ 10+) */}
+                  <div
+                    className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-300 shadow-2xs relative overflow-hidden group"
+                    style={{ animation: "gfPerkPopIn 0.35s ease-out forwards" }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                        style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards" }}
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                            Welcome &amp; Thank-You Kit included
+                          </h4>
+                          <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            Tier 1 Starter
+                          </span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                          A little something extra, free with your order. (Personalize message in Step 3)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Perk 2: Tier 2 Personalized (Unlocked at 50+ sets) */}
+                  {activeTierObj.tierNumber >= 2 ? (
+                    <div
+                      className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-400 shadow-2xs relative overflow-hidden group"
+                      style={{ animation: "gfPerkPopIn 0.45s ease-out forwards" }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                          style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.1s" }}
+                        >
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                              Your Name Engraved on the Product
+                            </h4>
+                            <span className="text-[10px] font-extrabold text-brand-800 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
+                              Tier 2 Perk ✨
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                            Free laser engraving of individual recipient names or company text. (Enter in Step 3)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dimmed Locked State for Tier 2 */
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">
+                              Your Name Engraved on the Product
+                            </h4>
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                              Tier 2 (50+ Sets)
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
+                            Free laser engraving of individual recipient names or company text.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="pl-10 pt-1 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Add {Math.max(0, 50 - qty)} more sets to unlock
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(50)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3 text-brand-600" />
+                          <span>Upgrade to 50 sets</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Perk 3: Tier 3 Fully Custom (Unlocked at 100+ sets) */}
+                  {activeTierObj.tierNumber >= 3 ? (
+                    <div
+                      className="p-3.5 rounded-2xl border transition-all duration-300 bg-gradient-to-r from-amber-50/50 via-white to-emerald-50/50 border-amber-300 shadow-2xs relative overflow-hidden group"
+                      style={{ animation: "gfPerkPopIn 0.55s ease-out forwards" }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                          style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.2s" }}
+                        >
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                              Custom Product Name + Branded Box Sleeve
+                            </h4>
+                            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                              Tier 3 VIP 👑
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                            Custom product naming &amp; branded sleeve. (Set name in Step 3; logo collected via phone/WhatsApp)
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dimmed Locked State for Tier 3 */
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">
+                              Custom Product Name + Branded Box Sleeve
+                            </h4>
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                              Tier 3 (100+ Sets)
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
+                            Custom product naming &amp; branded sleeve. (Logo collected via phone/WhatsApp)
+                          </p>
+                        </div>
+                      </div>
+                      <div className="pl-10 pt-1 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Add {Math.max(0, 100 - qty)} more sets to unlock
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(100)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:border-amber-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Crown className="w-3 h-3 text-amber-600" />
+                          <span>Upgrade to 100 sets</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 2 Footer: Order Summary & Actions */}
+                <div className="flex-shrink-0 px-5 py-4 border-t border-slate-200 bg-white space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-slate-500 text-[11px] font-medium block">Order Snapshot:</span>
+                      <span className="font-extrabold text-slate-900 text-sm">
+                        {qty} {unitLabelPlural} • ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {totalSavings > 0 && (
+                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
+                        Saved ₹{totalSavings.toLocaleString("en-IN")} ({activeTierDiscountPct}% OFF)
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(1)}
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
+                    >
+                      ← Back to Add-ons
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(3)}
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
+                    >
+                      <span>Next: Personalize Order</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -2387,155 +2450,259 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               </>
             )}
 
-            {/* ── STEP 2: BRANDING & CUSTOMIZATION OPTIONS ── */}
-            {modalStep === 2 && (
+            {/* ── STEP 3: ORDER PERSONALIZATION (CARD MESSAGE, ENGRAVING & CUSTOM BRANDING) ── */}
+            {modalStep === 3 && (
               <>
-                <div className="overflow-y-auto flex-1 px-5 py-2 space-y-3.5">
-                  {/* Tier Allowance Banner */}
-                  <div
-                    className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${activeTierObj.tierNumber === 1
-                      ? "bg-amber-50/80 border-amber-200 text-amber-900"
-                      : activeTierObj.tierNumber === 2
-                        ? "bg-brand-50/80 border-brand-200 text-brand-900"
-                        : "bg-emerald-50 border-emerald-300 text-emerald-950"
-                      }`}
+                {/* Step 3 Header: Slim Dark Brand Green */}
+                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                    <span>💌</span>
+                    <span>Personalize Order &amp; Customizations</span>
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    aria-label="Close"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Sparkles className="w-4 h-4 flex-shrink-0 text-brand-600" />
-                      <span className="font-medium text-[11px] leading-tight">
-                        {activeTierObj.tierNumber === 1 && (
-                          <>
-                            <strong>Tier 1:</strong> Select any <strong>2 of 5</strong> complimentary customizations.
-                          </>
-                        )}
-                        {activeTierObj.tierNumber === 2 && (
-                          <>
-                            <strong>Tier 2:</strong> Select any <strong>3 of 5</strong> complimentary customizations.
-                          </>
-                        )}
-                        {activeTierObj.tierNumber >= 3 && (
-                          <>
-                            <strong>Tier 3:</strong> All <strong>5 of 5</strong> customizations complimentary!
-                          </>
-                        )}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full flex-shrink-0 ${selectedCustomizations.length === maxCustomizations
-                        ? "bg-brand-600 text-white shadow-xs"
-                        : "bg-white border border-slate-200 text-slate-700"
-                        }`}
-                    >
-                      {selectedCustomizations.length}/{maxCustomizations} Selected
-                    </span>
-                  </div>
-
-                  {/* Customization Options Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {currentCustomizations.map((opt) => {
-                      const isSelected = selectedCustomizations.includes(opt.id);
-                      const OptIcon = opt.icon;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => handleToggleCustomization(opt.id)}
-                          className={`w-full text-left p-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer flex items-center gap-3 group ${isSelected
-                            ? "border-brand-500 shadow-sm"
-                            : "border-slate-200 hover:border-brand-300"
-                            }`}
-                          style={{ background: isSelected ? "#f0fdf4" : "#f8fafc" }}
-                        >
-                          <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected
-                              ? "bg-brand-600 text-white"
-                              : "border-2 border-slate-300 bg-white group-hover:border-brand-400"
-                              }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                          </div>
-                          <div
-                            className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 ${isSelected
-                              ? "bg-white border-brand-200 text-brand-600"
-                              : "bg-white border-slate-200 text-slate-400 group-hover:text-brand-600"
-                              }`}
-                          >
-                            <OptIcon className="w-4 h-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-bold text-slate-900">
-                                {opt.name}
-                              </span>
-                              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">
-                                {opt.tag}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-                              {opt.desc}
-                            </p>
-                          </div>
-                          <div className="flex-shrink-0">
-                            {isSelected ? (
-                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-1 rounded-full flex items-center gap-1">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                                Included
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 group-hover:text-brand-700 px-2 py-1 rounded-full border border-transparent group-hover:border-brand-200 group-hover:bg-brand-50 transition-all">
-                                Select
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Branding notes */}
-                  <div className="space-y-1.5 pt-1">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-brand-600" /> Branding Notes (Optional)
-                    </label>
-                    <textarea
-                      value={brandingNotes}
-                      onChange={(e) => setBrandingNotes(e.target.value)}
-                      rows={2}
-                      placeholder="E.g. 'Logo file will be emailed — please center on front lid.'"
-                      className="w-full text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 focus:bg-white placeholder:text-slate-400 transition-all"
-                    />
-                  </div>
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Step 2 Footer: Save & Proceed */}
-                <div
-                  className="flex-shrink-0 px-5 py-3 border-t border-slate-100 space-y-2.5"
-                  style={{ background: "#f8fafc" }}
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-1.5 text-slate-500">
-                      <Clock className="w-3.5 h-3.5 text-brand-600" />
-                      <strong className="text-slate-700">Lead Time:</strong> {activeOccasion.leadTime || "5–7 Days"}
-                    </span>
-                    <span className="font-extrabold text-slate-900">
-                      Total: ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                    </span>
+                {/* Step 3 Body: Form Inputs for Card, Engraving, and Custom Product Name */}
+                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 bg-slate-50/50">
+                  {/* Section 1: Kit Card Message (Tier 1+) */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                      <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <FileText className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-emerald-950 block">
+                          Tier 1 Starter Perk (Included in all {qty} {unitLabelPlural}):
+                        </span>
+                        <span className="text-[11px] text-emerald-800">
+                          Custom printed plantable seed paper or kraft story card inside each gift box.
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Input 1: Sender Name */}
+                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-brand-700" />
+                          <span>Sender Name / Organization (From)</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        placeholder="e.g. Acme Corp Leadership Team / Rajesh Sharma"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Input 2: Receiver Name */}
+                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-brand-700" />
+                          <span>Receiver Name / Recipient Group (To)</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={receiverName}
+                        onChange={(e) => setReceiverName(e.target.value)}
+                        placeholder="e.g. Valued Partner / Jane Smith / Team Member"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Input 3: Gift Message with 50-60 Word Counter */}
+                    <div className="space-y-2 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                      {(() => {
+                        const messageWordCount = giftMessage.trim()
+                          ? giftMessage.trim().split(/\s+/).filter(Boolean).length
+                          : 0;
+
+                        return (
+                          <>
+                            <div className="flex items-center justify-between flex-wrap gap-1.5">
+                              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <FileText className="w-3.5 h-3.5 text-brand-700" />
+                                <span>Card Message (50–60 words)</span>
+                              </label>
+                              <span
+                                className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${messageWordCount >= 50 && messageWordCount <= 60
+                                  ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                  : messageWordCount > 60
+                                    ? "bg-amber-100 text-amber-900 border-amber-300"
+                                    : "bg-slate-100 text-slate-600 border-slate-200"
+                                  }`}
+                              >
+                                {messageWordCount >= 50 && messageWordCount <= 60 ? (
+                                  <span>✓ {messageWordCount} / 60 words (Target met!)</span>
+                                ) : messageWordCount > 60 ? (
+                                  <span>⚠ {messageWordCount} words ({messageWordCount - 60} words over target)</span>
+                                ) : (
+                                  <span>{messageWordCount} / 60 words ({Math.max(0, 50 - messageWordCount)} more for 50)</span>
+                                )}
+                              </span>
+                            </div>
+
+                            <textarea
+                              rows={4}
+                              value={giftMessage}
+                              onChange={(e) => setGiftMessage(e.target.value)}
+                              placeholder="Write your personalized 50 to 60 word greeting or thank-you message to print on the kit card..."
+                              className="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all resize-none font-medium leading-relaxed"
+                            />
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
+
+                  {/* Section 2: Tier 2 Product Name Engraving */}
+                  {activeTierObj.tierNumber >= 2 ? (
+                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-emerald-300 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-brand-700" />
+                          <span>Name / Text to Engrave on Product</span>
+                        </label>
+                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          Tier 2 Perk ✨
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-snug">
+                        Enter recipient individual name(s), comma-separated list, or text to be laser engraved on each product:
+                      </p>
+                      <input
+                        type="text"
+                        value={engravingName}
+                        onChange={(e) => setEngravingName(e.target.value)}
+                        placeholder="e.g. John Doe, Sarah Smith, Alex Wong / Company Tagline"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 text-xs space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0">
+                            <Lock className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-slate-700">Product Name Laser Engraving</h4>
+                            <p className="text-[11px] text-slate-500">Unlocked at 50+ sets (Tier 2)</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(50)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3 text-brand-600" />
+                          <span>Unlock (50 sets)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Section 3: Tier 3 Custom Product Name & Logo Note */}
+                  {activeTierObj.tierNumber >= 3 ? (
+                    <div className="space-y-2.5 bg-gradient-to-r from-amber-50/40 via-white to-emerald-50/30 p-3.5 rounded-2xl border border-amber-300 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                          <Crown className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Custom Product Name for Box Sleeve</span>
+                        </label>
+                        <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                          Tier 3 VIP 👑
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-snug">
+                        Give your gift sets a custom edition name or branded collection title for the box sleeve:
+                      </p>
+                      <input
+                        type="text"
+                        value={customProductName}
+                        onChange={(e) => setCustomProductName(e.target.value)}
+                        placeholder="e.g. Acme Leadership Onboarding Set 2026 / The Eco-Executive Kit"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-white border border-amber-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+
+                      {/* Logo Collection Notification Callout */}
+                      <div className="p-3 rounded-xl bg-amber-50/90 border border-amber-200 flex items-start gap-2.5 text-xs">
+                        <PhoneCall className="w-4 h-4 text-amber-800 flex-shrink-0 mt-0.5" />
+                        <div className="text-[11px] text-amber-950 leading-relaxed">
+                          <span className="font-bold text-amber-900 block">Company Logo / Vector Artwork:</span>
+                          In case of logo branding, our B2B team will contact you shortly via phone / WhatsApp after quote submission to collect your high-res logo file and share a digital 3D mockup for your approval.
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-amber-200/80 bg-amber-50/30 text-xs space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                            <Lock className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-amber-950">Custom Product Name &amp; Branded Box Sleeve / Logo</h4>
+                            <p className="text-[11px] text-amber-900/80">Unlocked at 100+ sets (Tier 3 VIP)</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(100)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Crown className="w-3 h-3" />
+                          <span>Unlock (100 sets)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 3 Footer: Order Summary & Review Basket */}
+                <div className="flex-shrink-0 px-5 py-4 border-t border-slate-200 bg-white space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-slate-500 text-[11px] font-medium block">Order Snapshot:</span>
+                      <span className="font-extrabold text-slate-900 text-sm">
+                        {qty} {unitLabelPlural} • ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {totalSavings > 0 && (
+                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
+                        Saved ₹{totalSavings.toLocaleString("en-IN")} ({activeTierDiscountPct}% OFF)
+                      </span>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
-                      onClick={() => setModalStep(1)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      onClick={() => setModalStep(2)}
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
                     >
-                      <span>← Back to Bundles</span>
+                      ← Back to Perks
                     </button>
                     <Link
                       href="/quote"
                       onClick={handleSaveCustomizations}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
                     >
                       <ShoppingBag className="w-4 h-4" />
-                      <span>Review Basket &amp; Quote</span>
+                      <span>Review Basket</span>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -2548,6 +2715,27 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       )}
 
       <style>{`
+        @keyframes gfPerkPopIn {
+          0% {
+            opacity: 0;
+            transform: translateY(8px) scale(0.97);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes gfCheckPop {
+          0% {
+            transform: scale(0);
+          }
+          70% {
+            transform: scale(1.3);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
         @keyframes gfModalBackdrop {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -2555,7 +2743,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         @keyframes gfModalBox {
           from {
             opacity: 0;
-            transform: scale(0.95) translateY(16px);
+            transform: scale(0.94) translateY(14px);
           }
           to {
             opacity: 1;

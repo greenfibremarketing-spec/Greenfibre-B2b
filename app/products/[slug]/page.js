@@ -31,9 +31,40 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
   if (!p) notFound();
 
   const allProducts = await getProducts(rawContext);
-  const relatedProducts = allProducts
-    .filter((x) => x.slug !== p.slug && (x.category === p.category || x.popular))
-    .slice(0, 4);
+  // Prefer backend-provided companion products (additionalProducts from B2BProductConfig).
+  // Fall back to same-category / popular filter if the API didn't return any.
+  let relatedProducts = [];
+  if (Array.isArray(p.additionalProducts) && p.additionalProducts.length > 0) {
+    relatedProducts = p.additionalProducts
+      .map((addon) => {
+        const fullProd = allProducts.find(
+          (x) =>
+            x.slug === addon.slug ||
+            x._id === addon._id ||
+            (x.name && addon.name && x.name.toLowerCase() === addon.name.toLowerCase())
+        );
+        if (fullProd) {
+          return {
+            ...fullProd,
+            ...addon,
+            image: addon.image || fullProd.image,
+            price: addon.price || fullProd.price || 0,
+            originalPrice:
+              addon.originalPrice || fullProd.originalPrice || fullProd.retailPrice || fullProd.price || 0,
+            moq: fullProd.moq || 10,
+            unit: addon.unit || fullProd.unit || "set"
+          };
+        }
+        return addon;
+      })
+      .slice(0, 4);
+  }
+
+  if (relatedProducts.length === 0) {
+    relatedProducts = allProducts
+      .filter((x) => x.slug !== p.slug && (x.category === p.category || x.popular))
+      .slice(0, 4);
+  }
 
   const jsonLd = {
     "@context": "https://schema.org",

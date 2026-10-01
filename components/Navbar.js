@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Menu,
   X,
@@ -13,76 +13,21 @@ import {
   ArrowRight,
   Phone,
   ShieldCheck,
-  ChevronRight,
-  ChevronDown,
-  Briefcase,
-  Cake,
-  Heart,
-  Building2,
-  Home,
-  Star
+  ChevronRight
 } from "lucide-react";
 import NavbarSearch from "./NavbarSearch";
 import UserNav from "./UserNav";
 import { Count } from "./Quote";
 
-const giftingCategories = [
-  {
-    label: "Corporate",
-    desc: "Branded bulk gifting for offices",
-    icon: Briefcase,
-    href: "/products?category=Gifting&type=corporate",
-    color: "bg-emerald-50 text-emerald-700"
-  },
-  {
-    label: "Anniversary",
-    desc: "Celebrate milestones with elegance",
-    icon: Heart,
-    href: "/products?category=Gifting&type=anniversary",
-    color: "bg-rose-50 text-rose-600"
-  },
-  {
-    label: "Birthday",
-    desc: "Thoughtful eco gifts for birthdays",
-    icon: Cake,
-    href: "/products?category=Gifting&type=birthday",
-    color: "bg-amber-50 text-amber-600"
-  },
-  {
-    label: "Institutional",
-    desc: "Schools, hospitals & org gifting",
-    icon: Building2,
-    href: "/products?category=Gifting&type=institutional",
-    color: "bg-blue-50 text-blue-600"
-  },
-  {
-    label: "House Warming",
-    desc: "Sustainable gifts for new homes",
-    icon: Home,
-    href: "/products?category=Gifting&type=housewarming",
-    color: "bg-orange-50 text-orange-600"
-  },
-  {
-    label: "Wedding",
-    desc: "Premium sets for the big day",
-    icon: Star,
-    href: "/products?category=Gifting&type=wedding",
-    color: "bg-purple-50 text-purple-600"
-  }
-];
-
-export default function Navbar() {
+function NavbarInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [giftingOpen, setGiftingOpen] = useState(false);
-  const [mobileGiftingOpen, setMobileGiftingOpen] = useState(false);
-  const giftingTimeout = useRef(null);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
-    setGiftingOpen(false);
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -96,25 +41,24 @@ export default function Navbar() {
     };
   }, [mobileMenuOpen]);
 
-  const handleGiftingMouseEnter = () => {
-    if (giftingTimeout.current) clearTimeout(giftingTimeout.current);
-    setGiftingOpen(true);
-  };
-
-  const handleGiftingMouseLeave = () => {
-    giftingTimeout.current = setTimeout(() => {
-      setGiftingOpen(false);
-    }, 120);
-  };
-
   if (pathname === "/login" || pathname === "/signup") {
     return null;
   }
 
+  const categoryParam = searchParams ? searchParams.get("category") || "" : "";
+  const typeParam = searchParams ? searchParams.get("type") || "" : "";
+  const catLower = categoryParam.toLowerCase();
+
+  const isGiftingCategory =
+    catLower.includes("gift") ||
+    catLower.includes("hamper") ||
+    Boolean(typeParam) ||
+    ["corporate", "anniversary", "birthday", "institutional", "housewarming", "house warming", "wedding"].includes(catLower);
+
   const isAllProductsActive =
-    pathname.startsWith("/products") && !pathname.includes("category=");
+    pathname === "/products" && !categoryParam && !typeParam;
   const isGiftingActive =
-    pathname.includes("category=Gifting") || pathname.includes("category=Gift");
+    pathname.startsWith("/products") && isGiftingCategory;
   const isStoryActive = pathname === "/story";
 
   return (
@@ -154,96 +98,19 @@ export default function Navbar() {
                 )}
               </Link>
 
-              {/* Gifting with hover dropdown */}
-              <div
-                className="relative"
-                onMouseEnter={handleGiftingMouseEnter}
-                onMouseLeave={handleGiftingMouseLeave}
+              {/* Gifts & Hampers */}
+              <Link
+                href="/products?category=Gift+Hampers"
+                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
+                    ? "text-brand-900 bg-brand-50/80 font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  }`}
               >
-                <Link
-                  href="/products?category=Gifting"
-                  className={`flex items-center gap-1 whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
-                      ? "text-brand-900 bg-brand-50/80 font-bold"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                    }`}
-                >
-                  <span className="relative z-10">Gifting</span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform duration-300 ${giftingOpen ? "rotate-180" : "rotate-0"
-                      }`}
-                  />
-                  {isGiftingActive && (
-                    <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-600 rounded-full" />
-                  )}
-                </Link>
-
-                {/* Dropdown */}
-                <div
-                  className={`absolute top-full left-0 mt-2 w-[420px] transition-all duration-300 ease-out origin-top-left ${giftingOpen
-                      ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                      : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-                    }`}
-                >
-                  {/* Invisible hover bridge */}
-                  <div className="absolute -top-2 left-0 right-0 h-2" />
-                  <div
-                    className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden"
-                    style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)" }}
-                  >
-                    {/* Dropdown header */}
-                    <div className="px-4 pt-4 pb-3 border-b border-slate-100 bg-gradient-to-r from-brand-50 to-emerald-50/50">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-                          <Gift className="w-3.5 h-3.5 text-white" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900">Gifting Occasions</p>
-                          <p className="text-[10px] text-slate-500">Premium eco gifts for every moment</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Grid */}
-                    <div className="p-3 grid grid-cols-2 gap-1.5">
-                      {giftingCategories.map((cat) => {
-                        const Icon = cat.icon;
-                        return (
-                          <Link
-                            key={cat.label}
-                            href={cat.href}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-150 group border border-transparent hover:border-slate-100"
-                          >
-                            <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 ${cat.color}`}
-                            >
-                              <Icon className="w-4 h-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-slate-800 group-hover:text-brand-700 transition-colors leading-tight">
-                                {cat.label}
-                              </p>
-                              <p className="text-[10px] text-slate-400 leading-tight mt-0.5 truncate">
-                                {cat.desc}
-                              </p>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-
-                    {/* Footer CTA */}
-                    <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/60">
-                      <Link
-                        href="/products?category=Gifting"
-                        className="flex items-center justify-between text-xs font-semibold text-brand-700 hover:text-brand-900 transition-colors group"
-                      >
-                        <span>Browse all gifting products</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <span className="relative z-10">Gifts &amp; Hampers</span>
+                {isGiftingActive && (
+                  <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-600 rounded-full" />
+                )}
+              </Link>
 
               {/* Our Story */}
               <Link
@@ -335,49 +202,23 @@ export default function Navbar() {
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>
 
-                {/* Gifting expandable */}
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => setMobileGiftingOpen(!mobileGiftingOpen)}
-                    className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${isGiftingActive
-                        ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
-                        : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
-                        <Gift className="w-4 h-4" />
-                      </div>
-                      <span className="text-sm font-semibold">Gifting</span>
+                {/* Gifts & Hampers */}
+                <Link
+                  href="/products?category=Gift+Hampers"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isGiftingActive
+                      ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
+                      : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <Gift className="w-4 h-4" />
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${mobileGiftingOpen ? "rotate-180" : ""}`} />
-                  </button>
-
-                  {mobileGiftingOpen && (
-                    <div className="mt-1.5 ml-4 space-y-1 border-l-2 border-brand-100 pl-3">
-                      {giftingCategories.map((cat) => {
-                        const Icon = cat.icon;
-                        return (
-                          <Link
-                            key={cat.label}
-                            href={cat.href}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 p-2.5 rounded-xl text-slate-700 hover:bg-slate-50 hover:text-brand-700 transition-all"
-                          >
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${cat.color}`}>
-                              <Icon className="w-3.5 h-3.5" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-semibold leading-tight">{cat.label}</p>
-                              <p className="text-[10px] text-slate-400 leading-tight">{cat.desc}</p>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                    <span className="text-sm font-semibold">Gifts &amp; Hampers</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </Link>
 
                 {/* Our Story */}
                 <Link
@@ -448,5 +289,14 @@ export default function Navbar() {
     </>
   );
 }
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={<div className="h-18 sm:h-20 bg-white border-b border-slate-200" />}>
+      <NavbarInner />
+    </Suspense>
+  );
+}
+
 
 

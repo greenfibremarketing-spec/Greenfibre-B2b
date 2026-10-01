@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useQuote } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
-import { CheckCircle2, ShoppingBag, PhoneCall, AlertCircle, Lock, ShieldCheck, Building, User, Mail, Phone, MapPin, FileText } from "lucide-react";
+import { CheckCircle2, ShoppingBag, PhoneCall, AlertCircle, Lock, ShieldCheck, Building, User, Mail, Phone, MapPin, FileText, Sparkles, Check } from "lucide-react";
 
 export default function QuotePage() {
   const { items, setQty, remove, clear, count, estimatedTotal } = useQuote() || {
@@ -59,10 +59,16 @@ export default function QuotePage() {
           ...formData,
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
-          items: items.map(({ slug, colour, qty }) => ({
+          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations }) => ({
             slug,
             colour,
-            qty
+            qty,
+            senderName,
+            receiverName,
+            giftMessage,
+            engravingName,
+            customProductName,
+            selectedCustomizations
           }))
         })
       });
@@ -190,97 +196,256 @@ export default function QuotePage() {
                 </div>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 mt-1">
-                {items.map((item) => (
-                  <div key={item.key} className="py-3.5 flex gap-3.5 items-center">
-                    {/* Thumbnail */}
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-xs text-slate-400">
-                          GF
-                        </div>
-                      )}
-                    </div>
+              (() => {
+                const computedItems = items.map((item) => {
+                  const isAddon = Boolean(item.bundleDiscountApplied || item.activeTierTitle?.toLowerCase().includes("bundle"));
+                  // For main products: use wholesalePrice (from payload). For add-ons: their price field IS the 5%-discounted price.
+                  const addonDiscountPct = 5;
+                  const tierNum = isAddon ? 0 : (item.qty >= 100 ? 3 : item.qty >= 50 ? 2 : 1);
+                  const discountPct = isAddon ? addonDiscountPct : (tierNum === 3 ? 15 : tierNum === 2 ? 12 : 10);
 
-                    {/* Details */}
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                        {item.name}
-                      </h4>
-                      <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-500 flex-wrap">
-                        {item.activeTierTitle && (
-                          <span className="font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                            {item.activeTierTitle}
-                          </span>
+                  // Wholesale unit price = the base price BEFORE discount
+                  // For main products, prefer wholesalePrice set in payload, fallback to originalBasePrice, then back-calculate
+                  const wholesaleUnitP = isAddon
+                    ? (item.originalBasePrice || (item.price > 0 ? Math.round(item.price / (1 - addonDiscountPct / 100)) : 0))
+                    : (item.wholesalePrice || item.originalBasePrice || item.retailPrice || (item.price > 0 ? Math.round(item.price / (1 - discountPct / 100)) : 550));
+
+                  // Gross wholesale total (before discount)
+                  const lineGross = wholesaleUnitP * item.qty;
+                  // Discount amount on total
+                  const lineDiscount = Math.round(lineGross * discountPct / 100);
+                  // Final you-pay total
+                  const lineTotal = lineGross - lineDiscount;
+                  // Effective per-unit after discount
+                  const unitPrice = item.qty > 0 ? Math.round(lineTotal / item.qty) : 0;
+
+                  return {
+                    ...item,
+                    isAddon,
+                    tierNum,
+                    discountPct,
+                    wholesaleUnitP,
+                    lineGross,
+                    lineDiscount,
+                    lineTotal,
+                    unitPrice
+                  };
+                });
+
+                // Separate main products and add-ons for summary
+                const mainItems = computedItems.filter((it) => !it.isAddon);
+                const addonItems = computedItems.filter((it) => it.isAddon);
+                const mainGross = mainItems.reduce((acc, it) => acc + it.lineGross, 0);
+                const mainDiscount = mainItems.reduce((acc, it) => acc + it.lineDiscount, 0);
+                const mainNet = mainItems.reduce((acc, it) => acc + it.lineTotal, 0);
+                const addonGross = addonItems.reduce((acc, it) => acc + it.lineGross, 0);
+                const addonDiscount = addonItems.reduce((acc, it) => acc + it.lineDiscount, 0);
+                const addonNet = addonItems.reduce((acc, it) => acc + it.lineTotal, 0);
+                const totalNetSubtotal = mainNet + addonNet;
+                const totalSavingsAmount = mainDiscount + addonDiscount;
+
+                return (
+                  <div className="divide-y divide-slate-100 mt-1">
+                    {computedItems.map((item) => (
+                      <div key={item.key} className="py-3.5 flex gap-3.5 items-center">
+                        {/* Thumbnail */}
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-bold text-xs text-slate-400">
+                              GF
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                            {item.name}
+                          </h4>
+                          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-500 flex-wrap">
+                            {item.isAddon ? (
+                              <span className="font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                                Add-On · 5% OFF
+                              </span>
+                            ) : (
+                              <span className="font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                {item.activeTierTitle || `Tier ${item.tierNum}`} · {item.discountPct}% OFF
+                              </span>
+                            )}
+                            <span>SKU: {item.sku || "GF-B2B"}</span>
+                          </div>
+
+                          {Array.isArray(item.selectedCustomizations) && item.selectedCustomizations.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {item.selectedCustomizations.map((c, ci) => (
+                                <span
+                                  key={ci}
+                                  className="text-[10px] bg-brand-50 text-brand-900 border border-brand-200 px-1.5 py-0.2 rounded font-medium"
+                                >
+                                  ✓ {c}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {(item.senderName || item.receiverName || item.giftMessage || item.engravingName || item.customProductName) && (
+                            <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200 text-[10.5px] space-y-1">
+                              {(item.senderName || item.receiverName || item.giftMessage) && (
+                                <div className="space-y-0.5">
+                                  <div className="font-bold text-emerald-900 flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3 text-emerald-600" />
+                                    <span>Kit Card Message:</span>
+                                  </div>
+                                  {item.senderName && (
+                                    <div className="text-slate-700">
+                                      <span className="font-semibold text-slate-900">From:</span> {item.senderName}
+                                    </div>
+                                  )}
+                                  {item.receiverName && (
+                                    <div className="text-slate-700">
+                                      <span className="font-semibold text-slate-900">To:</span> {item.receiverName}
+                                    </div>
+                                  )}
+                                  {item.giftMessage && (
+                                    <div className="italic text-slate-600 line-clamp-2">
+                                      &ldquo;{item.giftMessage}&rdquo;
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {item.engravingName && (
+                                <div className="text-slate-700 pt-0.5 border-t border-emerald-200/60">
+                                  <span className="font-semibold text-slate-900">Laser Engraving:</span> {item.engravingName}
+                                </div>
+                              )}
+
+                              {item.customProductName && (
+                                <div className="text-slate-700 pt-0.5 border-t border-emerald-200/60">
+                                  <span className="font-semibold text-slate-900">Custom Box Sleeve Title:</span> {item.customProductName}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Clear 3-line pricing breakdown per item */}
+                          <div className="mt-1.5 space-y-0.5 text-[11px]">
+                            <div className="flex items-center gap-2 text-slate-500">
+                              <span>{item.qty} × ₹{item.wholesaleUnitP}</span>
+                              <span className="font-semibold text-slate-700">= ₹{item.lineGross.toLocaleString("en-IN")}</span>
+                            </div>
+                            {item.lineDiscount > 0 && (
+                              <div className="flex items-center gap-2 text-emerald-700 font-bold">
+                                <span>{item.discountPct}% {item.isAddon ? "Add-on" : "Bulk"} Discount</span>
+                                <span>− ₹{item.lineDiscount.toLocaleString("en-IN")}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 font-bold text-slate-900">
+                              <span>You Pay:</span>
+                              <span>₹{item.lineTotal.toLocaleString("en-IN")}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Quantity Stepper & Remove */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              value={item.qty}
+                              onChange={(e) => {
+                                const cleaned = e.target.value.replace(/\D/g, "");
+                                setQty(item.key, cleaned ? parseInt(cleaned, 10) : (item.moq || 1));
+                              }}
+                              className="w-14 text-center text-xs font-bold py-1 px-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none select-all"
+                              aria-label={`Quantity for ${item.name}`}
+                            />
+                            <span className="text-[10px] text-slate-500">{item.unit || "set"}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => remove(item.key)}
+                            className="w-6 h-6 rounded text-slate-400 hover:text-red-600 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                            title="Remove item"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Subtotal & Detailed Discount Breakdown */}
+                    <div className="pt-4 border-t border-slate-200 space-y-2.5">
+                      <div className="space-y-1.5 text-xs">
+                        {/* Main Products */}
+                        {mainGross > 0 && (
+                          <div className="flex items-center justify-between text-slate-700">
+                            <span>Main Products (Wholesale Total):</span>
+                            <span className="font-semibold">₹{mainGross.toLocaleString("en-IN")}</span>
+                          </div>
                         )}
-                        <span>SKU: {item.sku}</span>
-                      </div>
-                      {Array.isArray(item.selectedCustomizations) && item.selectedCustomizations.length > 0 && (
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {item.selectedCustomizations.map((c, ci) => (
-                            <span
-                              key={ci}
-                              className="text-[10px] bg-brand-50 text-brand-900 border border-brand-200 px-1.5 py-0.2 rounded font-medium"
-                            >
-                              ✓ {c}
+                        {mainDiscount > 0 && (
+                          <div className="flex items-center justify-between text-emerald-800">
+                            <span className="flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                              <span>Volume Tier Discounts (10%–15% on total):</span>
                             </span>
-                          ))}
+                            <span className="font-bold">−₹{mainDiscount.toLocaleString("en-IN")}</span>
+                          </div>
+                        )}
+
+                        {/* Add-ons */}
+                        {addonGross > 0 && (
+                          <div className="flex items-center justify-between text-slate-700">
+                            <span>Add-On Items (Wholesale Total):</span>
+                            <span className="font-semibold">₹{addonGross.toLocaleString("en-IN")}</span>
+                          </div>
+                        )}
+                        {addonDiscount > 0 && (
+                          <div className="flex items-center justify-between text-emerald-800">
+                            <span className="flex items-center gap-1">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
+                              <span>Add-On Bundle Discounts (5% on add-on total):</span>
+                            </span>
+                            <span className="font-bold">−₹{addonDiscount.toLocaleString("en-IN")}</span>
+                          </div>
+                        )}
+
+                        {/* Total Savings */}
+                        {totalSavingsAmount > 0 && (
+                          <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-emerald-950 font-bold">
+                            <span>Total Savings Unlocked:</span>
+                            <span className="text-emerald-800 font-extrabold">
+                              −₹{totalSavingsAmount.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* You Pay */}
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-200 text-slate-900">
+                          <span className="text-xs sm:text-sm font-bold">Total You Pay:</span>
+                          <span className="text-lg sm:text-xl font-black text-slate-900">
+                            ₹{totalNetSubtotal.toLocaleString("en-IN")}
+                          </span>
                         </div>
-                      )}
-                      <div className="text-xs font-bold text-slate-900 mt-1">
-                        Est. Rate: ₹{item.price ? item.price : "—"} <span className="text-[10px] text-slate-500 font-normal">/{item.unit}</span>
-                      </div>
-                    </div>
-
-                    {/* Quantity Stepper & Remove */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={item.qty}
-                          onChange={(e) => {
-                            const cleaned = e.target.value.replace(/\D/g, "");
-                            setQty(item.key, cleaned ? parseInt(cleaned, 10) : (item.moq || 1));
-                          }}
-                          className="w-14 text-center text-xs font-bold py-1 px-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none select-all"
-                          aria-label={`Quantity for ${item.name}`}
-                        />
-                        <span className="text-[10px] text-slate-500">{item.unit}</span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => remove(item.key)}
-                        className="w-6 h-6 rounded text-slate-400 hover:text-red-600 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
-                        title="Remove item"
-                      >
-                        ✕
-                      </button>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">
+                        * B2B wholesale pricing. Tier discounts (10–15%) applied on main product totals; add-ons get 5% off their own totals separately. Final official quotation will include GST (18%) credit and Pan-India dispatch logistics.
+                      </p>
                     </div>
                   </div>
-                ))}
-
-                {/* Subtotal & Indicative Note */}
-                <div className="pt-3.5 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-700">Estimated Product Subtotal:</span>
-                    <span className="text-lg font-bold text-slate-900">
-                      ₹{estimatedTotal.toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">
-                    * Indicative estimate. Final quote will detail volume tier discounts, branding setup, GST (18%), and shipping.
-                  </p>
-                </div>
-              </div>
+                );
+              })()
             )}
           </div>
 
