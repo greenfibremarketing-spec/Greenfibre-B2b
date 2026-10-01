@@ -59,13 +59,15 @@ export default function QuotePage() {
           ...formData,
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
-          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, selectedCustomizations }) => ({
+          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations }) => ({
             slug,
             colour,
             qty,
             senderName,
             receiverName,
             giftMessage,
+            engravingName,
+            customProductName,
             selectedCustomizations
           }))
         })
@@ -292,25 +294,41 @@ export default function QuotePage() {
                             </div>
                           )}
 
-                          {(item.senderName || item.receiverName || item.giftMessage) && (
-                            <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200 text-[10.5px] space-y-0.5">
-                              <div className="font-bold text-emerald-900 flex items-center gap-1">
-                                <Sparkles className="w-3 h-3 text-emerald-600" />
-                                <span>Kit Card Message:</span>
-                              </div>
-                              {item.senderName && (
-                                <div className="text-slate-700">
-                                  <span className="font-semibold text-slate-900">From:</span> {item.senderName}
+                          {(item.senderName || item.receiverName || item.giftMessage || item.engravingName || item.customProductName) && (
+                            <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200 text-[10.5px] space-y-1">
+                              {(item.senderName || item.receiverName || item.giftMessage) && (
+                                <div className="space-y-0.5">
+                                  <div className="font-bold text-emerald-900 flex items-center gap-1">
+                                    <Sparkles className="w-3 h-3 text-emerald-600" />
+                                    <span>Kit Card Message:</span>
+                                  </div>
+                                  {item.senderName && (
+                                    <div className="text-slate-700">
+                                      <span className="font-semibold text-slate-900">From:</span> {item.senderName}
+                                    </div>
+                                  )}
+                                  {item.receiverName && (
+                                    <div className="text-slate-700">
+                                      <span className="font-semibold text-slate-900">To:</span> {item.receiverName}
+                                    </div>
+                                  )}
+                                  {item.giftMessage && (
+                                    <div className="italic text-slate-600 line-clamp-2">
+                                      &ldquo;{item.giftMessage}&rdquo;
+                                    </div>
+                                  )}
                                 </div>
                               )}
-                              {item.receiverName && (
-                                <div className="text-slate-700">
-                                  <span className="font-semibold text-slate-900">To:</span> {item.receiverName}
+
+                              {item.engravingName && (
+                                <div className="text-slate-700 pt-0.5 border-t border-emerald-200/60">
+                                  <span className="font-semibold text-slate-900">Laser Engraving:</span> {item.engravingName}
                                 </div>
                               )}
-                              {item.giftMessage && (
-                                <div className="italic text-slate-600 line-clamp-2">
-                                  &ldquo;{item.giftMessage}&rdquo;
+
+                              {item.customProductName && (
+                                <div className="text-slate-700 pt-0.5 border-t border-emerald-200/60">
+                                  <span className="font-semibold text-slate-900">Custom Box Sleeve Title:</span> {item.customProductName}
                                 </div>
                               )}
                             </div>

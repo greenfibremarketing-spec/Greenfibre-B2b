@@ -49,7 +49,8 @@ import {
   Heart,
   Users,
   Eye,
-  Lock
+  Lock,
+  PhoneCall
 } from "lucide-react";
 
 // Standard 5 Contexts & Occasions for B2B Gifting
@@ -734,6 +735,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const [senderName, setSenderName] = useState("");
   const [receiverName, setReceiverName] = useState("");
   const [giftMessage, setGiftMessage] = useState("");
+  const [engravingName, setEngravingName] = useState("");
+  const [customProductName, setCustomProductName] = useState("");
   const [packagingOption, setPackagingOption] = useState("Standard Recyclable Eco Kraft Box");
   const [added, setAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -916,6 +919,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       senderName: senderName.trim(),
       receiverName: receiverName.trim(),
       giftMessage: giftMessage.trim(),
+      engravingName: engravingName.trim(),
+      customProductName: customProductName.trim(),
       activeOccasion: activeOccasion.label,
       activeOccasionKey: activeOccasion.key,
       activeTierTitle: activeTierObj.title,
@@ -2289,7 +2294,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             </span>
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
-                            Make it yours — free personalization unlocked at this tier.
+                            Free laser engraving of individual recipient names or company text. (Enter in Step 3)
                           </p>
                         </div>
                       </div>
@@ -2311,7 +2316,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             </span>
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
-                            Make it yours — free personalization unlocked at this tier.
+                            Free laser engraving of individual recipient names or company text.
                           </p>
                         </div>
                       </div>
@@ -2354,7 +2359,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             </span>
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
-                            The complete personalized experience — gift-ready, straight out of the box.
+                            Custom product naming &amp; branded sleeve. (Set name in Step 3; logo collected via phone/WhatsApp)
                           </p>
                         </div>
                       </div>
@@ -2376,7 +2381,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             </span>
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
-                            The complete personalized experience — gift-ready, straight out of the box.
+                            Custom product naming &amp; branded sleeve. (Logo collected via phone/WhatsApp)
                           </p>
                         </div>
                       </div>
@@ -2426,7 +2431,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       onClick={() => setModalStep(3)}
                       className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
                     >
-                      <span>Next: Personalize Card</span>
+                      <span>Next: Personalize Order</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -2434,14 +2439,14 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               </>
             )}
 
-            {/* ── STEP 3: WELCOME & THANK-YOU KIT PERSONALIZATION (SENDER, RECEIVER, 50-60 WORD MESSAGE) ── */}
+            {/* ── STEP 3: ORDER PERSONALIZATION (CARD MESSAGE, ENGRAVING & CUSTOM BRANDING) ── */}
             {modalStep === 3 && (
               <>
                 {/* Step 3 Header: Slim Dark Brand Green */}
                 <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
                   <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
                     <span>💌</span>
-                    <span>Personalize Card Message</span>
+                    <span>Personalize Order &amp; Customizations</span>
                   </h2>
                   <button
                     type="button"
@@ -2453,103 +2458,208 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   </button>
                 </div>
 
-                {/* Step 3 Body: Form Inputs for Sender, Receiver, and 50-60 words Message */}
+                {/* Step 3 Body: Form Inputs for Card, Engraving, and Custom Product Name */}
                 <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 bg-slate-50/50">
-                  {/* Context notice */}
-                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
-                    <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                      <FileText className="w-3.5 h-3.5" />
+                  {/* Section 1: Kit Card Message (Tier 1+) */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                      <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <FileText className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-bold text-emerald-950 block">
+                          Tier 1 Starter Perk (Included in all {qty} {unitLabelPlural}):
+                        </span>
+                        <span className="text-[11px] text-emerald-800">
+                          Custom printed plantable seed paper or kraft story card inside each gift box.
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="font-bold text-emerald-950 block">
-                        Included in every set ({qty} {unitLabelPlural}):
-                      </span>
-                      <span className="text-[11px] text-emerald-800">
-                        Custom printed plantable seed paper or kraft story card inside each gift box.
-                      </span>
+
+                    {/* Input 1: Sender Name */}
+                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-brand-700" />
+                          <span>Sender Name / Organization (From)</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        placeholder="e.g. Acme Corp Leadership Team / Rajesh Sharma"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Input 2: Receiver Name */}
+                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                      <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-brand-700" />
+                          <span>Receiver Name / Recipient Group (To)</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={receiverName}
+                        onChange={(e) => setReceiverName(e.target.value)}
+                        placeholder="e.g. Valued Partner / Jane Smith / Team Member"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+                    </div>
+
+                    {/* Input 3: Gift Message with 50-60 Word Counter */}
+                    <div className="space-y-2 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                      {(() => {
+                        const messageWordCount = giftMessage.trim()
+                          ? giftMessage.trim().split(/\s+/).filter(Boolean).length
+                          : 0;
+
+                        return (
+                          <>
+                            <div className="flex items-center justify-between flex-wrap gap-1.5">
+                              <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                                <FileText className="w-3.5 h-3.5 text-brand-700" />
+                                <span>Card Message (50–60 words)</span>
+                              </label>
+                              <span
+                                className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${
+                                  messageWordCount >= 50 && messageWordCount <= 60
+                                    ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                    : messageWordCount > 60
+                                    ? "bg-amber-100 text-amber-900 border-amber-300"
+                                    : "bg-slate-100 text-slate-600 border-slate-200"
+                                }`}
+                              >
+                                {messageWordCount >= 50 && messageWordCount <= 60 ? (
+                                  <span>✓ {messageWordCount} / 60 words (Target met!)</span>
+                                ) : messageWordCount > 60 ? (
+                                  <span>⚠ {messageWordCount} words ({messageWordCount - 60} words over target)</span>
+                                ) : (
+                                  <span>{messageWordCount} / 60 words ({Math.max(0, 50 - messageWordCount)} more for 50)</span>
+                                )}
+                              </span>
+                            </div>
+
+                            <textarea
+                              rows={4}
+                              value={giftMessage}
+                              onChange={(e) => setGiftMessage(e.target.value)}
+                              placeholder="Write your personalized 50 to 60 word greeting or thank-you message to print on the kit card..."
+                              className="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all resize-none font-medium leading-relaxed"
+                            />
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
 
-                  {/* Input 1: Sender Name */}
-                  <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
-                    <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <Building2 className="w-3.5 h-3.5 text-brand-700" />
-                        <span>Sender Name / Organization (From)</span>
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={senderName}
-                      onChange={(e) => setSenderName(e.target.value)}
-                      placeholder="e.g. Acme Corp Leadership Team / Rajesh Sharma"
-                      className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
-                    />
-                  </div>
-
-                  {/* Input 2: Receiver Name */}
-                  <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
-                    <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-brand-700" />
-                        <span>Receiver Name / Recipient Group (To)</span>
-                      </span>
-                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={receiverName}
-                      onChange={(e) => setReceiverName(e.target.value)}
-                      placeholder="e.g. Valued Partner / Jane Smith / Team Member"
-                      className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
-                    />
-                  </div>
-
-                  {/* Input 3: Gift Message with 50-60 Word Counter & Quick Presets */}
-                  <div className="space-y-2 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
-                    {(() => {
-                      const messageWordCount = giftMessage.trim()
-                        ? giftMessage.trim().split(/\s+/).filter(Boolean).length
-                        : 0;
-
-                      return (
-                        <>
-                          <div className="flex items-center justify-between flex-wrap gap-1.5">
-                            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                              <FileText className="w-3.5 h-3.5 text-brand-700" />
-                              <span>Card Message (50–60 words)</span>
-                            </label>
-                            <span
-                              className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${
-                                messageWordCount >= 50 && messageWordCount <= 60
-                                  ? "bg-emerald-100 text-emerald-900 border-emerald-300"
-                                  : messageWordCount > 60
-                                  ? "bg-amber-100 text-amber-900 border-amber-300"
-                                  : "bg-slate-100 text-slate-600 border-slate-200"
-                              }`}
-                            >
-                              {messageWordCount >= 50 && messageWordCount <= 60 ? (
-                                <span>✓ {messageWordCount} / 60 words (Target met!)</span>
-                              ) : messageWordCount > 60 ? (
-                                <span>⚠ {messageWordCount} words ({messageWordCount - 60} words over target)</span>
-                              ) : (
-                                <span>{messageWordCount} / 60 words ({Math.max(0, 50 - messageWordCount)} more for 50)</span>
-                              )}
-                            </span>
+                  {/* Section 2: Tier 2 Product Name Engraving */}
+                  {activeTierObj.tierNumber >= 2 ? (
+                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-emerald-300 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-brand-700" />
+                          <span>Name / Text to Engrave on Product</span>
+                        </label>
+                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          Tier 2 Perk ✨
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 leading-snug">
+                        Enter recipient individual name(s), comma-separated list, or text to be laser engraved on each product:
+                      </p>
+                      <input
+                        type="text"
+                        value={engravingName}
+                        onChange={(e) => setEngravingName(e.target.value)}
+                        placeholder="e.g. John Doe, Sarah Smith, Alex Wong / Company Tagline"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 text-xs space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0">
+                            <Lock className="w-3.5 h-3.5" />
                           </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-slate-700">Product Name Laser Engraving</h4>
+                            <p className="text-[11px] text-slate-500">Unlocked at 50+ sets (Tier 2)</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(50)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3 text-brand-600" />
+                          <span>Unlock (50 sets)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
-                          <textarea
-                            rows={4}
-                            value={giftMessage}
-                            onChange={(e) => setGiftMessage(e.target.value)}
-                            placeholder="Write your personalized 50 to 60 word greeting or thank-you message to print on the kit card..."
-                            className="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all resize-none font-medium leading-relaxed"
-                          />
-                        </>
-                      );
-                    })()}
-                  </div>
+                  {/* Section 3: Tier 3 Custom Product Name & Logo Note */}
+                  {activeTierObj.tierNumber >= 3 ? (
+                    <div className="space-y-2.5 bg-gradient-to-r from-amber-50/40 via-white to-emerald-50/30 p-3.5 rounded-2xl border border-amber-300 shadow-2xs">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                          <Crown className="w-3.5 h-3.5 text-amber-600" />
+                          <span>Custom Product Name for Box Sleeve</span>
+                        </label>
+                        <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                          Tier 3 VIP 👑
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-snug">
+                        Give your gift sets a custom edition name or branded collection title for the box sleeve:
+                      </p>
+                      <input
+                        type="text"
+                        value={customProductName}
+                        onChange={(e) => setCustomProductName(e.target.value)}
+                        placeholder="e.g. Acme Leadership Onboarding Set 2026 / The Eco-Executive Kit"
+                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-white border border-amber-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                      />
+
+                      {/* Logo Collection Notification Callout */}
+                      <div className="p-3 rounded-xl bg-amber-50/90 border border-amber-200 flex items-start gap-2.5 text-xs">
+                        <PhoneCall className="w-4 h-4 text-amber-800 flex-shrink-0 mt-0.5" />
+                        <div className="text-[11px] text-amber-950 leading-relaxed">
+                          <span className="font-bold text-amber-900 block">Company Logo / Vector Artwork:</span>
+                          In case of logo branding, our B2B team will contact you shortly via phone / WhatsApp after quote submission to collect your high-res logo file and share a digital 3D mockup for your approval.
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-amber-200/80 bg-amber-50/30 text-xs space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                            <Lock className="w-3.5 h-3.5" />
+                          </div>
+                          <div>
+                            <h4 className="text-xs font-bold text-amber-950">Custom Product Name &amp; Branded Box Sleeve / Logo</h4>
+                            <p className="text-[11px] text-amber-900/80">Unlocked at 100+ sets (Tier 3 VIP)</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(100)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Crown className="w-3 h-3" />
+                          <span>Unlock (100 sets)</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Step 3 Footer: Order Summary & Review Basket */}

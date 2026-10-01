@@ -80,7 +80,9 @@ export function QuoteProvider({ children }) {
               packagingOption: product.packagingOption ?? x.packagingOption,
               senderName: product.senderName ?? x.senderName,
               receiverName: product.receiverName ?? x.receiverName,
-              giftMessage: product.giftMessage ?? x.giftMessage
+              giftMessage: product.giftMessage ?? x.giftMessage,
+              engravingName: product.engravingName ?? x.engravingName,
+              customProductName: product.customProductName ?? x.customProductName
             }
           : x
       );
@@ -113,6 +115,8 @@ export function QuoteProvider({ children }) {
           senderName: product.senderName || "",
           receiverName: product.receiverName || "",
           giftMessage: product.giftMessage || "",
+          engravingName: product.engravingName || "",
+          customProductName: product.customProductName || "",
           activeTierTitle: tierTitle,
           activeTierNumber: tierNum
         }
