@@ -763,7 +763,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const handleAddPairToQuote = (rel) => {
     if (!add) return;
     const relQty = getPairQty(rel.slug);
-    const originalPrice = rel.price || 0;
+    const originalPrice =
+      rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
     const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
 
     const pairPayload = {
@@ -2014,7 +2015,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               maxWidth: "520px",
               maxHeight: "90vh",
               background: "#ffffff",
-              borderRadius: "24px",
+              borderRadius: "28px",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06)",
               display: "flex",
               flexDirection: "column",
@@ -2022,196 +2023,206 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               animation: "gfModalBox 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards"
             }}
           >
-            {/* ── STEP 1: ADD-ONS & FREQUENTLY ORDERED TOGETHER ── */}
-            {modalStep === 1 && (
-              <>
-                {/* Step 1 Header: Slim Dark Brand Green */}
-                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Sparkles className="w-4 h-4 text-yellow-300 flex-shrink-0" />
-                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">
-                      Frequently Ordered With This Set
-                    </h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
-                    aria-label="Close"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+            {/* ── STEP 1: BUNDLE OFFER (MATCHING USER SCREENSHOT DESIGN) ── */}
+            {modalStep === 1 && (() => {
+              const primaryAddon = relatedProducts && relatedProducts.length > 0 ? relatedProducts[0] : null;
+              const hasAddons = relatedProducts && relatedProducts.length > 0;
+              const anyItemAdded = Object.values(pairAdded).some(Boolean);
+              const primaryIsAdded = primaryAddon ? Boolean(pairAdded[primaryAddon.slug]) : false;
 
-                {/* Step 1 Body: Add-ons list */}
-                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-3 bg-slate-50/50">
-                  {/* Order added confirmation strip */}
-                  <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-5 h-5 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3 h-3 stroke-[3]" />
+              // Price math
+              const addonOrigPrice = primaryAddon
+                ? (primaryAddon.price || primaryAddon.discountedPrice || primaryAddon.originalPrice || primaryAddon.retailPrice || 0)
+                : 0;
+              const addonDiscPrice = addonOrigPrice > 0 ? Math.round(addonOrigPrice * 0.95) : 0;
+              const addonSavings = addonOrigPrice > 0 ? (addonOrigPrice - addonDiscPrice) : 0;
+
+              // Extra 5% bundle discount calculation
+              const extra5PctDiscountAmount = Math.round(grossWholesaleSubtotal * 0.05) + (primaryIsAdded ? addonSavings : addonSavings);
+              const totalDisplaySubtotal = primaryIsAdded ? (estimatedSubtotal + addonDiscPrice) : estimatedSubtotal;
+
+              return (
+                <div className="p-5 sm:p-7 space-y-4 bg-white overflow-y-auto flex-1">
+                  {/* Top row: Bundle Offer Pill & Close Button */}
+                  <div className="flex items-center justify-between">
+                    <div className="inline-flex items-center gap-2 text-[#9b6f38] text-xs sm:text-[13px] font-semibold tracking-wide">
+                      <span className="w-5 h-[2px] bg-[#9b6f38] rounded-full inline-block"></span>
+                      <span>Bundle offer</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="w-8 h-8 rounded-full border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer"
+                      aria-label="Close"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Headline & Subtitle */}
+                  <div className="space-y-1.5 pt-0.5">
+                    <h2 className="text-2xl sm:text-[26px] font-bold text-[#0f3428] tracking-tight leading-tight">
+                      Enjoy an Extra 5% Savings
+                    </h2>
+                    <p className="text-slate-500 text-xs sm:text-[13px] leading-relaxed">
+                      You&apos;re already saving {activeTierDiscountPct}% on your cart. Add {primaryAddon ? (primaryAddon.name.match(/^[aeiou]/i) ? `an ${primaryAddon.name}` : `a ${primaryAddon.name}`) : "a companion product"} and{" "}
+                      <strong className="font-semibold text-slate-800">save 5% more on your overall order.</strong>
+                    </p>
+                  </div>
+
+                  {/* Progress Bar (10% unlocked -> 15% with bundle) */}
+                  <div className="pt-2 pb-1 space-y-2">
+                    <div className="relative flex items-center">
+                      <div className="h-1 bg-slate-100 w-full rounded-full overflow-hidden">
+                        <div className={`h-full bg-[#1b5e3f] transition-all duration-300 ${primaryIsAdded || anyItemAdded ? "w-full" : "w-[4%]"}`} />
+                      </div>
+                      {/* Left Dot */}
+                      <div className="absolute left-0 w-3 h-3 rounded-full bg-[#1b5e3f] ring-4 ring-[#1b5e3f]/20 -translate-x-0.5" />
+                      {/* Right Dot */}
+                      <div className={`absolute right-0 w-3 h-3 rounded-full transition-all duration-300 translate-x-0.5 ${
+                        primaryIsAdded || anyItemAdded
+                          ? "bg-[#1b5e3f] ring-4 ring-[#1b5e3f]/20"
+                          : "border-2 border-slate-300 bg-white"
+                      }`} />
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-medium">
+                      <span className="text-[#1b5e3f] font-semibold text-[11.5px]">
+                        {activeTierDiscountPct}% off • unlocked
                       </span>
-                      <span className="font-bold text-emerald-950 truncate">
-                        {qty} {unitLabelPlural} added to basket!
+                      <span className={`text-[11.5px] transition-colors ${primaryIsAdded || anyItemAdded ? "text-[#1b5e3f] font-bold" : "text-slate-400 font-normal"}`}>
+                        {activeTierDiscountPct + 5}% off with bundle
                       </span>
                     </div>
-                    <span className="font-extrabold text-slate-900 flex-shrink-0">
-                      ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                    </span>
                   </div>
 
-                  {/* Add-ons list */}
-                  {relatedProducts && relatedProducts.length > 0 ? (
-                    <div className="space-y-2.5">
-                      {relatedProducts.slice(0, 4).map((rel) => {
-                        const itemQty = getPairQty(rel.slug);
-                        const isItemAdded = Boolean(pairAdded[rel.slug]);
-                        const originalPrice = rel.price || 0;
-                        const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
-                        const savingsPerUnit = originalPrice > 0 ? originalPrice - discountedPrice : 0;
+                  {/* Add-on Product Card(s) */}
+                  {hasAddons ? (
+                    <div className="space-y-2.5 pt-1">
+                      {relatedProducts.slice(0, 2).map((rel) => {
+                        const isAdded = Boolean(pairAdded[rel.slug]);
+                        const origP = rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
+                        const discP = origP > 0 ? Math.round(origP * 0.95) : 0;
 
                         return (
                           <div
                             key={rel.slug}
-                            className="flex items-center justify-between gap-3 bg-white rounded-2xl p-3 border border-slate-200 hover:border-brand-400 hover:shadow-xs transition-all"
+                            className={`rounded-2xl border p-3 sm:p-3.5 flex items-center justify-between gap-3 transition-all ${
+                              isAdded
+                                ? "border-emerald-500 bg-emerald-50/20 shadow-xs"
+                                : "border-slate-200/90 bg-[#fafbfc] hover:border-slate-300"
+                            }`}
                           >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                            <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
                                 <img
                                   src={rel.image || "/images/gift-set-classic.jpg"}
                                   alt={rel.name}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-contain"
                                   onError={(e) => {
                                     e.currentTarget.src = "/images/gift-set-classic.jpg";
                                   }}
                                 />
-                                <span className="absolute top-1 left-1 bg-brand-700 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-2xs">
-                                  +5% OFF
-                                </span>
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h4 className="text-xs font-bold text-slate-900 truncate leading-snug">
+                                <h4 className="text-sm font-semibold text-slate-900 truncate leading-snug">
                                   {rel.name}
                                 </h4>
                                 <div className="flex items-baseline gap-1.5 mt-0.5">
-                                  <span className="text-xs font-black text-brand-800">
-                                    ₹{discountedPrice || originalPrice}
+                                  <span className="text-sm font-bold text-slate-900">
+                                    ₹{discP.toLocaleString("en-IN")}
                                   </span>
-                                  {originalPrice > 0 && discountedPrice < originalPrice && (
-                                    <span className="text-[10px] text-slate-400 line-through">
-                                      ₹{originalPrice}
+                                  {origP > 0 && discP < origP && (
+                                    <span className="text-xs text-slate-400 line-through">
+                                      ₹{origP.toLocaleString("en-IN")}
                                     </span>
                                   )}
-                                  <span className="text-[10px] text-slate-500 font-medium">
-                                    /{rel.unit || "set"}
-                                  </span>
                                 </div>
-                                {savingsPerUnit > 0 && (
-                                  <span className="text-[9.5px] font-bold text-brand-700 block mt-0.5">
-                                    Save ₹{(savingsPerUnit * itemQty).toLocaleString("en-IN")} on {itemQty}
-                                  </span>
-                                )}
+                                <span className="inline-block mt-1 text-[10px] font-medium text-[#8c5e28] border border-[#dfc3a1] bg-[#fefbf7] px-2 py-0.5 rounded-full">
+                                  +5% more off on all items
+                                </span>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              {/* Quantity Stepper */}
-                              <div className="h-8 inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-                                <button
-                                  type="button"
-                                  onClick={() => handlePairQtyChange(rel.slug, itemQty - 1)}
-                                  disabled={itemQty <= 1}
-                                  className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed font-bold cursor-pointer transition-all"
-                                  title="Decrease quantity"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </button>
-                                <input
-                                  type="text"
-                                  inputMode="numeric"
-                                  pattern="[0-9]*"
-                                  value={itemQty}
-                                  onChange={(e) => {
-                                    const cleaned = e.target.value.replace(/\D/g, "");
-                                    handlePairQtyChange(rel.slug, cleaned);
-                                  }}
-                                  className="w-7 text-center text-xs font-bold text-slate-800 bg-transparent outline-none select-all"
-                                  aria-label="Quantity"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handlePairQtyChange(rel.slug, itemQty + 1)}
-                                  className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white font-bold cursor-pointer transition-all"
-                                  title="Increase quantity"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </button>
-                              </div>
-
-                              {/* Add Button */}
-                              <button
-                                type="button"
-                                onClick={() => handleAddPairToQuote(rel)}
-                                className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow-xs ${
-                                  isItemAdded
-                                    ? "bg-brand-800 text-white"
-                                    : "bg-brand-700 hover:bg-brand-600 text-white"
-                                }`}
-                              >
-                                {isItemAdded ? (
-                                  <>
-                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                    <span>Added</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                                    <span>Add</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleAddPairToQuote(rel)}
+                              className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all flex-shrink-0 ${
+                                isAdded
+                                  ? "bg-[#1b5e3f] text-white shadow-xs"
+                                  : "border border-[#1b5e3f] text-[#1b5e3f] hover:bg-[#1b5e3f] hover:text-white"
+                              }`}
+                              aria-label={isAdded ? "Added to order" : `Add ${rel.name}`}
+                            >
+                              {isAdded ? (
+                                <Check className="w-4 h-4 stroke-[3]" />
+                              ) : (
+                                <Plus className="w-4 h-4 stroke-[2.5]" />
+                              )}
+                            </button>
                           </div>
                         );
                       })}
                     </div>
-                  ) : (
-                    <div className="text-center py-6 text-slate-500 bg-white rounded-2xl border border-slate-200">
-                      <Gift className="w-8 h-8 mx-auto mb-1 text-slate-400" />
-                      <p className="text-xs font-semibold">Bulk Dispatch Ready</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">Proceed to check your unlocked volume rewards.</p>
-                    </div>
-                  )}
-                </div>
+                  ) : null}
 
-                {/* Step 1 Footer: Skip & Next to Perks */}
-                <div className="flex-shrink-0 px-5 py-3.5 border-t border-slate-200 bg-white space-y-2.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 text-[11px] font-medium">Order Subtotal:</span>
-                    <span className="font-extrabold text-slate-900">
-                      ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                    </span>
+                  {/* Pricing Breakdown Rows */}
+                  <div className="space-y-2 pt-2 text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Your items ({activeTierDiscountPct}% off each)</span>
+                      <span className="font-medium text-slate-900">
+                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {primaryAddon && (
+                      <div className="flex items-center justify-between text-slate-600">
+                        <span>{primaryAddon.name}</span>
+                        <span className="font-medium text-slate-900">
+                          ₹{addonOrigPrice.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between text-[#1b5e3f] font-semibold">
+                      <span>Extra 5% bundle discount</span>
+                      <span>-₹{extra5PctDiscountAmount.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-2 flex items-baseline justify-between">
+                      <span className="font-bold text-slate-900 text-sm">Subtotal</span>
+                      <span className="text-2xl sm:text-[26px] font-extrabold text-[#0d3b2e] tracking-tight">
+                        ₹{totalDisplaySubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2.5">
+
+                  {/* Bottom Action CTAs */}
+                  <div className="space-y-2 pt-2">
                     <button
                       type="button"
-                      onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
+                      onClick={() => {
+                        if (primaryAddon && !pairAdded[primaryAddon.slug]) {
+                          handleAddPairToQuote(primaryAddon);
+                        }
+                        setModalStep(2);
+                      }}
+                      className="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-[#1b5e3f] hover:bg-[#154c32] shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2"
                     >
-                      Skip Add-ons
+                      <span>
+                        Add {primaryAddon ? primaryAddon.name.toLowerCase() : "companion"} &amp; get {activeTierDiscountPct + 5}% off
+                      </span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
+                      className="w-full py-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-center"
                     >
-                      <span>Next: Unlocked Perks</span>
-                      <ArrowRight className="w-4 h-4" />
+                      No thanks, continue
                     </button>
                   </div>
                 </div>
-              </>
-            )}
+              );
+            })()}
 
             {/* ── STEP 2: CELEBRATORY UNLOCKED TIER PERKS ── */}
             {modalStep === 2 && (
@@ -2527,13 +2538,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                 <span>Card Message (50–60 words)</span>
                               </label>
                               <span
-                                className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${
-                                  messageWordCount >= 50 && messageWordCount <= 60
-                                    ? "bg-emerald-100 text-emerald-900 border-emerald-300"
-                                    : messageWordCount > 60
+                                className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${messageWordCount >= 50 && messageWordCount <= 60
+                                  ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                  : messageWordCount > 60
                                     ? "bg-amber-100 text-amber-900 border-amber-300"
                                     : "bg-slate-100 text-slate-600 border-slate-200"
-                                }`}
+                                  }`}
                               >
                                 {messageWordCount >= 50 && messageWordCount <= 60 ? (
                                   <span>✓ {messageWordCount} / 60 words (Target met!)</span>
