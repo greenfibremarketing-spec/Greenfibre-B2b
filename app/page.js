@@ -3,7 +3,7 @@ import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
 import HeroSwiper from "@/components/HeroSwiper";
 import BottleModelViewer from "@/components/BottleModelViewer";
-import { categories, getProducts } from "@/lib/products";
+import { categories, getProducts, matchesProductCategory } from "@/lib/products";
 
 export default async function Home() {
   const allProducts = await getProducts();
@@ -40,13 +40,8 @@ export default async function Home() {
           {categories
             .filter((c) => c !== "All Products")
             .map((c) => {
-              const count = allProducts.filter((p) => {
-                if (p.category?.toLowerCase() === c.toLowerCase() || p.subCategory?.toLowerCase() === c.toLowerCase()) return true;
-                if (Array.isArray(p.occasions) && p.occasions.some((o) => o.toLowerCase().includes(c.toLowerCase()))) return true;
-                if (Array.isArray(p.tags) && p.tags.some((t) => t.toLowerCase().includes(c.toLowerCase()))) return true;
-                if (c === "Gifting" && (p.category === "Gifting" || p.category?.toLowerCase().includes("gift"))) return true;
-                return false;
-              }).length;
+              const count = allProducts.filter((p) => matchesProductCategory(p, c)).length;
+
               return (
                 <Link
                   key={c}

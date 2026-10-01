@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Menu,
   X,
@@ -71,8 +71,9 @@ const giftingCategories = [
   }
 ];
 
-export default function Navbar() {
+function NavbarInner() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [giftingOpen, setGiftingOpen] = useState(false);
   const [mobileGiftingOpen, setMobileGiftingOpen] = useState(false);
@@ -82,7 +83,7 @@ export default function Navbar() {
   useEffect(() => {
     setMobileMenuOpen(false);
     setGiftingOpen(false);
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -111,10 +112,19 @@ export default function Navbar() {
     return null;
   }
 
+  const categoryParam = searchParams ? searchParams.get("category") || "" : "";
+  const typeParam = searchParams ? searchParams.get("type") || "" : "";
+  const catLower = categoryParam.toLowerCase();
+
+  const isGiftingCategory =
+    catLower.includes("gift") ||
+    Boolean(typeParam) ||
+    ["corporate", "anniversary", "birthday", "institutional", "housewarming", "house warming", "wedding"].includes(catLower);
+
   const isAllProductsActive =
-    pathname.startsWith("/products") && !pathname.includes("category=");
+    pathname.startsWith("/products") && !isGiftingCategory;
   const isGiftingActive =
-    pathname.includes("category=Gifting") || pathname.includes("category=Gift");
+    pathname.startsWith("/products") && isGiftingCategory;
   const isStoryActive = pathname === "/story";
 
   return (
@@ -179,7 +189,7 @@ export default function Navbar() {
 
                 {/* Dropdown */}
                 <div
-                  className={`absolute top-full left-0 mt-2 w-[420px] transition-all duration-300 ease-out origin-top-left ${giftingOpen
+                  className={`absolute top-full left-0 mt-2 w-72 transition-all duration-200 ease-out origin-top-left z-50 ${giftingOpen
                       ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
                       : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
                     }`}
@@ -187,55 +197,57 @@ export default function Navbar() {
                   {/* Invisible hover bridge */}
                   <div className="absolute -top-2 left-0 right-0 h-2" />
                   <div
-                    className="bg-white rounded-2xl border border-slate-200/80 overflow-hidden"
-                    style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)" }}
+                    className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xl shadow-slate-900/10"
                   >
                     {/* Dropdown header */}
-                    <div className="px-4 pt-4 pb-3 border-b border-slate-100 bg-gradient-to-r from-brand-50 to-emerald-50/50">
+                    <div className="px-3.5 py-3 border-b border-slate-100 bg-gradient-to-r from-brand-50/70 to-emerald-50/40">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center shadow-xs">
                           <Gift className="w-3.5 h-3.5 text-white" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-900">Gifting Occasions</p>
-                          <p className="text-[10px] text-slate-500">Premium eco gifts for every moment</p>
+                          <p className="text-xs font-bold text-slate-900 leading-tight">Gifting Occasions</p>
+                          <p className="text-[10px] text-slate-500 leading-tight">Eco gifts for every moment</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Grid */}
-                    <div className="p-3 grid grid-cols-2 gap-1.5">
+                    {/* Straight Vertical List */}
+                    <div className="p-1.5 space-y-0.5">
                       {giftingCategories.map((cat) => {
                         const Icon = cat.icon;
                         return (
                           <Link
                             key={cat.label}
                             href={cat.href}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-150 group border border-transparent hover:border-slate-100"
+                            className="flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-50 transition-all duration-150 group"
                           >
-                            <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110 ${cat.color}`}
-                            >
-                              <Icon className="w-4 h-4" />
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105 ${cat.color}`}
+                              >
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-semibold text-slate-800 group-hover:text-brand-700 transition-colors leading-tight">
+                                  {cat.label}
+                                </p>
+                                <p className="text-[10px] text-slate-400 leading-tight mt-0.5">
+                                  {cat.desc}
+                                </p>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-semibold text-slate-800 group-hover:text-brand-700 transition-colors leading-tight">
-                                {cat.label}
-                              </p>
-                              <p className="text-[10px] text-slate-400 leading-tight mt-0.5 truncate">
-                                {cat.desc}
-                              </p>
-                            </div>
+                            <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-600 group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100 flex-shrink-0 ml-1.5" />
                           </Link>
                         );
                       })}
                     </div>
 
                     {/* Footer CTA */}
-                    <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/60">
+                    <div className="p-2 border-t border-slate-100 bg-slate-50/50">
                       <Link
                         href="/products?category=Gifting"
-                        className="flex items-center justify-between text-xs font-semibold text-brand-700 hover:text-brand-900 transition-colors group"
+                        className="flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-brand-700 hover:text-brand-900 hover:bg-brand-50/70 transition-colors group"
                       >
                         <span>Browse all gifting products</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -448,5 +460,14 @@ export default function Navbar() {
     </>
   );
 }
+
+export default function Navbar() {
+  return (
+    <Suspense fallback={<div className="h-18 sm:h-20 bg-white border-b border-slate-200" />}>
+      <NavbarInner />
+    </Suspense>
+  );
+}
+
 
 
