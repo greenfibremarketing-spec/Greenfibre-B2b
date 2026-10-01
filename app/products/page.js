@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Card from "@/components/Card";
+import HeroSwiper from "@/components/HeroSwiper";
 import { categories, getProducts, normalizeContextKey } from "@/lib/products";
 import { Search } from "lucide-react";
 
@@ -66,12 +67,18 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
 
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 pb-12 sm:pb-16 space-y-6">
-      {/* Page Header */}
-      <div className="space-y-2">
-        <div className="badge-green">
-          Enterprise Catalog
-        </div>
+    <div className="w-full max-w-full overflow-hidden pb-12 sm:pb-16 space-y-6">
+      {/* Full Width Hero Swiper (PPT Slides Banner) */}
+      <section className="w-full max-w-full overflow-hidden">
+        <HeroSwiper />
+      </section>
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* Page Header */}
+        <div className="space-y-2">
+          <div className="badge-green">
+            Enterprise Catalog
+          </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Wholesale Products &amp; Corporate Gift Sets
         </h1>
@@ -194,6 +201,7 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
         >
           Contact Our Engineering Desk →
         </Link>
+      </div>
       </div>
     </div>
   );

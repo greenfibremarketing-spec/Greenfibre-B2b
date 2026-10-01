@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { AddToQuote } from "./Quote";
 
@@ -43,6 +45,23 @@ export default function Card({ p, context }) {
               src={p.image}
               alt={p.name}
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                const text = `${p.name || ""} ${p.category || ""} ${p.subCategory || ""}`.toLowerCase();
+                if (text.includes("mug") || text.includes("cup") || text.includes("drink")) {
+                  e.currentTarget.src = "/images/coffee-mug.jpg";
+                } else if (text.includes("bottle") || text.includes("flask") || text.includes("tumbler")) {
+                  e.currentTarget.src = "/images/thermal-bottle.jpg";
+                } else if (text.includes("bowl") || text.includes("casserole") || text.includes("dining")) {
+                  e.currentTarget.src = "/images/dining-bowl-set-5.jpg";
+                } else if (text.includes("tray") || text.includes("basket") || text.includes("storage")) {
+                  e.currentTarget.src = "/images/storage-basket.jpg";
+                } else if (text.includes("bento") || text.includes("box") || text.includes("lunch")) {
+                  e.currentTarget.src = "/images/bento-box.jpg";
+                } else {
+                  e.currentTarget.src = "/images/gift-set-classic.jpg";
+                }
+              }}
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out"
             />
           ) : (

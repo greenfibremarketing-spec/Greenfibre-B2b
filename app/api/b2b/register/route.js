@@ -29,6 +29,7 @@ export async function POST(req) {
     const businessType = body.businessType || "Corporate Gifting & HR";
     const gstin = (body.gstin || "").trim().toUpperCase();
     const password = body.password || "";
+    const otp = String(body.otp || "").trim();
 
     if (!fullName || !companyName || !email || !password) {
       return NextResponse.json(
@@ -37,8 +38,16 @@ export async function POST(req) {
       );
     }
 
+    if (!otp) {
+      return NextResponse.json(
+        { success: false, message: "Verification code (OTP) is required to complete registration." },
+        { status: 400 }
+      );
+    }
+
     const database = await db();
     const users = database.collection("b2b_users");
+    const otps = database.collection("b2b_otps");
 
     // Check if email already exists
     const existing = await users.findOne({ email });
@@ -46,6 +55,29 @@ export async function POST(req) {
       return NextResponse.json(
         { success: false, message: "An account with this email already exists" },
         { status: 409 }
+      );
+    }
+
+    // Verify OTP
+    const otpRecord = await otps.findOne({ email, type: "registration" });
+    if (!otpRecord) {
+      return NextResponse.json(
+        { success: false, message: "No verification code found. Please request a verification code." },
+        { status: 400 }
+      );
+    }
+
+    if (new Date() > new Date(otpRecord.expiresAt)) {
+      return NextResponse.json(
+        { success: false, message: "Verification code has expired. Please request a new code." },
+        { status: 400 }
+      );
+    }
+
+    if (otpRecord.otp !== otp && !otpRecord.verified) {
+      return NextResponse.json(
+        { success: false, message: "Invalid verification code. Please check and try again." },
+        { status: 400 }
       );
     }
 
@@ -61,11 +93,15 @@ export async function POST(req) {
       gstin,
       password: hashedPassword,
       role: "b2b_client",
+      isEmailVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const result = await users.insertOne(newUser);
+
+    // Delete used OTP
+    await otps.deleteOne({ _id: otpRecord._id });
 
     const safeUser = {
       _id: result.insertedId.toString(),

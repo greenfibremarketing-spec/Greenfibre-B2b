@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "./AuthContext";
 import {
   Mail,
@@ -16,9 +16,9 @@ import {
   FileText,
   CheckCircle2,
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   Sprout,
-  Sparkles,
   ChevronDown,
   Gift,
   Hotel,
@@ -27,7 +27,9 @@ import {
   Leaf,
   Check,
   AlertCircle,
-  Loader2
+  Loader2,
+  RotateCcw,
+  KeyRound
 } from "lucide-react";
 
 const businessSegments = [
@@ -74,9 +76,7 @@ const businessSegments = [
 function cleanEmailString(val) {
   if (!val) return "";
   let clean = String(val).trim().toLowerCase();
-  // Auto-correct comma before domain extension (e.g. puneetwork12@gmail,com -> puneetwork12@gmail.com)
   clean = clean.replace(/,([a-zA-Z0-9-]+)/g, ".$1");
-  // Replace any remaining accidental commas with dots
   clean = clean.replace(/,/g, ".");
   return clean;
 }
@@ -89,21 +89,81 @@ function isValidEmailAddress(val) {
 
 export default function AuthForm({ defaultMode = "signin" }) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialMode = searchParams?.get("mode") || defaultMode;
+
+  // Determine current mode from path or params or defaultMode prop
+  const getResolvedMode = () => {
+    if (pathname === "/signup") return "signup";
+    if (pathname === "/forgot-password") return "forgot";
+    if (pathname === "/login") return "signin";
+    return searchParams?.get("mode") || defaultMode;
+  };
+
+  const initialMode = getResolvedMode();
   const redirectTarget = searchParams?.get("redirect") || "/";
 
-  const { login, register, isAuthenticated, user } = useAuth() || {};
+  const { login, register, sendOtp, resetPassword, isAuthenticated, user } = useAuth() || {};
 
-  const [mode, setMode] = useState(initialMode); // "signin" | "signup"
+  const [mode, setMode] = useState(initialMode); // "signin" | "signup" | "forgot"
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [showForgotConfirmPassword, setShowForgotConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [devNotice, setDevNotice] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  // OTP & Multi-step state
+  const [signupStep, setSignupStep] = useState(1); // 1 = Details, 2 = Enter OTP
+  const [signUpOtp, setSignUpOtp] = useState("");
+  const [forgotStep, setForgotStep] = useState(1); // 1 = Email, 2 = OTP + New Password
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Sync mode whenever URL route changes
+  useEffect(() => {
+    const target = getResolvedMode();
+    if (target && target !== mode) {
+      setMode(target);
+      setSignupStep(1);
+      setForgotStep(1);
+      setErrorMessage("");
+      setSuccessMessage("");
+      setDevNotice("");
+    }
+  }, [pathname, defaultMode, searchParams]);
+
+  // Clean switcher helper that synchronizes UI mode and URL path
+  const switchMode = (newMode, carriedEmail = null) => {
+    setMode(newMode);
+    setSignupStep(1);
+    setForgotStep(1);
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDevNotice("");
+
+    if (carriedEmail) {
+      if (newMode === "signup") {
+        setSignUpData((prev) => ({ ...prev, email: carriedEmail }));
+      } else if (newMode === "forgot") {
+        setForgotData((prev) => ({ ...prev, email: carriedEmail }));
+      } else if (newMode === "signin") {
+        setSignInData((prev) => ({ ...prev, email: carriedEmail }));
+      }
+    }
+
+    if (newMode === "signup" && pathname !== "/signup") {
+      router.push("/signup");
+    } else if (newMode === "signin" && pathname !== "/login") {
+      router.push("/login");
+    } else if (newMode === "forgot" && pathname !== "/forgot-password") {
+      router.push("/forgot-password");
+    }
+  };
 
   // If already logged in, redirect
   useEffect(() => {
@@ -112,6 +172,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
     }
   }, [isAuthenticated, user, isLoading, redirectTarget, router, successMessage]);
 
+  // Dropdown dismiss handlers
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -130,6 +191,15 @@ export default function AuthForm({ defaultMode = "signin" }) {
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  // Resend Countdown Timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const interval = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
   // Sign In Form State
   const [signInData, setSignInData] = useState({
@@ -151,10 +221,22 @@ export default function AuthForm({ defaultMode = "signin" }) {
     agreeTerms: true
   });
 
+  // Forgot Password Form State
+  const [forgotData, setForgotData] = useState({
+    email: "",
+    otp: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
+
+  // -------------------------------------------------------------
+  // SIGN IN SUBMISSION
+  // -------------------------------------------------------------
   const handleSignInSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
+    setDevNotice("");
 
     const cleanEmail = cleanEmailString(signInData.email);
     const password = (signInData.password || "").trim();
@@ -169,13 +251,12 @@ export default function AuthForm({ defaultMode = "signin" }) {
       return;
     }
 
-    // Auto-update state with sanitized email
     setSignInData((prev) => ({ ...prev, email: cleanEmail }));
-
     setIsLoading(true);
     setLoadingText("Signing in...");
+
     try {
-      const result = await login({
+      await login({
         email: cleanEmail,
         password: password,
         rememberMe: signInData.rememberMe
@@ -191,10 +272,14 @@ export default function AuthForm({ defaultMode = "signin" }) {
     }
   };
 
-  const handleSignUpSubmit = async (e) => {
+  // -------------------------------------------------------------
+  // SIGN UP: STEP 1 (Send OTP)
+  // -------------------------------------------------------------
+  const handleSendSignUpOtp = async (e) => {
     e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
+    setDevNotice("");
 
     const cleanEmail = cleanEmailString(signUpData.email);
     const fullName = (signUpData.fullName || "").trim();
@@ -228,31 +313,226 @@ export default function AuthForm({ defaultMode = "signin" }) {
       return;
     }
 
-    // Auto-update state with sanitized email
     setSignUpData((prev) => ({ ...prev, email: cleanEmail }));
+    setIsLoading(true);
+    setLoadingText("Sending verification code to your email...");
+
+    try {
+      const res = await sendOtp({
+        email: cleanEmail,
+        type: "registration",
+        fullName
+      });
+
+      setIsLoading(false);
+      setSignupStep(2);
+      setResendCooldown(60);
+      setSuccessMessage(res.message || `Verification code sent to ${cleanEmail}`);
+      if (res.devMode) {
+        setDevNotice("Dev Mode Notice: SMTP credentials are not configured in .env yet. The OTP code was logged to your server console for testing.");
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to send verification code. Please check your email address.");
+      setIsLoading(false);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // SIGN UP: Resend OTP
+  // -------------------------------------------------------------
+  const handleResendSignUpOtp = async () => {
+    if (resendCooldown > 0 || isLoading) return;
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDevNotice("");
+
+    const cleanEmail = cleanEmailString(signUpData.email);
+    setIsLoading(true);
+    setLoadingText("Resending verification code...");
+
+    try {
+      const res = await sendOtp({
+        email: cleanEmail,
+        type: "registration",
+        fullName: signUpData.fullName
+      });
+
+      setIsLoading(false);
+      setResendCooldown(60);
+      setSuccessMessage(`A fresh verification code has been sent to ${cleanEmail}.`);
+      if (res.devMode) {
+        setDevNotice("Dev Mode Notice: SMTP credentials are not configured in .env yet. The OTP code was logged to your server console for testing.");
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to resend verification code.");
+      setIsLoading(false);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // SIGN UP: STEP 2 (Verify OTP & Complete Account Creation)
+  // -------------------------------------------------------------
+  const handleVerifyAndSignUp = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDevNotice("");
+
+    const otp = signUpOtp.trim();
+    if (!otp || otp.length < 6) {
+      setErrorMessage("Please enter the complete 6-digit verification code.");
+      return;
+    }
 
     setIsLoading(true);
-    setLoadingText("Creating account...");
+    setLoadingText("Verifying code and setting up your account...");
+
     try {
-      const result = await register({
-        fullName,
-        full_name: fullName,
-        companyName,
-        email: cleanEmail,
-        phone,
+      await register({
+        fullName: signUpData.fullName.trim(),
+        full_name: signUpData.fullName.trim(),
+        companyName: signUpData.companyName.trim(),
+        email: cleanEmailString(signUpData.email),
+        phone: signUpData.phone.trim(),
         businessType: signUpData.businessType,
         gstin: signUpData.gstin,
-        password,
+        password: signUpData.password,
+        otp: otp,
         rememberMe: true
       });
 
-      setLoadingText("Taking you to Home...");
-      setSuccessMessage("Account created! Taking you to Home...");
+      setLoadingText("Account verified! Taking you to Home...");
+      setSuccessMessage("Account verified and created! Taking you to Home...");
       setTimeout(() => {
         router.push(redirectTarget);
       }, 850);
     } catch (err) {
-      setErrorMessage(err.message || "Failed to create account. Please check your details.");
+      setErrorMessage(err.message || "Verification failed. Please check the code and try again.");
+      setIsLoading(false);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // FORGOT PASSWORD: STEP 1 (Send Reset OTP)
+  // -------------------------------------------------------------
+  const handleSendForgotOtp = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDevNotice("");
+
+    const cleanEmail = cleanEmailString(forgotData.email);
+    if (!cleanEmail) {
+      setErrorMessage("Please enter your registered corporate email.");
+      return;
+    }
+
+    if (!isValidEmailAddress(cleanEmail)) {
+      setErrorMessage("Please enter a valid work email address (e.g. name@company.com).");
+      return;
+    }
+
+    setForgotData((prev) => ({ ...prev, email: cleanEmail }));
+    setIsLoading(true);
+    setLoadingText("Sending reset verification code...");
+
+    try {
+      const res = await sendOtp({
+        email: cleanEmail,
+        type: "forgot_password"
+      });
+
+      setIsLoading(false);
+      setForgotStep(2);
+      setResendCooldown(60);
+      setSuccessMessage(`Password reset code sent to ${cleanEmail}.`);
+      if (res.devMode) {
+        setDevNotice("Dev Mode Notice: SMTP credentials are not configured in .env yet. The OTP code was logged to your server console for testing.");
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Could not send reset code. Please check your email.");
+      setIsLoading(false);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // FORGOT PASSWORD: Resend Reset OTP
+  // -------------------------------------------------------------
+  const handleResendForgotOtp = async () => {
+    if (resendCooldown > 0 || isLoading) return;
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDevNotice("");
+
+    const cleanEmail = cleanEmailString(forgotData.email);
+    setIsLoading(true);
+    setLoadingText("Resending reset code...");
+
+    try {
+      const res = await sendOtp({
+        email: cleanEmail,
+        type: "forgot_password"
+      });
+
+      setIsLoading(false);
+      setResendCooldown(60);
+      setSuccessMessage(`A fresh reset code has been sent to ${cleanEmail}.`);
+      if (res.devMode) {
+        setDevNotice("Dev Mode Notice: SMTP credentials are not configured in .env yet. The OTP code was logged to your server console for testing.");
+      }
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to resend reset code.");
+      setIsLoading(false);
+    }
+  };
+
+  // -------------------------------------------------------------
+  // FORGOT PASSWORD: STEP 2 (Reset Password with OTP)
+  // -------------------------------------------------------------
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+    setDevNotice("");
+
+    const cleanEmail = cleanEmailString(forgotData.email);
+    const otp = forgotData.otp.trim();
+    const newPassword = forgotData.newPassword || "";
+    const confirmPassword = forgotData.confirmPassword || "";
+
+    if (!otp || otp.length < 6) {
+      setErrorMessage("Please enter the complete 6-digit verification code.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setErrorMessage("New password must be at least 6 characters long.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMessage("New passwords do not match.");
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingText("Updating your password...");
+
+    try {
+      const res = await resetPassword({
+        email: cleanEmail,
+        otp,
+        newPassword
+      });
+
+      setIsLoading(false);
+      setSuccessMessage(res.message || "Password updated successfully! Please sign in with your new password.");
+      setSignInData((prev) => ({ ...prev, email: cleanEmail, password: "" }));
+      setForgotStep(1);
+      setForgotData({ email: "", otp: "", newPassword: "", confirmPassword: "" });
+      setMode("signin");
+    } catch (err) {
+      setErrorMessage(err.message || "Failed to reset password. Please check your verification code.");
       setIsLoading(false);
     }
   };
@@ -276,14 +556,13 @@ export default function AuthForm({ defaultMode = "signin" }) {
         {/* LEFT COLUMN: Lush Greenery Brand Showcase (Mobile Optimized) */}
         {/* ============================================================ */}
         <div className="lg:col-span-5 relative overflow-hidden bg-slate-950 flex flex-col justify-between p-6 sm:p-8 lg:p-10 text-white min-h-[220px] sm:min-h-[280px] lg:min-h-[720px]">
-          {/* Background Image with Crisp Detail */}
+          {/* Background Image */}
           <div className="absolute inset-0 w-full h-full pointer-events-none">
             <img
               src="/images/b2b-auth-showcase.jpg"
               alt="Green Fibre Sustainable B2B Tableware & Packaging"
               className="w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out"
             />
-            {/* Double Gradient Overlay for legibility */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/50 to-slate-950/30" />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/60 via-transparent to-transparent" />
           </div>
@@ -300,11 +579,11 @@ export default function AuthForm({ defaultMode = "signin" }) {
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/70 backdrop-blur-md border border-white/20 text-brand-300 text-[11px] sm:text-xs font-semibold shadow-sm">
               <Sprout className="w-3.5 h-3.5 text-brand-400" />
-              <span>100% Upcycled Rice Husk • B2B Portal</span>
+              <span>100% Upcycled Rice Husk &bull; B2B Portal</span>
             </div>
           </div>
 
-          {/* Middle Content (Compact on mobile, rich on desktop) */}
+          {/* Middle Content */}
           <div className="relative z-10 space-y-4 sm:space-y-6 my-auto pt-4 sm:pt-8">
             <div className="space-y-1.5 sm:space-y-3">
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug sm:leading-[1.18] drop-shadow-md">
@@ -333,7 +612,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
                 <span className="w-4 h-4 rounded-full bg-brand-500/30 border border-brand-400/40 flex items-center justify-center text-brand-300 text-[10px] font-bold flex-shrink-0">
                   ✓
                 </span>
-                <span>FDA 21 CFR &amp; LFGB certified food-safe bio-composite</span>
+                <span>Secure email OTP verification for corporate integrity</span>
               </div>
             </div>
 
@@ -352,56 +631,95 @@ export default function AuthForm({ defaultMode = "signin" }) {
           {/* Bottom Trusted Bar */}
           <div className="relative z-10 pt-3 sm:pt-6 border-t border-white/15 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400 font-medium">
             <span>200+ Enterprise Clients:</span>
-            <span className="font-bold tracking-wider text-slate-300">TAJ • GOOGLE • INFOSYS</span>
+            <span className="font-bold tracking-wider text-slate-300">TAJ &bull; GOOGLE &bull; INFOSYS</span>
           </div>
         </div>
 
         {/* ============================================================ */}
-        {/* RIGHT COLUMN: Interactive Sign In / Sign Up Form              */}
+        {/* RIGHT COLUMN: Interactive Sign In / Sign Up / Forgot Form      */}
         {/* ============================================================ */}
         <div className="lg:col-span-7 p-5 sm:p-8 lg:p-12 flex flex-col justify-between bg-white">
           <div>
-            {/* Top Switcher Tabs */}
-            <div className="flex items-center justify-center p-1 bg-slate-100 rounded-xl border border-slate-200 mb-6 sm:mb-8 w-full max-w-xs sm:max-w-sm mx-auto">
-              <button
-                type="button"
-                disabled={isLoading}
-                onClick={() => {
-                  setMode("signin");
-                  setErrorMessage("");
-                  setSuccessMessage("");
-                }}
-                className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  mode === "signin"
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
-                } ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                Sign In
-              </button>
-              <button
-                type="button"
-                disabled={isLoading}
-                onClick={() => {
-                  setMode("signup");
-                  setErrorMessage("");
-                  setSuccessMessage("");
-                }}
-                className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
-                  mode === "signup"
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-500 hover:text-slate-900"
-                } ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-              >
-                Create Account
-              </button>
-            </div>
+            {/* Top Switcher Tabs (Shown on Sign In & Sign Up) */}
+            {mode !== "forgot" ? (
+              <div className="flex items-center justify-center p-1 bg-slate-100 rounded-xl border border-slate-200 mb-6 sm:mb-8 w-full max-w-xs sm:max-w-sm mx-auto">
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => switchMode("signin")}
+                  className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
+                    mode === "signin"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-900"
+                  } ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => switchMode("signup")}
+                  className={`flex-1 py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-lg transition-all duration-200 cursor-pointer ${
+                    mode === "signup"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-900"
+                  } ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+                >
+                  Create Account
+                </button>
+              </div>
+            ) : (
+              /* Navigation back when in Forgot Password Mode */
+              <div className="mb-6 flex items-center justify-between">
+                <button
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => switchMode("signin")}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-brand-700 transition-colors cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back to Sign In</span>
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => {
+                      const emailToCarry = cleanEmailString(forgotData.email);
+                      switchMode("signup", emailToCarry);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-brand-700 hover:text-brand-800 transition-colors cursor-pointer mr-1"
+                  >
+                    <span>Create Account</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
+                    Password Recovery
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Feedback Alerts */}
             {errorMessage && (
-              <div className="mb-4 sm:mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2 animate-in fade-in-0 duration-200">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                <span>{errorMessage}</span>
+              <div className="mb-4 sm:mb-6 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex flex-col gap-2 animate-in fade-in-0 duration-200">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+                {errorMessage.toLowerCase().includes("no registered") && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const emailToCarry = cleanEmailString(forgotData.email);
+                      switchMode("signup", emailToCarry);
+                    }}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-700 hover:text-brand-800 underline self-start pl-6 cursor-pointer"
+                  >
+                    <span>Create an Enterprise Account with this email</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
             )}
 
@@ -412,10 +730,17 @@ export default function AuthForm({ defaultMode = "signin" }) {
               </div>
             )}
 
+            {devNotice && (
+              <div className="mb-4 sm:mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium flex items-start gap-2">
+                <KeyRound className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <span>{devNotice}</span>
+              </div>
+            )}
+
             {/* ======================================================== */}
             {/* MODE: SIGN IN                                            */}
             {/* ======================================================== */}
-            {mode === "signin" ? (
+            {mode === "signin" && (
               <form noValidate onSubmit={handleSignInSubmit} className="space-y-4 sm:space-y-5">
                 <div className="space-y-1 text-center sm:text-left">
                   <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
@@ -457,10 +782,13 @@ export default function AuthForm({ defaultMode = "signin" }) {
                     <button
                       type="button"
                       disabled={isLoading}
-                      onClick={() => alert("Password reset link will be sent to your verified corporate email.")}
-                      className="text-xs font-semibold text-brand-700 hover:text-brand-800 hover:underline"
+                      onClick={() => {
+                        const emailToCarry = cleanEmailString(signInData.email);
+                        switchMode("forgot", emailToCarry);
+                      }}
+                      className="text-xs font-semibold text-brand-700 hover:text-brand-800 hover:underline cursor-pointer"
                     >
-                      Forgot?
+                      Forgot Password?
                     </button>
                   </div>
                   <div className="relative flex items-center">
@@ -500,7 +828,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
                   </label>
                 </div>
 
-                {/* Submit Sign In Button with Dynamic Loading State */}
+                {/* Submit Sign In Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -521,17 +849,24 @@ export default function AuthForm({ defaultMode = "signin" }) {
                   )}
                 </button>
               </form>
-            ) : (
-              /* ======================================================== */
-              /* MODE: SIGN UP (CREATE B2B ACCOUNT)                       */
-              /* ======================================================== */
-              <form noValidate onSubmit={handleSignUpSubmit} className="space-y-3 sm:space-y-3.5">
+            )}
+
+            {/* ======================================================== */}
+            {/* MODE: SIGN UP (OTP BASED REGISTRATION)                   */}
+            {/* ======================================================== */}
+            {mode === "signup" && signupStep === 1 && (
+              <form noValidate onSubmit={handleSendSignUpOtp} className="space-y-3 sm:space-y-3.5">
                 <div className="space-y-0.5 text-center sm:text-left">
-                  <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-                    Create Enterprise Account
-                  </h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                      Create Enterprise Account
+                    </h3>
+                    <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                      Step 1 of 2
+                    </span>
+                  </div>
                   <p className="text-xs sm:text-sm text-slate-500">
-                    Register for factory wholesale tier rates and custom logo branding.
+                    Register for factory wholesale rates. A 6-digit verification code will be sent to your work email.
                   </p>
                 </div>
 
@@ -616,15 +951,12 @@ export default function AuthForm({ defaultMode = "signin" }) {
                   </div>
                 </div>
 
-                {/* Row: Luxury Business Type Dropdown & GSTIN */}
+                {/* Row: Business Segment Dropdown & GSTIN */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Custom Luxury Business Segment Dropdown */}
                   <div className="space-y-1 relative" ref={dropdownRef}>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                       Business Segment
                     </label>
-
-                    {/* Luxury Custom Trigger Button */}
                     <button
                       type="button"
                       disabled={isLoading}
@@ -645,7 +977,6 @@ export default function AuthForm({ defaultMode = "signin" }) {
                           {activeSegment.label}
                         </span>
                       </div>
-
                       <ChevronDown
                         className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ${
                           isDropdownOpen ? "rotate-180 text-brand-700 font-bold" : ""
@@ -653,7 +984,6 @@ export default function AuthForm({ defaultMode = "signin" }) {
                       />
                     </button>
 
-                    {/* Luxury Animated Floating Dropdown Menu */}
                     {isDropdownOpen && !isLoading && (
                       <div
                         role="listbox"
@@ -662,7 +992,6 @@ export default function AuthForm({ defaultMode = "signin" }) {
                         <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
                           Select Industry Segment
                         </div>
-
                         {businessSegments.map((segment) => {
                           const Icon = segment.icon;
                           const isSelected = signUpData.businessType === segment.id;
@@ -708,7 +1037,6 @@ export default function AuthForm({ defaultMode = "signin" }) {
                                   </span>
                                 </div>
                               </div>
-
                               {isSelected && (
                                 <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0 mt-1 font-bold" />
                               )}
@@ -810,7 +1138,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
                   </label>
                 </div>
 
-                {/* Submit Sign Up Button with Dynamic Loading State */}
+                {/* Continue to OTP Step Button */}
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -821,12 +1149,354 @@ export default function AuthForm({ defaultMode = "signin" }) {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-white flex-shrink-0" />
-                      <span>{loadingText || "Creating account..."}</span>
+                      <span>{loadingText || "Sending verification code..."}</span>
                     </>
                   ) : (
                     <>
-                      <span>Create Account</span>
+                      <span>Verify Email &amp; Continue</span>
                       <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* ======================================================== */}
+            {/* MODE: SIGN UP (STEP 2: ENTER OTP)                        */}
+            {/* ======================================================== */}
+            {mode === "signup" && signupStep === 2 && (
+              <form noValidate onSubmit={handleVerifyAndSignUp} className="space-y-4 sm:space-y-5 animate-in fade-in-50 duration-200">
+                <div className="space-y-1.5 text-center sm:text-left">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => {
+                        setSignupStep(1);
+                        setErrorMessage("");
+                        setDevNotice("");
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Edit details / email</span>
+                    </button>
+                    <span className="text-[11px] font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                      Step 2 of 2
+                    </span>
+                  </div>
+
+                  <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    Verify Your Work Email
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    We sent a 6-digit verification code to{" "}
+                    <span className="font-bold text-slate-900 underline">{signUpData.email}</span>.
+                  </p>
+                </div>
+
+                {/* 6-Digit OTP Input */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 text-center sm:text-left">
+                    Enter 6-Digit Code
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      autoFocus
+                      required
+                      disabled={isLoading}
+                      placeholder="000000"
+                      value={signUpOtp}
+                      onChange={(e) => setSignUpOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className="w-full text-center tracking-[0.5em] font-mono text-2xl sm:text-3xl font-extrabold py-3.5 bg-slate-50 border-2 border-brand-200 rounded-2xl text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-brand-600 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all disabled:opacity-60"
+                    />
+                  </div>
+                  <p className="text-[11px] text-slate-500 text-center sm:text-left">
+                    Code expires in 10 minutes.
+                  </p>
+                </div>
+
+                {/* Resend Code Action */}
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                  <span className="text-slate-500">Didn&apos;t receive the code?</span>
+                  <button
+                    type="button"
+                    disabled={resendCooldown > 0 || isLoading}
+                    onClick={handleResendSignUpOtp}
+                    className={`font-semibold inline-flex items-center gap-1.5 transition-colors ${
+                      resendCooldown > 0 || isLoading
+                        ? "text-slate-400 cursor-not-allowed"
+                        : "text-brand-700 hover:text-brand-800 hover:underline cursor-pointer"
+                    }`}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Code"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Submit Verification Button */}
+                <button
+                  type="submit"
+                  disabled={isLoading || signUpOtp.length < 6}
+                  className={`btn-primary w-full py-3 sm:py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.98] ${
+                    isLoading || signUpOtp.length < 6
+                      ? "opacity-90 cursor-wait bg-brand-700"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white flex-shrink-0" />
+                      <span>{loadingText || "Verifying..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Complete Registration</span>
+                      <CheckCircle2 className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* ======================================================== */}
+            {/* MODE: FORGOT PASSWORD (STEP 1: ENTER WORK EMAIL)         */}
+            {/* ======================================================== */}
+            {mode === "forgot" && forgotStep === 1 && (
+              <form noValidate onSubmit={handleSendForgotOtp} className="space-y-4 sm:space-y-5 animate-in fade-in-50 duration-200">
+                <div className="space-y-1 text-center sm:text-left">
+                  <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    Reset Enterprise Password
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    Enter your registered corporate email. We&apos;ll deliver a secure 6-digit verification code to reset your credentials.
+                  </p>
+                </div>
+
+                {/* Work Email */}
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Corporate Work Email
+                  </label>
+                  <div className="relative flex items-center">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                    <input
+                      type="text"
+                      inputMode="email"
+                      autoComplete="email"
+                      autoFocus
+                      required
+                      disabled={isLoading}
+                      placeholder="name@company.com"
+                      value={forgotData.email}
+                      onBlur={() => setForgotData((prev) => ({ ...prev, email: cleanEmailString(prev.email) }))}
+                      onChange={(e) => setForgotData({ ...forgotData, email: e.target.value })}
+                      className="w-full text-sm sm:text-xs pl-10 pr-4 py-2.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all disabled:opacity-60 disabled:bg-slate-100"
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Reset Code Request */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className={`btn-primary w-full py-3 sm:py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.98] ${
+                    isLoading ? "opacity-90 cursor-wait bg-brand-700" : "cursor-pointer"
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white flex-shrink-0" />
+                      <span>{loadingText || "Sending reset code..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Reset Code</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+
+                {/* Switch to Register link */}
+                <div className="pt-2 text-center text-xs text-slate-500">
+                  Don&apos;t have an enterprise account yet?{" "}
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onClick={() => {
+                      const emailToCarry = cleanEmailString(forgotData.email);
+                      switchMode("signup", emailToCarry);
+                    }}
+                    className="font-bold text-brand-700 hover:text-brand-800 hover:underline cursor-pointer"
+                  >
+                    Register here &rarr;
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* ======================================================== */}
+            {/* MODE: FORGOT PASSWORD (STEP 2: ENTER OTP & NEW PASSWORD) */}
+            {/* ======================================================== */}
+            {mode === "forgot" && forgotStep === 2 && (
+              <form noValidate onSubmit={handleResetPassword} className="space-y-3.5 sm:space-y-4 animate-in fade-in-50 duration-200">
+                <div className="space-y-1 text-center sm:text-left">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={() => {
+                        setForgotStep(1);
+                        setErrorMessage("");
+                        setDevNotice("");
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Change email</span>
+                    </button>
+                    <span className="text-[11px] font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                      Step 2 of 2
+                    </span>
+                  </div>
+
+                  <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                    Set New Password
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-500">
+                    Enter the code sent to{" "}
+                    <span className="font-bold text-slate-900 underline">{forgotData.email}</span>{" "}
+                    and create a new password.
+                  </p>
+                </div>
+
+                {/* 6-Digit OTP */}
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    6-Digit Verification Code *
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    autoFocus
+                    required
+                    disabled={isLoading}
+                    placeholder="000000"
+                    value={forgotData.otp}
+                    onChange={(e) =>
+                      setForgotData({
+                        ...forgotData,
+                        otp: e.target.value.replace(/\D/g, "").slice(0, 6)
+                      })
+                    }
+                    className="w-full text-center tracking-[0.4em] font-mono text-xl sm:text-2xl font-bold py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500 outline-none transition-all disabled:opacity-60"
+                  />
+                </div>
+
+                {/* Row: New Password & Confirm */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                      New Password *
+                    </label>
+                    <div className="relative flex items-center">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                      <input
+                        type={showForgotNewPassword ? "text" : "password"}
+                        required
+                        disabled={isLoading}
+                        placeholder="••••••••••••"
+                        value={forgotData.newPassword}
+                        onChange={(e) => setForgotData({ ...forgotData, newPassword: e.target.value })}
+                        className="w-full text-sm sm:text-xs pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all disabled:opacity-60"
+                      />
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
+                        className="absolute right-3 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                        aria-label={showForgotNewPassword ? "Hide password" : "Show password"}
+                      >
+                        {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                      Confirm New Password *
+                    </label>
+                    <div className="relative flex items-center">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                      <input
+                        type={showForgotConfirmPassword ? "text" : "password"}
+                        required
+                        disabled={isLoading}
+                        placeholder="••••••••••••"
+                        value={forgotData.confirmPassword}
+                        onChange={(e) => setForgotData({ ...forgotData, confirmPassword: e.target.value })}
+                        className="w-full text-sm sm:text-xs pl-10 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-all disabled:opacity-60"
+                      />
+                      <button
+                        type="button"
+                        disabled={isLoading}
+                        onClick={() => setShowForgotConfirmPassword(!showForgotConfirmPassword)}
+                        className="absolute right-3 text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                        aria-label={showForgotConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showForgotConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Resend Code Option */}
+                <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100">
+                  <span className="text-slate-500">Didn&apos;t get the code?</span>
+                  <button
+                    type="button"
+                    disabled={resendCooldown > 0 || isLoading}
+                    onClick={handleResendForgotOtp}
+                    className={`font-semibold inline-flex items-center gap-1.5 transition-colors ${
+                      resendCooldown > 0 || isLoading
+                        ? "text-slate-400 cursor-not-allowed"
+                        : "text-brand-700 hover:text-brand-800 hover:underline cursor-pointer"
+                    }`}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>
+                      {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend Code"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Submit Reset Password */}
+                <button
+                  type="submit"
+                  disabled={isLoading || forgotData.otp.length < 6}
+                  className={`btn-primary w-full py-3 sm:py-3.5 text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.98] ${
+                    isLoading || forgotData.otp.length < 6
+                      ? "opacity-90 cursor-wait bg-brand-700"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-white flex-shrink-0" />
+                      <span>{loadingText || "Updating password..."}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Reset Password &amp; Sign In</span>
+                      <CheckCircle2 className="w-4 h-4" />
                     </>
                   )}
                 </button>
@@ -834,7 +1504,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
             )}
           </div>
 
-          {/* Footer Security / Trust Note */}
+          {/* Footer Security Note */}
           <div className="pt-4 sm:pt-6 border-t border-slate-100 flex items-center justify-center text-xs text-slate-500 mt-4 sm:mt-6">
             <span className="inline-flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-brand-600" />

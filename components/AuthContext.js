@@ -8,6 +8,9 @@ import {
   clearAuthSession,
   loginB2B,
   registerB2B,
+  sendOtp as sendOtpApi,
+  verifyOtp as verifyOtpApi,
+  resetPassword as resetPasswordApi,
   fetchB2BProfile,
   refreshB2BToken
 } from "@/lib/auth";
@@ -98,6 +101,18 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const sendOtp = useCallback(async (params) => {
+    return await sendOtpApi(params);
+  }, []);
+
+  const verifyOtp = useCallback(async (params) => {
+    return await verifyOtpApi(params);
+  }, []);
+
+  const resetPassword = useCallback(async (params) => {
+    return await resetPasswordApi(params);
+  }, []);
+
   const logout = useCallback(() => {
     clearAuthSession();
     setToken(null);
@@ -124,6 +139,9 @@ export function AuthProvider({ children }) {
     isLoading,
     login,
     register,
+    sendOtp,
+    verifyOtp,
+    resetPassword,
     logout,
     refreshProfile
   };

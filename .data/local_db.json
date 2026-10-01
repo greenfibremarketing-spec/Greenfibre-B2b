@@ -1,0 +1,20 @@
+{
+  "b2b_users": [
+    {
+      "_id": "6abe1bf1b2c86d7089f396f0",
+      "fullName": "shivansh",
+      "full_name": "shivansh",
+      "companyName": "Dubey",
+      "email": "shdubey896@gmail.com",
+      "phone": "8566555659",
+      "businessType": "Corporate Gifting & HR",
+      "gstin": "AWBRAOLEQUSTXOOELC@VTMPJ.NET",
+      "password": "15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225",
+      "role": "b2b_client",
+      "isEmailVerified": true,
+      "createdAt": "2026-10-01T08:38:09.382Z",
+      "updatedAt": "2026-10-01T08:41:54.170Z"
+    }
+  ],
+  "b2b_otps": []
+}
