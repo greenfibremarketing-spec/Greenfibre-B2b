@@ -59,10 +59,14 @@ export default function QuotePage() {
           ...formData,
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
-          items: items.map(({ slug, colour, qty }) => ({
+          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, selectedCustomizations }) => ({
             slug,
             colour,
-            qty
+            qty,
+            senderName,
+            receiverName,
+            giftMessage,
+            selectedCustomizations
           }))
         })
       });
@@ -285,6 +289,30 @@ export default function QuotePage() {
                                   ✓ {c}
                                 </span>
                               ))}
+                            </div>
+                          )}
+
+                          {(item.senderName || item.receiverName || item.giftMessage) && (
+                            <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200 text-[10.5px] space-y-0.5">
+                              <div className="font-bold text-emerald-900 flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-emerald-600" />
+                                <span>Kit Card Message:</span>
+                              </div>
+                              {item.senderName && (
+                                <div className="text-slate-700">
+                                  <span className="font-semibold text-slate-900">From:</span> {item.senderName}
+                                </div>
+                              )}
+                              {item.receiverName && (
+                                <div className="text-slate-700">
+                                  <span className="font-semibold text-slate-900">To:</span> {item.receiverName}
+                                </div>
+                              )}
+                              {item.giftMessage && (
+                                <div className="italic text-slate-600 line-clamp-2">
+                                  &ldquo;{item.giftMessage}&rdquo;
+                                </div>
+                              )}
                             </div>
                           )}
 

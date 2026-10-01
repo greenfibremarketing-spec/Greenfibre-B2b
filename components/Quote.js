@@ -77,7 +77,10 @@ export function QuoteProvider({ children }) {
               maxAllowedCustomizations:
                 product.maxAllowedCustomizations ?? x.maxAllowedCustomizations,
               brandingNotes: product.brandingNotes ?? x.brandingNotes,
-              packagingOption: product.packagingOption ?? x.packagingOption
+              packagingOption: product.packagingOption ?? x.packagingOption,
+              senderName: product.senderName ?? x.senderName,
+              receiverName: product.receiverName ?? x.receiverName,
+              giftMessage: product.giftMessage ?? x.giftMessage
             }
           : x
       );
@@ -107,6 +110,9 @@ export function QuoteProvider({ children }) {
           maxAllowedCustomizations: product.maxAllowedCustomizations,
           brandingNotes: product.brandingNotes,
           packagingOption: product.packagingOption,
+          senderName: product.senderName || "",
+          receiverName: product.receiverName || "",
+          giftMessage: product.giftMessage || "",
           activeTierTitle: tierTitle,
           activeTierNumber: tierNum
         }

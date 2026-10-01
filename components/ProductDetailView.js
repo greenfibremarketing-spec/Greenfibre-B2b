@@ -48,7 +48,8 @@ import {
   Building2,
   Heart,
   Users,
-  Eye
+  Eye,
+  Lock
 } from "lucide-react";
 
 // Standard 5 Contexts & Occasions for B2B Gifting
@@ -69,7 +70,7 @@ export const B2B_OCCASIONS = [
       {
         id: "tier-1",
         tierNumber: 1,
-        title: "Tier 1 Starter",
+        title: "Tier 1 — Starter",
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
@@ -81,12 +82,12 @@ export const B2B_OCCASIONS = [
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 2 (50+) unlocks 3 →",
-        perks: ["10% Off MRP", "2 Free Customizations", "Standard 7-10 Day Production"]
+        perks: ["10% Off MRP", "Welcome & Thank-You Kit Included", "Standard 7-10 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
-        title: "Tier 2 Growth",
+        title: "Tier 2 — Personalized",
         badge: "★ POPULAR",
         isPopular: true,
         min: 50,
@@ -98,12 +99,12 @@ export const B2B_OCCASIONS = [
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 3 (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Priority Dispatch"]
+        perks: ["12% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
-        title: "Tier 3 Enterprise",
+        title: "Tier 3 — Fully Custom",
         badge: "Max Value",
         isPopular: false,
         min: 100,
@@ -115,7 +116,7 @@ export const B2B_OCCASIONS = [
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "Dedicated Account Manager", "Eco Certificate"]
+        perks: ["15% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
       }
     ],
     customizations: [
@@ -730,6 +731,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const [qty, setQty] = useState(currentMoq || 10);
   const [qtyInput, setQtyInput] = useState(String(currentMoq || 10));
   const [brandingNotes, setBrandingNotes] = useState("");
+  const [senderName, setSenderName] = useState("");
+  const [receiverName, setReceiverName] = useState("");
+  const [giftMessage, setGiftMessage] = useState("");
   const [packagingOption, setPackagingOption] = useState("Standard Recyclable Eco Kraft Box");
   const [added, setAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -909,6 +913,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       maxAllowedCustomizations: maxCustomizations,
       brandingNotes,
       packagingOption,
+      senderName: senderName.trim(),
+      receiverName: receiverName.trim(),
+      giftMessage: giftMessage.trim(),
       activeOccasion: activeOccasion.label,
       activeOccasionKey: activeOccasion.key,
       activeTierTitle: activeTierObj.title,
@@ -1189,11 +1196,6 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   </span>
                 )}
               </div>
-              {wholesaleUnitPrice > 0 && (
-                <p className="text-[11px] text-slate-500 leading-snug">
-                  Example: {qty} {unitLabelPlural} × ₹{wholesaleUnitPrice} = ₹{grossWholesaleSubtotal.toLocaleString("en-IN")} → <strong className="text-emerald-700">{activeTierDiscountPct}% off = −₹{mainDiscountAmount.toLocaleString("en-IN")}</strong> → <strong className="text-slate-900">You pay ₹{estimatedSubtotal.toLocaleString("en-IN")}</strong>
-                </p>
-              )}
             </div>
           </div>
 
@@ -1269,33 +1271,16 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             </div>
           </div>
 
-          {/* PACKAGING & PRESENTATION BOX */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-              <Box className="w-3.5 h-3.5 text-brand-700" />
-              <span>Packaging &amp; Presentation:</span>
-            </label>
-            <div className="p-3 bg-brand-50/70 border border-brand-200 rounded-xl flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 font-bold text-slate-900">
-                <Box className="w-4 h-4 text-brand-700" />
-                <span>Standard Recyclable Eco Kraft Gift Box</span>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                Included FREE
-              </span>
-            </div>
-          </div>
-
           {/* 3. ORDER QUANTITY & PRICE CALCULATION CARD */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
 
             {/* Set Quantity Stepper, Quick Addons & Price Calculation */}
-            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-3.5 sm:p-4 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-4 sm:p-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
                     <span>Order Quantity ({unitLabelPlural}):</span>
-                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.2 rounded-full border border-emerald-200">
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
                       MOQ: {currentMoq} {unitLabelPlural}
                     </span>
                   </label>
@@ -1368,8 +1353,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 </div>
 
                 {/* Price Breakdown: Gross → Discount → Net */}
-                <div className="text-left sm:text-right pt-1 sm:pt-0 min-w-[200px]">
-                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block mb-2">
+                <div className="text-left sm:text-right pt-2 sm:pt-0 min-w-[220px] sm:pl-4 space-y-1">
+                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block mb-1.5">
                     Price Breakdown:
                   </span>
 
@@ -1381,7 +1366,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                   {/* Row 2: Discount deduction */}
                   {mainDiscountAmount > 0 && (
-                    <div className="flex items-center sm:justify-end gap-2 text-xs text-emerald-700 font-bold mt-0.5">
+                    <div className="flex items-center sm:justify-end gap-2 text-xs text-emerald-700 font-bold">
                       <span className="flex items-center gap-1">
                         <Tag className="w-3 h-3" />
                         <span>{activeTierDiscountPct}% Bulk Discount</span>
@@ -1410,89 +1395,6 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Live Discount & Checkout Breakdown Banner */}
-              <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-50 via-[#f8faf2] to-amber-50/60 border border-emerald-200/90 text-xs text-slate-800 space-y-1.5 shadow-2xs">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-2xs">
-                      <Sparkles className="w-3 h-3 text-amber-300 fill-amber-300" />
-                    </span>
-                    <span className="font-extrabold text-emerald-950 text-xs">
-                      {activeTierObj.title}: {activeTierDiscountPct}% off on ₹{grossWholesaleSubtotal.toLocaleString("en-IN")} = Save ₹{mainDiscountAmount.toLocaleString("en-IN")}
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-black text-emerald-900 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                    {activeTierDiscountPct}% OFF Total
-                  </span>
-                </div>
-                <div className="text-[11px] text-emerald-900/90 flex flex-col sm:flex-row sm:items-center justify-between gap-1 pt-1 border-t border-emerald-200/60">
-                  <span className="flex items-center gap-1">
-                    <Check className="w-3.5 h-3.5 text-emerald-700 stroke-[2.5]" />
-                    <span><strong>Add-on items:</strong> Each add-on gets a separate +5% off on its own total (not combined with main discount).</span>
-                  </span>
-                  <span className="text-slate-500 text-[10px]">
-                    18% GST input credit tax invoice issued upon checkout
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Preset Volume Shortcuts */}
-              <div className="pt-2 border-t border-[#E5DAC8]/70 flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">
-                  Quick Select:
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(10)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 10
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  10 (Tier 1)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(50)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 50
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  50 (Tier 2 ★)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(100)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 100
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  100 (Tier 3)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(250)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 250
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  250
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSetExactQty(500)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${qty === 500
-                    ? "bg-brand-600 text-white shadow-xs"
-                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
-                    }`}
-                >
-                  500+
-                </button>
               </div>
             </div>
 
@@ -1545,6 +1447,23 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <span>
                   <strong>Tax Invoice:</strong> {product.tax?.gstRate || 18}% GST Credit
                 </span>
+              </span>
+            </div>
+          </div>
+
+          {/* PACKAGING & PRESENTATION BOX (Located under Quantity & Price Calculation Card) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+              <Box className="w-3.5 h-3.5 text-brand-700" />
+              <span>Packaging &amp; Presentation:</span>
+            </label>
+            <div className="p-3 bg-brand-50/70 border border-brand-200 rounded-xl flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2 font-bold text-slate-900">
+                <Box className="w-4 h-4 text-brand-700" />
+                <span>Standard Recyclable Eco Kraft Gift Box</span>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                Included FREE
               </span>
             </div>
           </div>
@@ -2058,7 +1977,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         </div>
       )}
 
-      {/* ── 2-STEP CUSTOMIZATION & RECOMMENDATION MODAL ── */}
+      {/* ── 2-STEP BUNDLE ADD-ONS & CELEBRATORY UNLOCKED TIER PERKS MODAL ── */}
       {mounted && isCustomizeModalOpen && createPortal(
         <div
           style={{
@@ -2074,9 +1993,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             alignItems: "center",
             justifyContent: "center",
             padding: "16px",
-            backgroundColor: "rgba(0, 0, 0, 0.72)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            backgroundColor: "rgba(15, 23, 42, 0.72)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             animation: "gfModalBackdrop 0.25s ease-out forwards"
           }}
           onClick={handleCloseModal}
@@ -2087,371 +2006,201 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: "860px",
-              maxHeight: "80vh",
+              maxWidth: "520px",
+              maxHeight: "90vh",
               background: "#ffffff",
               borderRadius: "24px",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.08)",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06)",
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
               animation: "gfModalBox 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards"
             }}
           >
-            {/* Step indicator bar */}
-            <div className="flex items-center gap-2 px-6 pt-4 pb-2 flex-shrink-0 bg-white">
-              <div
-                style={{
-                  flex: 1,
-                  height: 4,
-                  borderRadius: 99,
-                  background: "#22c55e"
-                }}
-              />
-              <div
-                style={{
-                  flex: 1,
-                  height: 4,
-                  borderRadius: 99,
-                  background: modalStep >= 2 ? "#22c55e" : "#e2e8f0",
-                  transition: "background 0.3s"
-                }}
-              />
-              <span className="text-[11px] font-bold text-slate-500 ml-1">
-                Step {modalStep} of 2
-              </span>
-            </div>
-
-            {/* Header */}
-            <div
-              className="mx-5 mb-2 px-4 py-3 rounded-2xl flex items-center justify-between flex-shrink-0"
-              style={{
-                background: "linear-gradient(135deg, #16a34a, #22c55e)"
-              }}
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div
-                  className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "rgba(255,255,255,0.2)" }}
-                >
-                  {modalStep === 1 ? (
-                    <Sparkles className="w-4 h-4 text-white" />
-                  ) : (
-                    <SlidersHorizontal className="w-4 h-4 text-white" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  {modalStep === 1 ? (
-                    <>
-                      <h2 className="text-sm font-extrabold text-white leading-tight">
-                        Frequently Bought Together &amp; Bundle Sets
-                      </h2>
-                      <p className="text-[11px] font-medium text-emerald-100 truncate">
-                        Extra 5% bundle discount unlocked for paired items (Total up to 15% OFF)
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-sm font-extrabold text-white leading-tight">
-                        Branding &amp; Customization Options
-                      </h2>
-                      <p className="text-[11px] font-medium text-emerald-100 truncate">
-                        Select complimentary corporate personalization for your quote
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleCloseModal}
-                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all hover:bg-white/20 text-white"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* ── STEP 1: FREQUENTLY BOUGHT TOGETHER & BUNDLE DEALS ── */}
+            {/* ── STEP 1: ADD-ONS & FREQUENTLY ORDERED TOGETHER ── */}
             {modalStep === 1 && (
               <>
-                <div className="overflow-y-auto flex-1 px-5 py-3 space-y-3.5">
-                  {/* Order added confirmation */}
-                  <div
-                    className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
+                {/* Step 1 Header: Slim Dark Brand Green */}
+                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Sparkles className="w-4 h-4 text-yellow-300 flex-shrink-0" />
+                    <h2 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">
+                      Frequently Ordered With This Set
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    aria-label="Close"
                   >
-                    <span className="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center flex-shrink-0 text-white shadow-xs">
-                      <Check className="w-4 h-4 stroke-[3]" />
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Step 1 Body: Add-ons list */}
+                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-3 bg-slate-50/50">
+                  {/* Order added confirmation strip */}
+                  <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-5 h-5 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 stroke-[3]" />
+                      </span>
+                      <span className="font-bold text-emerald-950 truncate">
+                        {qty} {unitLabelPlural} added to basket!
+                      </span>
+                    </div>
+                    <span className="font-extrabold text-slate-900 flex-shrink-0">
+                      ₹{estimatedSubtotal.toLocaleString("en-IN")}
                     </span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-extrabold text-emerald-950 leading-tight">
-                        {qty} {unitLabelPlural} added to your basket!
-                      </p>
-                      <p className="text-[11px] text-emerald-800">
-                        Pair with complementary sets below to maximize your bulk savings.
-                      </p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-xs font-extrabold text-slate-900">
-                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                      </p>
-                      <p className="text-[10px] text-slate-500 font-medium">
-                        {activeTierObj.title}
-                      </p>
-                    </div>
                   </div>
 
-                  {/* Light & Vibrant Executive Bundle Savings Stacking Banner */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-[#fbfdf7] to-amber-50/60 border-2 border-emerald-300 text-slate-800 shadow-sm relative overflow-hidden">
-                    {/* Subtle decorative background gradient circles */}
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-emerald-200/40 rounded-full blur-xl pointer-events-none" />
-                    <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-amber-200/30 rounded-full blur-xl pointer-events-none" />
+                  {/* Add-ons list */}
+                  {relatedProducts && relatedProducts.length > 0 ? (
+                    <div className="space-y-2.5">
+                      {relatedProducts.slice(0, 4).map((rel) => {
+                        const itemQty = getPairQty(rel.slug);
+                        const isItemAdded = Boolean(pairAdded[rel.slug]);
+                        const originalPrice = rel.price || 0;
+                        const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
+                        const savingsPerUnit = originalPrice > 0 ? originalPrice - discountedPrice : 0;
 
-                    <div className="relative space-y-2.5">
-                      {/* Top Header Row */}
-                      <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-                          </div>
-                          <div>
-                            <span className="text-xs sm:text-sm font-black text-slate-900 tracking-tight block">
-                              Executive Bundle Savings Stacking
-                            </span>
-                            <span className="text-[11px] text-slate-600 font-medium">
-                              Add paired sets below to unlock your maximum volume tier
-                            </span>
-                          </div>
-                        </div>
-
-                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-black bg-gradient-to-r from-amber-400 to-amber-300 text-amber-950 shadow-xs border border-amber-300 tracking-wide uppercase">
-                          🔥 {activeTierDiscountPct}% Main + 5% Add-On OFF
-                        </span>
-                      </div>
-
-                      {/* 3-Step Visual Discount Stacking Meter */}
-                      <div className="grid grid-cols-3 gap-2">
-                        {/* Step 1: Base Discount */}
-                        <div className="bg-white border border-emerald-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs">
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Main Product
-                          </span>
-                          <span className="text-xs sm:text-sm font-black text-brand-700 block mt-0.5">
-                            {activeTierDiscountPct}% OFF
-                          </span>
-                          <span className="text-[9px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            On main total
-                          </span>
-                        </div>
-
-                        {/* Step 2: Add-on Discount */}
-                        <div className="bg-white border border-amber-200/90 rounded-xl p-2 sm:p-2.5 text-center shadow-2xs relative">
-                          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Add-On Items
-                          </span>
-                          <span className="text-xs sm:text-sm font-black text-amber-600 block mt-0.5">
-                            5% OFF
-                          </span>
-                          <span className="text-[9px] text-amber-900 font-semibold bg-amber-50 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            Add-on total only
-                          </span>
-                        </div>
-
-                        {/* Step 3: Separate Savings */}
-                        <div className="bg-gradient-to-br from-emerald-600 to-brand-700 text-white rounded-xl p-2 sm:p-2.5 text-center shadow-xs">
-                          <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-wider block">
-                            Separate Discounts
-                          </span>
-                          <span className="text-xs sm:text-sm font-black text-white block mt-0.5 tracking-tight">
-                            {activeTierDiscountPct}% + 5%
-                          </span>
-                          <span className="text-[9px] text-emerald-950 font-bold bg-amber-300 px-1.5 py-0.2 rounded inline-block mt-0.5">
-                            Main • Add-on
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Frequently bought together grid */}
-                  {relatedProducts.length > 0 ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <Boxes className="w-3.5 h-3.5 text-brand-600" />
-                          <span>Frequently Ordered With This Set</span>
-                        </p>
-                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                          Extra 5% Bundle Discount
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {relatedProducts.slice(0, 4).map((rel) => {
-                          const itemQty = getPairQty(rel.slug);
-                          const isItemAdded = Boolean(pairAdded[rel.slug]);
-                          const originalPrice = rel.price || 0;
-                          const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
-                          const savingsPerUnit = originalPrice > 0 ? originalPrice - discountedPrice : 0;
-
-                          return (
-                            <div
-                              key={rel.slug}
-                              className="group flex flex-col justify-between bg-white rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md border border-slate-200 hover:border-brand-400 p-3 relative"
-                            >
-                              {/* 5% Discount Badge */}
-                              <div className="absolute top-2.5 right-2.5 z-10 bg-gradient-to-r from-emerald-600 to-teal-700 text-white text-[9.5px] font-black px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1 border border-emerald-400/30">
-                                <Sparkles className="w-2.5 h-2.5 text-amber-300 fill-amber-300" />
-                                <span>+5% OFF</span>
+                        return (
+                          <div
+                            key={rel.slug}
+                            className="flex items-center justify-between gap-3 bg-white rounded-2xl p-3 border border-slate-200 hover:border-brand-400 hover:shadow-xs transition-all"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                                <img
+                                  src={rel.image || "/images/gift-set-classic.jpg"}
+                                  alt={rel.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/images/gift-set-classic.jpg";
+                                  }}
+                                />
+                                <span className="absolute top-1 left-1 bg-brand-700 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-2xs">
+                                  +5% OFF
+                                </span>
                               </div>
-
-                              <div>
-                                <div className="flex gap-2.5 items-center">
-                                  <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 group/img">
-                                    <img
-                                      src={rel.image || "/images/gift-set-classic.jpg"}
-                                      alt={rel.name}
-                                      className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
-                                      onError={(e) => {
-                                        e.currentTarget.src = "/images/gift-set-classic.jpg";
-                                      }}
-                                    />
-                                    <Link
-                                      href={`/products/${rel.slug}`}
-                                      onClick={handleCloseModal}
-                                      className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white"
-                                      title="Preview product"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </Link>
-                                  </div>
-                                  <div className="flex-1 min-w-0 pr-12">
-                                    <Link
-                                      href={`/products/${rel.slug}`}
-                                      onClick={handleCloseModal}
-                                      className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug hover:text-brand-600 transition-colors"
-                                    >
-                                      {rel.name}
-                                    </Link>
-
-                                    <div className="mt-0.5 flex items-baseline gap-1.5 flex-wrap">
-                                      {discountedPrice > 0 ? (
-                                        <>
-                                          <span className="text-xs font-black text-brand-700">
-                                            ₹{discountedPrice}
-                                          </span>
-                                          <span className="text-[10px] text-slate-400 line-through font-semibold">
-                                            ₹{originalPrice}
-                                          </span>
-                                          <span className="text-[10px] font-semibold text-slate-500">
-                                            /{rel.unit || "set"}
-                                          </span>
-                                        </>
-                                      ) : (
-                                        <span className="text-xs font-bold text-brand-600">
-                                          Custom Tier
-                                        </span>
-                                      )}
-                                    </div>
-
-                                    <div className="mt-0.5 text-[10px] font-semibold text-emerald-700 flex items-center gap-1">
-                                      <Sparkles className="w-2.5 h-2.5 text-amber-500 flex-shrink-0" />
-                                      <span>Save ₹{(savingsPerUnit * itemQty).toLocaleString("en-IN")} on {itemQty}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Stepper + Compact Light Green Add Button */}
-                              <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center gap-2">
-                                {/* Quantity Stepper */}
-                                <div className="h-8 inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5 flex-shrink-0 shadow-2xs">
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePairQtyChange(rel.slug, itemQty - 1)}
-                                    disabled={itemQty <= 1}
-                                    className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold cursor-pointer"
-                                    title="Decrease quantity by 1"
-                                  >
-                                    <Minus className="w-3 h-3" />
-                                  </button>
-                                  <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    pattern="[0-9]*"
-                                    value={itemQty}
-                                    onChange={(e) => {
-                                      const cleaned = e.target.value.replace(/\D/g, "");
-                                      handlePairQtyChange(rel.slug, cleaned);
-                                    }}
-                                    className="w-8 text-center text-xs font-bold text-slate-800 bg-transparent outline-none select-all"
-                                    aria-label="Quantity"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => handlePairQtyChange(rel.slug, itemQty + 1)}
-                                    className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 transition-all font-bold cursor-pointer"
-                                    title="Increase quantity by 1"
-                                  >
-                                    <Plus className="w-3 h-3" />
-                                  </button>
-                                </div>
-
-                                {/* Compact Light Green ADD Button */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleAddPairToQuote(rel)}
-                                  className={`h-8 flex-1 px-2.5 rounded-lg text-xs font-bold transition-all duration-150 flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${isItemAdded
-                                    ? "bg-brand-500 text-white ring-2 ring-brand-300 shadow-xs"
-                                    : "bg-brand-600 hover:bg-brand-500 text-white hover:shadow-xs"
-                                    }`}
-                                >
-                                  {isItemAdded ? (
-                                    <>
-                                      <Check className="w-3.5 h-3.5 stroke-[3]" />
-                                      <span>Added ({itemQty})</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                                      <span>Add {itemQty} (+5% Off)</span>
-                                    </>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="text-xs font-bold text-slate-900 truncate leading-snug">
+                                  {rel.name}
+                                </h4>
+                                <div className="flex items-baseline gap-1.5 mt-0.5">
+                                  <span className="text-xs font-black text-brand-800">
+                                    ₹{discountedPrice || originalPrice}
+                                  </span>
+                                  {originalPrice > 0 && discountedPrice < originalPrice && (
+                                    <span className="text-[10px] text-slate-400 line-through">
+                                      ₹{originalPrice}
+                                    </span>
                                   )}
-                                </button>
+                                  <span className="text-[10px] text-slate-500 font-medium">
+                                    /{rel.unit || "set"}
+                                  </span>
+                                </div>
+                                {savingsPerUnit > 0 && (
+                                  <span className="text-[9.5px] font-bold text-brand-700 block mt-0.5">
+                                    Save ₹{(savingsPerUnit * itemQty).toLocaleString("en-IN")} on {itemQty}
+                                  </span>
+                                )}
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
+
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              {/* Quantity Stepper */}
+                              <div className="h-8 inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5 shadow-2xs">
+                                <button
+                                  type="button"
+                                  onClick={() => handlePairQtyChange(rel.slug, itemQty - 1)}
+                                  disabled={itemQty <= 1}
+                                  className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed font-bold cursor-pointer transition-all"
+                                  title="Decrease quantity"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  value={itemQty}
+                                  onChange={(e) => {
+                                    const cleaned = e.target.value.replace(/\D/g, "");
+                                    handlePairQtyChange(rel.slug, cleaned);
+                                  }}
+                                  className="w-7 text-center text-xs font-bold text-slate-800 bg-transparent outline-none select-all"
+                                  aria-label="Quantity"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handlePairQtyChange(rel.slug, itemQty + 1)}
+                                  className="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-white font-bold cursor-pointer transition-all"
+                                  title="Increase quantity"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+
+                              {/* Add Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleAddPairToQuote(rel)}
+                                className={`h-8 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow-xs ${
+                                  isItemAdded
+                                    ? "bg-brand-800 text-white"
+                                    : "bg-brand-700 hover:bg-brand-600 text-white"
+                                }`}
+                              >
+                                {isItemAdded ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    <span>Added</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    <span>Add</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-slate-400">
-                      <ShoppingBag className="w-10 h-10 mx-auto mb-2 opacity-40 text-slate-400" />
-                      <p className="text-xs font-semibold text-slate-600">No suggestions right now</p>
+                    <div className="text-center py-6 text-slate-500 bg-white rounded-2xl border border-slate-200">
+                      <Gift className="w-8 h-8 mx-auto mb-1 text-slate-400" />
+                      <p className="text-xs font-semibold">Bulk Dispatch Ready</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Proceed to check your unlocked volume rewards.</p>
                     </div>
                   )}
                 </div>
 
-                {/* Step 1 Footer: Navigate to Step 2 (Branding) */}
-                <div
-                  className="flex-shrink-0 px-5 py-3 border-t border-slate-100 space-y-2.5"
-                  style={{ background: "#f8fafc" }}
-                >
+                {/* Step 1 Footer: Skip & Next to Perks */}
+                <div className="flex-shrink-0 px-5 py-3.5 border-t border-slate-200 bg-white space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500 text-[11px] font-medium">Order Subtotal:</span>
+                    <span className="font-extrabold text-slate-900">
+                      ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                    </span>
+                  </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer"
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
                     >
-                      Skip
+                      Skip Add-ons
                     </button>
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
                     >
-                      <span>Next</span>
+                      <span>Next: Unlocked Perks</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -2459,155 +2208,381 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               </>
             )}
 
-            {/* ── STEP 2: BRANDING & CUSTOMIZATION OPTIONS ── */}
+            {/* ── STEP 2: CELEBRATORY UNLOCKED TIER PERKS ── */}
             {modalStep === 2 && (
               <>
-                <div className="overflow-y-auto flex-1 px-5 py-2 space-y-3.5">
-                  {/* Tier Allowance Banner */}
-                  <div
-                    className={`p-3 rounded-xl border text-xs flex items-center justify-between gap-2 ${activeTierObj.tierNumber === 1
-                      ? "bg-amber-50/80 border-amber-200 text-amber-900"
-                      : activeTierObj.tierNumber === 2
-                        ? "bg-brand-50/80 border-brand-200 text-brand-900"
-                        : "bg-emerald-50 border-emerald-300 text-emerald-950"
-                      }`}
+                {/* Step 2 Header: Slim Dark Brand Green */}
+                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                    <span>🎉</span>
+                    <span>You&apos;ve unlocked {activeTierObj.tierNumber === 1 ? "Tier 1 — Starter" : activeTierObj.tierNumber === 2 ? "Tier 2 — Personalized" : "Tier 3 — Fully Custom"}!</span>
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    aria-label="Close"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Sparkles className="w-4 h-4 flex-shrink-0 text-brand-600" />
-                      <span className="font-medium text-[11px] leading-tight">
-                        {activeTierObj.tierNumber === 1 && (
-                          <>
-                            <strong>Tier 1:</strong> Select any <strong>2 of 5</strong> complimentary customizations.
-                          </>
-                        )}
-                        {activeTierObj.tierNumber === 2 && (
-                          <>
-                            <strong>Tier 2:</strong> Select any <strong>3 of 5</strong> complimentary customizations.
-                          </>
-                        )}
-                        {activeTierObj.tierNumber >= 3 && (
-                          <>
-                            <strong>Tier 3:</strong> All <strong>5 of 5</strong> customizations complimentary!
-                          </>
-                        )}
-                      </span>
-                    </div>
-                    <span
-                      className={`text-[11px] font-extrabold px-2.5 py-1 rounded-full flex-shrink-0 ${selectedCustomizations.length === maxCustomizations
-                        ? "bg-brand-600 text-white shadow-xs"
-                        : "bg-white border border-slate-200 text-slate-700"
-                        }`}
-                    >
-                      {selectedCustomizations.length}/{maxCustomizations} Selected
-                    </span>
-                  </div>
-
-                  {/* Customization Options Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {currentCustomizations.map((opt) => {
-                      const isSelected = selectedCustomizations.includes(opt.id);
-                      const OptIcon = opt.icon;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => handleToggleCustomization(opt.id)}
-                          className={`w-full text-left p-3 rounded-2xl border-2 transition-all duration-200 cursor-pointer flex items-center gap-3 group ${isSelected
-                            ? "border-brand-500 shadow-sm"
-                            : "border-slate-200 hover:border-brand-300"
-                            }`}
-                          style={{ background: isSelected ? "#f0fdf4" : "#f8fafc" }}
-                        >
-                          <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${isSelected
-                              ? "bg-brand-600 text-white"
-                              : "border-2 border-slate-300 bg-white group-hover:border-brand-400"
-                              }`}
-                          >
-                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                          </div>
-                          <div
-                            className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 ${isSelected
-                              ? "bg-white border-brand-200 text-brand-600"
-                              : "bg-white border-slate-200 text-slate-400 group-hover:text-brand-600"
-                              }`}
-                          >
-                            <OptIcon className="w-4 h-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-bold text-slate-900">
-                                {opt.name}
-                              </span>
-                              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200">
-                                {opt.tag}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-500 leading-snug mt-0.5">
-                              {opt.desc}
-                            </p>
-                          </div>
-                          <div className="flex-shrink-0">
-                            {isSelected ? (
-                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-1 rounded-full flex items-center gap-1">
-                                <Check className="w-3 h-3 stroke-[3]" />
-                                Included
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-slate-400 group-hover:text-brand-700 px-2 py-1 rounded-full border border-transparent group-hover:border-brand-200 group-hover:bg-brand-50 transition-all">
-                                Select
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Branding notes */}
-                  <div className="space-y-1.5 pt-1">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
-                      <FileText className="w-3.5 h-3.5 text-brand-600" /> Branding Notes (Optional)
-                    </label>
-                    <textarea
-                      value={brandingNotes}
-                      onChange={(e) => setBrandingNotes(e.target.value)}
-                      rows={2}
-                      placeholder="E.g. 'Logo file will be emailed — please center on front lid.'"
-                      className="w-full text-xs text-slate-800 bg-slate-50 border border-slate-200 rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-brand-400 focus:bg-white placeholder:text-slate-400 transition-all"
-                    />
-                  </div>
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                {/* Step 2 Footer: Save & Proceed */}
-                <div
-                  className="flex-shrink-0 px-5 py-3 border-t border-slate-100 space-y-2.5"
-                  style={{ background: "#f8fafc" }}
-                >
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-1.5 text-slate-500">
-                      <Clock className="w-3.5 h-3.5 text-brand-600" />
-                      <strong className="text-slate-700">Lead Time:</strong> {activeOccasion.leadTime || "5–7 Days"}
+                {/* Step 2 Body: Checklist of Included Perks */}
+                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-3 bg-slate-50/50">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                      Included Perks Checklist
                     </span>
-                    <span className="font-extrabold text-slate-900">
-                      Total: ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
+                      Cumulative Value
                     </span>
                   </div>
+
+                  {/* Perk 1: Tier 1 Starter (Always Unlocked at MOQ 10+) */}
+                  <div
+                    className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-300 shadow-2xs relative overflow-hidden group"
+                    style={{ animation: "gfPerkPopIn 0.35s ease-out forwards" }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                        style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards" }}
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                            Welcome &amp; Thank-You Kit included
+                          </h4>
+                          <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            Tier 1 Starter
+                          </span>
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                          A little something extra, free with your order. (Personalize message in Step 3)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Perk 2: Tier 2 Personalized (Unlocked at 50+ sets) */}
+                  {activeTierObj.tierNumber >= 2 ? (
+                    <div
+                      className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-400 shadow-2xs relative overflow-hidden group"
+                      style={{ animation: "gfPerkPopIn 0.45s ease-out forwards" }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                          style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.1s" }}
+                        >
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                              Your Name Engraved on the Product
+                            </h4>
+                            <span className="text-[10px] font-extrabold text-brand-800 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
+                              Tier 2 Perk ✨
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                            Make it yours — free personalization unlocked at this tier.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dimmed Locked State for Tier 2 */
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">
+                              Your Name Engraved on the Product
+                            </h4>
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                              Tier 2 (50+ Sets)
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
+                            Make it yours — free personalization unlocked at this tier.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="pl-10 pt-1 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Add {Math.max(0, 50 - qty)} more sets to unlock
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(50)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Sparkles className="w-3 h-3 text-brand-600" />
+                          <span>Upgrade to 50 sets</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Perk 3: Tier 3 Fully Custom (Unlocked at 100+ sets) */}
+                  {activeTierObj.tierNumber >= 3 ? (
+                    <div
+                      className="p-3.5 rounded-2xl border transition-all duration-300 bg-gradient-to-r from-amber-50/50 via-white to-emerald-50/50 border-amber-300 shadow-2xs relative overflow-hidden group"
+                      style={{ animation: "gfPerkPopIn 0.55s ease-out forwards" }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                          style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.2s" }}
+                        >
+                          <Check className="w-4 h-4 stroke-[3]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                              Custom Product Name + Branded Box Sleeve
+                            </h4>
+                            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                              Tier 3 VIP 👑
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                            The complete personalized experience — gift-ready, straight out of the box.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* Dimmed Locked State for Tier 3 */
+                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-2">
+                      <div className="flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">
+                              Custom Product Name + Branded Box Sleeve
+                            </h4>
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                              Tier 3 (100+ Sets)
+                            </span>
+                          </div>
+                          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
+                            The complete personalized experience — gift-ready, straight out of the box.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="pl-10 pt-1 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Add {Math.max(0, 100 - qty)} more sets to unlock
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleSetExactQty(100)}
+                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:border-amber-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                        >
+                          <Crown className="w-3 h-3 text-amber-600" />
+                          <span>Upgrade to 100 sets</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Step 2 Footer: Order Summary & Actions */}
+                <div className="flex-shrink-0 px-5 py-4 border-t border-slate-200 bg-white space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-slate-500 text-[11px] font-medium block">Order Snapshot:</span>
+                      <span className="font-extrabold text-slate-900 text-sm">
+                        {qty} {unitLabelPlural} • ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {totalSavings > 0 && (
+                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
+                        Saved ₹{totalSavings.toLocaleString("en-IN")} ({activeTierDiscountPct}% OFF)
+                      </span>
+                    )}
+                  </div>
+
                   <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
                       onClick={() => setModalStep(1)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
                     >
-                      <span>← Back</span>
+                      ← Back to Add-ons
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(3)}
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
+                    >
+                      <span>Next: Personalize Card</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* ── STEP 3: WELCOME & THANK-YOU KIT PERSONALIZATION (SENDER, RECEIVER, 50-60 WORD MESSAGE) ── */}
+            {modalStep === 3 && (
+              <>
+                {/* Step 3 Header: Slim Dark Brand Green */}
+                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                    <span>💌</span>
+                    <span>Personalize Card Message</span>
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    aria-label="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Step 3 Body: Form Inputs for Sender, Receiver, and 50-60 words Message */}
+                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 bg-slate-50/50">
+                  {/* Context notice */}
+                  <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                    <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                      <FileText className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-emerald-950 block">
+                        Included in every set ({qty} {unitLabelPlural}):
+                      </span>
+                      <span className="text-[11px] text-emerald-800">
+                        Custom printed plantable seed paper or kraft story card inside each gift box.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Input 1: Sender Name */}
+                  <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-brand-700" />
+                        <span>Sender Name / Organization (From)</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={senderName}
+                      onChange={(e) => setSenderName(e.target.value)}
+                      placeholder="e.g. Acme Corp Leadership Team / Rajesh Sharma"
+                      className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                    />
+                  </div>
+
+                  {/* Input 2: Receiver Name */}
+                  <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-brand-700" />
+                        <span>Receiver Name / Recipient Group (To)</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={receiverName}
+                      onChange={(e) => setReceiverName(e.target.value)}
+                      placeholder="e.g. Valued Partner / Jane Smith / Team Member"
+                      className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                    />
+                  </div>
+
+                  {/* Input 3: Gift Message with 50-60 Word Counter & Quick Presets */}
+                  <div className="space-y-2 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                    {(() => {
+                      const messageWordCount = giftMessage.trim()
+                        ? giftMessage.trim().split(/\s+/).filter(Boolean).length
+                        : 0;
+
+                      return (
+                        <>
+                          <div className="flex items-center justify-between flex-wrap gap-1.5">
+                            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-brand-700" />
+                              <span>Card Message (50–60 words)</span>
+                            </label>
+                            <span
+                              className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${
+                                messageWordCount >= 50 && messageWordCount <= 60
+                                  ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                                  : messageWordCount > 60
+                                  ? "bg-amber-100 text-amber-900 border-amber-300"
+                                  : "bg-slate-100 text-slate-600 border-slate-200"
+                              }`}
+                            >
+                              {messageWordCount >= 50 && messageWordCount <= 60 ? (
+                                <span>✓ {messageWordCount} / 60 words (Target met!)</span>
+                              ) : messageWordCount > 60 ? (
+                                <span>⚠ {messageWordCount} words ({messageWordCount - 60} words over target)</span>
+                              ) : (
+                                <span>{messageWordCount} / 60 words ({Math.max(0, 50 - messageWordCount)} more for 50)</span>
+                              )}
+                            </span>
+                          </div>
+
+                          <textarea
+                            rows={4}
+                            value={giftMessage}
+                            onChange={(e) => setGiftMessage(e.target.value)}
+                            placeholder="Write your personalized 50 to 60 word greeting or thank-you message to print on the kit card..."
+                            className="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all resize-none font-medium leading-relaxed"
+                          />
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Step 3 Footer: Order Summary & Review Basket */}
+                <div className="flex-shrink-0 px-5 py-4 border-t border-slate-200 bg-white space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-slate-500 text-[11px] font-medium block">Order Snapshot:</span>
+                      <span className="font-extrabold text-slate-900 text-sm">
+                        {qty} {unitLabelPlural} • ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {totalSavings > 0 && (
+                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
+                        Saved ₹{totalSavings.toLocaleString("en-IN")} ({activeTierDiscountPct}% OFF)
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setModalStep(2)}
+                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
+                    >
+                      ← Back to Perks
                     </button>
                     <Link
                       href="/quote"
                       onClick={handleSaveCustomizations}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-600 hover:bg-brand-500 transition-all cursor-pointer"
+                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
                     >
                       <ShoppingBag className="w-4 h-4" />
-                      <span>Review Basket &amp; Quote</span>
+                      <span>Review Basket</span>
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -2620,6 +2595,27 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       )}
 
       <style>{`
+        @keyframes gfPerkPopIn {
+          0% {
+            opacity: 0;
+            transform: translateY(8px) scale(0.97);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        @keyframes gfCheckPop {
+          0% {
+            transform: scale(0);
+          }
+          70% {
+            transform: scale(1.3);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
         @keyframes gfModalBackdrop {
           from { opacity: 0; }
           to { opacity: 1; }
@@ -2627,7 +2623,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         @keyframes gfModalBox {
           from {
             opacity: 0;
-            transform: scale(0.95) translateY(16px);
+            transform: scale(0.94) translateY(14px);
           }
           to {
             opacity: 1;
