@@ -22,10 +22,10 @@ export default function Card({ p, context }) {
   return (
     <article className="group bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-2xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col overflow-hidden">
       {/* Media & Badges */}
-      <div className="relative aspect-[4/3] sm:aspect-square bg-slate-50 overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-square bg-slate-50 overflow-hidden flex items-center justify-center">
         {/* Category Badge - floating top-left */}
         {p.category && (
-          <div className="absolute top-2 left-2 z-10 pointer-events-none">
+          <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
             <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white/95 text-slate-700 border border-slate-200/70 shadow-2xs">
               {p.category}
             </span>
@@ -34,8 +34,8 @@ export default function Card({ p, context }) {
 
         {/* Finishes Badge - floating top-right */}
         {p.colours?.length > 1 && (
-          <div className="absolute top-2 right-2 z-10 pointer-events-none">
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-900/60 text-white backdrop-blur-xs">
+          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-900/65 text-white backdrop-blur-xs">
               {p.colours.length} finishes
             </span>
           </div>
@@ -68,7 +68,7 @@ export default function Card({ p, context }) {
       </div>
 
       {/* Body Content */}
-      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between gap-2">
+      <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between gap-2.5">
         <div>
           <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">
             <Link href={productHref}>
@@ -76,28 +76,28 @@ export default function Card({ p, context }) {
             </Link>
           </h3>
 
-          <p className="hidden sm:block mt-0.5 text-xs text-slate-500 line-clamp-1 leading-relaxed">
+          <p className="mt-0.5 text-[11px] text-slate-500 line-clamp-1 leading-snug">
             {p.tagline || p.desc}
           </p>
 
-          {/* Pricing & MOQ in a single compact line */}
-          <div className="flex items-baseline justify-between mt-1 sm:mt-1.5">
+          {/* Pricing & MOQ */}
+          <div className="flex items-baseline justify-between mt-1.5">
             <div className="flex items-baseline gap-1">
-              <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+              <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
                 {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
               </span>
               <span className="text-[10px] text-slate-400 font-medium">
                 /{p.unit || "unit"}
               </span>
             </div>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] whitespace-nowrap">
+            <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] whitespace-nowrap">
               MOQ {p.moq}
             </span>
           </div>
         </div>
 
         {/* Action Button */}
-        <div className="pt-1.5 border-t border-slate-100">
+        <div className="pt-2 border-t border-slate-100">
           <AddToQuote p={p} />
         </div>
       </div>
