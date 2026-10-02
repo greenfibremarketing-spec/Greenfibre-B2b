@@ -1990,7 +1990,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       {/* =========================================================================
           MOBILE VIEW (< md) - EXACT HIGH-CONVERTING DESIGN FROM USER SPEC
          ========================================================================= */}
-      <div className="md:hidden space-y-4 pb-28">
+      <div className="md:hidden space-y-4 pb-4">
         {/* 1. Main Stage Image with Gift Set Pill Badge */}
         <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center">
           <img
@@ -2432,26 +2432,26 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       </div>
 
       {/* MOBILE FIXED BOTTOM ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-4 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] md:hidden">
-        <div>
-          <div className="text-[10px] text-slate-500 uppercase tracking-wide font-medium">You pay</div>
-          <div className="text-lg font-black text-slate-900">
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2.5 flex items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] md:hidden">
+        <div className="flex-shrink-0">
+          <div className="text-[10px] text-slate-500 uppercase tracking-wide font-medium leading-tight">You pay</div>
+          <div className="text-base sm:text-lg font-black text-slate-900 leading-tight">
             ₹{estimatedSubtotal.toLocaleString("en-IN")}
           </div>
         </div>
         <button
           type="button"
           onClick={handleAddToCart}
-          className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
+          className={`px-4 sm:px-5 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs flex-shrink-0 ${
             added
               ? "bg-brand-600 text-white"
-              : "bg-[#1b5e3f] hover:bg-[#144830] active:scale-[0.99] text-white"
+              : "bg-[#1b5e3f] hover:bg-[#144830] active:scale-[0.98] text-white"
           }`}
         >
           {added ? (
             <>
-              <Check className="w-4 h-4 stroke-[3]" />
-              <span>Added {qty} {unitLabelPlural} to basket</span>
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Added!</span>
             </>
           ) : (
             <span>Add {qty} {unitLabelPlural.toLowerCase()} to basket</span>
