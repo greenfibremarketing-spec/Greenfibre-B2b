@@ -1021,10 +1021,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         <div className="md:col-span-6 lg:col-span-6 space-y-4 w-full max-w-[540px] mx-auto md:mx-0 min-w-0 md:sticky md:top-24">
 
           {/* Gallery Canvas with Left Vertical Thumbnails */}
-          <div className="flex flex-col-reverse sm:flex-row gap-3 items-start min-w-0 w-full">
-            {/* Left Vertical Thumbnails Strip */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start min-w-0 w-full">
+            {/* Left Vertical Thumbnails Strip (Desktop only - hidden on mobile) */}
             {images.length > 1 && (
-              <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto sm:max-h-[460px] w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar flex-shrink-0">
+              <div className="hidden sm:flex sm:flex-col gap-2 sm:overflow-y-auto sm:max-h-[460px] sm:w-auto pb-0 no-scrollbar flex-shrink-0">
                 {images.map((img, idx) => {
                   const isActive = activeImageIndex === idx;
                   return (
@@ -1032,7 +1032,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       key={img + idx}
                       type="button"
                       onClick={() => handleSelectImage(idx)}
-                      className={`relative w-15 h-15 sm:w-16 sm:h-16 aspect-square rounded-xl overflow-hidden border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${isActive
+                      className={`relative w-14 h-14 sm:w-16 sm:h-16 aspect-square rounded-xl overflow-hidden border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${isActive
                         ? "ring-2 ring-brand-600 border-brand-600 shadow-sm scale-102 bg-white"
                         : "border-slate-200 hover:border-brand-400 opacity-75 hover:opacity-100 bg-slate-50"
                         }`}
@@ -1115,6 +1115,25 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <span className="text-slate-400">•</span>
                 <span className="text-brand-200 font-semibold">{activeOccasion.label}</span>
               </div>
+
+              {/* Mobile pagination dots */}
+              {images.length > 1 && (
+                <div className="sm:hidden absolute bottom-3.5 right-3.5 flex items-center gap-1 bg-slate-900/60 backdrop-blur-xs px-2 py-1 rounded-full z-10">
+                  {images.map((_, dotIdx) => (
+                    <button
+                      key={dotIdx}
+                      type="button"
+                      onClick={() => handleSelectImage(dotIdx)}
+                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                        dotIdx === activeImageIndex
+                          ? "w-3.5 bg-brand-400"
+                          : "w-1.5 bg-white/60 hover:bg-white"
+                      }`}
+                      aria-label={`Jump to photo ${dotIdx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
