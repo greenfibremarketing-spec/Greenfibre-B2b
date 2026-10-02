@@ -20,14 +20,23 @@ export default function Card({ p, context }) {
     : `/products/${p.slug}`;
 
   return (
-    <article className="group bg-white rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-sm hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col overflow-hidden">
+    <article className="group bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-2xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col overflow-hidden">
       {/* Media & Badges */}
-      <div className="relative aspect-square bg-white overflow-hidden flex items-center justify-center">
-        {/* Category Badge */}
+      <div className="relative aspect-[4/3] sm:aspect-square bg-slate-50 overflow-hidden flex items-center justify-center">
+        {/* Category Badge - floating top-left */}
         {p.category && (
-          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold bg-white/95 text-slate-700 border border-slate-200 shadow-sm">
+          <div className="absolute top-2 left-2 z-10 pointer-events-none">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-white/95 text-slate-700 border border-slate-200/70 shadow-2xs">
               {p.category}
+            </span>
+          </div>
+        )}
+
+        {/* Finishes Badge - floating top-right */}
+        {p.colours?.length > 1 && (
+          <div className="absolute top-2 right-2 z-10 pointer-events-none">
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-900/60 text-white backdrop-blur-xs">
+              {p.colours.length} finishes
             </span>
           </div>
         )}
@@ -51,7 +60,7 @@ export default function Card({ p, context }) {
             className="img-fallback-badge w-full h-full flex flex-col items-center justify-center bg-slate-50 text-emerald-800 p-4"
             style={{ display: p.image ? "none" : "flex" }}
           >
-            <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-2xl font-black shadow-2xs">
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-xl font-black shadow-2xs">
               {p.name ? p.name[0].toUpperCase() : "G"}
             </div>
           </div>
@@ -59,52 +68,37 @@ export default function Card({ p, context }) {
       </div>
 
       {/* Body Content */}
-      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between gap-2">
         <div>
-          <div className="flex items-center justify-between gap-1 text-xs text-slate-500 mb-1">
-            <span className="font-semibold text-brand-800 bg-brand-50 px-1.5 py-0.5 rounded border border-brand-200 text-[9px] sm:text-[10px] uppercase tracking-wide">
-              Gift Set • {p.size || "Multi-Piece"}
-            </span>
-            <span className="inline-flex items-center text-[9px] sm:text-[11px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-              {p.colours?.length || 1} Finishes
-            </span>
-          </div>
-
-          <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">
             <Link href={productHref}>
               {p.name}
             </Link>
           </h3>
 
-
-          <p className="mt-1 text-xs text-slate-500 line-clamp-1 sm:line-clamp-2 leading-relaxed">
+          <p className="hidden sm:block mt-0.5 text-xs text-slate-500 line-clamp-1 leading-relaxed">
             {p.tagline || p.desc}
           </p>
-        </div>
 
-        {/* Pricing & MOQ */}
-        <div className="pt-3 border-t border-slate-100">
-          <div className="flex items-baseline justify-between mb-3">
-            <div>
-              <span className="text-[11px] font-medium text-slate-400 block">From</span>
-              <div className="flex items-baseline gap-1">
-                <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-                  {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
-                </span>
-                <span className="text-xs text-slate-500 font-semibold">
-                  /gift set
-                </span>
-              </div>
+          {/* Pricing & MOQ in a single compact line */}
+          <div className="flex items-baseline justify-between mt-1 sm:mt-1.5">
+            <div className="flex items-baseline gap-1">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-tight">
+                {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
+              </span>
+              <span className="text-[10px] text-slate-400 font-medium">
+                /{p.unit || "unit"}
+              </span>
             </div>
-            <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] whitespace-nowrap">
-              MOQ {p.moq} {p.moq === 1 ? "Set" : "Sets"}
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] whitespace-nowrap">
+              MOQ {p.moq}
             </span>
           </div>
+        </div>
 
-          {/* Add to Basket Action Row */}
-          <div>
-            <AddToQuote p={p} />
-          </div>
+        {/* Action Button */}
+        <div className="pt-1.5 border-t border-slate-100">
+          <AddToQuote p={p} />
         </div>
       </div>
     </article>

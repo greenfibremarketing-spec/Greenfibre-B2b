@@ -289,107 +289,95 @@ export function Count() {
 }
 
 export function AddToQuote({ p }) {
-  const { add } = useQuote() || {};
-  const [colour, setColour] = useState(p.colours ? p.colours[0] : "Natural Sand");
-  const [qty, setQty] = useState(p.moq || 50);
+  const { add, items, setQty, remove } = useQuote() || {};
   const [added, setAdded] = useState(false);
+  const defaultColour = p.colours ? p.colours[0] : "Natural Sand";
+  const minQty = p.moq || 10;
+  const step = 10;
 
-  const step   = 10;
-  const minQty = p.moq || 1;
+  // Check if item is already added to quote basket
+  const basketItem = items?.find(
+    (x) => x.slug === p.slug || x.key?.startsWith(`${p.slug}-`)
+  );
 
-  const handleDecrease = () => setQty((prev) => Math.max(minQty, prev - step));
-  const handleIncrease = () => setQty((prev) => prev + step);
-
-  const handleAdd = () => {
+  const handleAdd = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!add) return;
-    add(p, colour, Math.max(qty, minQty));
+    add(p, defaultColour, minQty);
     setAdded(true);
-    setTimeout(() => setAdded(false), 1800);
+    setTimeout(() => setAdded(false), 1500);
   };
 
-  return (
-    <div className="space-y-2 w-full pt-1">
-      {p.colours && p.colours.length > 1 && (
-        <div className="relative">
-          <select
-            aria-label="Select Finish"
-            value={colour}
-            onChange={(e) => setColour(e.target.value)}
-            className="w-full h-8 sm:h-9 text-[11px] sm:text-xs py-1 pl-2.5 pr-7 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:bg-white outline-none cursor-pointer transition-colors appearance-none"
-          >
-            {p.colours.map((c) => (
-              <option key={c} value={c}>
-                Finish: {c}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-        </div>
-      )}
+  const handleDecrease = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!basketItem) return;
+    const nextQty = basketItem.qty - step;
+    if (nextQty < minQty) {
+      if (remove) remove(basketItem.key);
+    } else if (setQty) {
+      setQty(basketItem.key, nextQty);
+    }
+  };
 
-      {/* Stepper + Action Button: Stacked on mobile cards to prevent any overflow/clipping; side-by-side on sm+ */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2 w-full">
-        {/* Quantity Stepper */}
-        <div className="h-8 sm:h-9 flex items-center justify-between sm:justify-center bg-slate-100/90 border border-slate-200 rounded-xl p-0.5 shadow-xs flex-shrink-0">
-          <button
-            type="button"
-            onClick={handleDecrease}
-            disabled={qty <= minQty}
-            className="w-8 sm:w-7 h-7 sm:h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold text-sm cursor-pointer"
-            title="Decrease quantity"
-            aria-label="Decrease quantity"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
+  const handleIncrease = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!basketItem || !setQty) return;
+    setQty(basketItem.key, basketItem.qty + step);
+  };
 
-          <div className="flex items-center justify-center px-1">
-            <input
-              aria-label={`Quantity in ${p.unit}`}
-              type="number"
-              min={minQty}
-              step={step}
-              value={qty}
-              onChange={(e) => setQty(Math.max(minQty, parseInt(e.target.value, 10) || minQty))}
-              className="w-10 sm:w-8 text-center text-xs font-bold text-slate-900 bg-transparent outline-none"
-            />
-            <span className="text-[10px] text-slate-400 font-medium sm:hidden">qty</span>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleIncrease}
-            className="w-8 sm:w-7 h-7 sm:h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs transition-all font-bold text-sm cursor-pointer"
-            title="Increase quantity"
-            aria-label="Increase quantity"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Add to Basket Button */}
+  if (basketItem) {
+    return (
+      <div className="w-full h-7.5 sm:h-8 flex items-center justify-between bg-brand-50 border border-brand-200 rounded-lg p-0.5 shadow-2xs">
         <button
           type="button"
-          onClick={handleAdd}
-          title={`Add ${qty} ${p.unit} to wholesale basket`}
-          className={`h-8.5 sm:h-9 w-full sm:flex-1 px-3 sm:px-3.5 text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] cursor-pointer whitespace-nowrap min-w-0 ${
-            added
-              ? "bg-emerald-600 text-white shadow-emerald-600/30"
-              : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-md hover:-translate-y-0.5"
-          }`}
+          onClick={handleDecrease}
+          className="w-6.5 h-6.5 rounded-md flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
+          title="Decrease quantity"
+          aria-label="Decrease quantity"
         >
-          {added ? (
-            <>
-              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5] flex-shrink-0" />
-              <span>Added to Basket!</span>
-            </>
-          ) : (
-            <>
-              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span>Add to Basket</span>
-            </>
-          )}
+          <Minus className="w-3 h-3" />
+        </button>
+        <span className="text-[11px] font-bold text-brand-900 px-1 truncate select-none">
+          {basketItem.qty} in Basket
+        </span>
+        <button
+          type="button"
+          onClick={handleIncrease}
+          className="w-6.5 h-6.5 rounded-md flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
+          title="Increase quantity"
+          aria-label="Increase quantity"
+        >
+          <Plus className="w-3 h-3" />
         </button>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleAdd}
+      title={`Add MOQ (${minQty}) to wholesale basket`}
+      className={`w-full h-7.5 sm:h-8 px-2.5 text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 shadow-2xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${
+        added
+          ? "bg-emerald-600 text-white shadow-emerald-600/30"
+          : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-2xs"
+      }`}
+    >
+      {added ? (
+        <>
+          <Check className="w-3.5 h-3.5 stroke-[2.5] flex-shrink-0" />
+          <span>Added!</span>
+        </>
+      ) : (
+        <>
+          <ShoppingBag className="w-3.5 h-3.5 flex-shrink-0" />
+          <span>Add to Basket</span>
+        </>
+      )}
+    </button>
   );
 }
