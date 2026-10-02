@@ -308,14 +308,14 @@ export function AddToQuote({ p }) {
   };
 
   return (
-    <div className="space-y-2.5 w-full pt-1.5">
+    <div className="space-y-2 w-full pt-1">
       {p.colours && p.colours.length > 1 && (
         <div className="relative">
           <select
             aria-label="Select Finish"
             value={colour}
             onChange={(e) => setColour(e.target.value)}
-            className="w-full h-9 text-xs py-1.5 pl-3 pr-8 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:bg-white outline-none cursor-pointer transition-colors appearance-none"
+            className="w-full h-8 sm:h-9 text-[11px] sm:text-xs py-1 pl-2.5 pr-7 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl text-slate-800 font-semibold focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:bg-white outline-none cursor-pointer transition-colors appearance-none"
           >
             {p.colours.map((c) => (
               <option key={c} value={c}>
@@ -323,37 +323,42 @@ export function AddToQuote({ p }) {
               </option>
             ))}
           </select>
-          <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       )}
 
-      <div className="flex items-center gap-2 w-full">
-        <div className="h-10 inline-flex items-center bg-slate-100/90 border border-slate-200 rounded-xl p-0.5 shadow-xs flex-shrink-0">
+      {/* Stepper + Action Button: Stacked on mobile cards to prevent any overflow/clipping; side-by-side on sm+ */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2 w-full">
+        {/* Quantity Stepper */}
+        <div className="h-8 sm:h-9 flex items-center justify-between sm:justify-center bg-slate-100/90 border border-slate-200 rounded-xl p-0.5 shadow-xs flex-shrink-0">
           <button
             type="button"
             onClick={handleDecrease}
             disabled={qty <= minQty}
-            className="w-7 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold text-sm cursor-pointer"
+            className="w-8 sm:w-7 h-7 sm:h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold text-sm cursor-pointer"
             title="Decrease quantity"
             aria-label="Decrease quantity"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
 
-          <input
-            aria-label={`Quantity in ${p.unit}`}
-            type="number"
-            min={minQty}
-            step={step}
-            value={qty}
-            onChange={(e) => setQty(Math.max(minQty, parseInt(e.target.value, 10) || minQty))}
-            className="w-9 text-center text-xs font-bold text-slate-900 bg-transparent outline-none"
-          />
+          <div className="flex items-center justify-center px-1">
+            <input
+              aria-label={`Quantity in ${p.unit}`}
+              type="number"
+              min={minQty}
+              step={step}
+              value={qty}
+              onChange={(e) => setQty(Math.max(minQty, parseInt(e.target.value, 10) || minQty))}
+              className="w-10 sm:w-8 text-center text-xs font-bold text-slate-900 bg-transparent outline-none"
+            />
+            <span className="text-[10px] text-slate-400 font-medium sm:hidden">qty</span>
+          </div>
 
           <button
             type="button"
             onClick={handleIncrease}
-            className="w-7 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs transition-all font-bold text-sm cursor-pointer"
+            className="w-8 sm:w-7 h-7 sm:h-8 rounded-lg flex items-center justify-center text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-xs transition-all font-bold text-sm cursor-pointer"
             title="Increase quantity"
             aria-label="Increase quantity"
           >
@@ -361,11 +366,12 @@ export function AddToQuote({ p }) {
           </button>
         </div>
 
+        {/* Add to Basket Button */}
         <button
           type="button"
           onClick={handleAdd}
           title={`Add ${qty} ${p.unit} to wholesale basket`}
-          className={`h-10 flex-1 px-2.5 sm:px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm active:scale-[0.98] cursor-pointer whitespace-nowrap min-w-0 ${
+          className={`h-8.5 sm:h-9 w-full sm:flex-1 px-3 sm:px-3.5 text-xs font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] cursor-pointer whitespace-nowrap min-w-0 ${
             added
               ? "bg-emerald-600 text-white shadow-emerald-600/30"
               : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-md hover:-translate-y-0.5"
@@ -373,12 +379,12 @@ export function AddToQuote({ p }) {
         >
           {added ? (
             <>
-              <Check className="w-4 h-4 stroke-[2.5] flex-shrink-0" />
-              <span>Added to Basket</span>
+              <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5] flex-shrink-0" />
+              <span>Added to Basket!</span>
             </>
           ) : (
             <>
-              <ShoppingBag className="w-4 h-4 flex-shrink-0" />
+              <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>Add to Basket</span>
             </>
           )}

@@ -77,7 +77,7 @@ export default function Card({ p, context }) {
           </h3>
 
 
-          <p className="mt-1 text-xs text-slate-500 line-clamp-2 leading-relaxed">
+          <p className="mt-1 text-xs text-slate-500 line-clamp-1 sm:line-clamp-2 leading-relaxed">
             {p.tagline || p.desc}
           </p>
         </div>
@@ -96,8 +96,8 @@ export default function Card({ p, context }) {
                 </span>
               </div>
             </div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8]">
-              MOQ {p.moq} {p.moq === 1 ? "Gift Set" : "Gift Sets"}
+            <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded text-[10px] sm:text-[11px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] whitespace-nowrap">
+              MOQ {p.moq} {p.moq === 1 ? "Set" : "Sets"}
             </span>
           </div>
 

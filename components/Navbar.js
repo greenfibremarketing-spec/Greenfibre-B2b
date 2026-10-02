@@ -134,11 +134,11 @@ function NavbarInner() {
             <UserNav />
             <Link
               href="/quote"
-              className="hidden sm:flex relative btn-primary items-center gap-1.5 shadow-xs hover:shadow-md text-xs sm:text-sm py-1.5 px-2.5 sm:px-3.5 rounded-lg flex-shrink-0 transition-all active:scale-95"
+              className="flex relative btn-primary items-center gap-1.5 shadow-xs hover:shadow-md text-xs sm:text-sm py-1.5 px-2 sm:px-3.5 rounded-lg flex-shrink-0 transition-all active:scale-95"
               aria-label="View Wholesale Quote Basket"
             >
               <ShoppingBag className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline whitespace-nowrap">Quote Basket</span>
+              <span className="hidden md:inline whitespace-nowrap">Quote Basket</span>
               <Count />
             </Link>
             <button
