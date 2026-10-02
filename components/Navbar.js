@@ -201,21 +201,32 @@ function NavbarInner() {
           />
           <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-250">
             <div>
-              {/* Drawer Header */}
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+              {/* Drawer Header with Logo, User Icon & Close Button */}
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
                 <img
                   src="/images/logo.png"
                   alt="Green Fibre Logo"
-                  className="h-8.5 w-auto max-w-[140px] object-contain"
+                  className="h-8.5 w-auto max-w-[130px] object-contain"
                 />
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    href={isAuthenticated ? "/profile" : "/login"}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-9 h-9 flex items-center justify-center text-slate-700 hover:text-emerald-800 rounded-xl bg-slate-100/90 hover:bg-emerald-50 border border-slate-200 transition-colors cursor-pointer"
+                    aria-label="User Account"
+                    title={isAuthenticated ? "View Profile" : "Sign In"}
+                  >
+                    <User className="w-4.5 h-4.5" />
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
+                    aria-label="Close menu"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* User Account / Profile Card in Sidebar */}
@@ -349,6 +360,24 @@ function NavbarInner() {
                     <span className="text-sm font-semibold">Gifts &amp; Hampers</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
+                </Link>
+
+                {/* Quote Basket */}
+                <Link
+                  href="/quote"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between p-3 rounded-xl transition-all text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-100 text-emerald-800">
+                      <ShoppingBag className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold">Quote Basket</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Count className="bg-emerald-600 text-white font-extrabold shadow-xs text-[10px] px-1.5 py-0.5 rounded-full" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </div>
                 </Link>
 
                 {/* Our Story */}
