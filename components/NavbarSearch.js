@@ -90,7 +90,7 @@ export default function NavbarSearch() {
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search products..."
-          className="w-40 lg:w-56 text-xs font-medium pl-8 pr-8 py-1.5 bg-slate-100/90 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:w-48 lg:focus:w-64 focus:ring-2 focus:ring-brand-500/20"
+          className="w-40 lg:w-56 h-10 text-xs font-medium pl-8 pr-8 bg-slate-100/90 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-xl text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:w-48 lg:focus:w-64 focus:ring-2 focus:ring-brand-500/20 flex items-center"
         />
         {query ? (
           <button
@@ -117,10 +117,10 @@ export default function NavbarSearch() {
           setIsOpen(!isOpen);
           setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200/90 bg-slate-50/80 hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs flex-shrink-0"
+        className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/90 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0"
         aria-label="Search catalog"
       >
-        <Search className="w-4 h-4" />
+        <Search className="w-4.5 h-4.5 text-slate-600" />
       </button>
 
       {/* Real-Time Dropdown Results Modal */}

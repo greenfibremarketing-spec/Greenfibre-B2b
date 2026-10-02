@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -13,16 +13,24 @@ import {
   ArrowRight,
   Phone,
   ShieldCheck,
-  ChevronRight
+  ChevronRight,
+  User,
+  Search,
+  LogOut,
+  Building
 } from "lucide-react";
 import NavbarSearch from "./NavbarSearch";
 import UserNav from "./UserNav";
-import { Count } from "./Quote";
+import { Count, useQuote } from "./Quote";
+import { useAuth } from "./AuthContext";
 
 function NavbarInner() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, isAuthenticated, logout } = useAuth() || {};
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -40,6 +48,15 @@ function NavbarInner() {
       document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
+
+  const handleMobileSearchSubmit = (e) => {
+    e.preventDefault();
+    const q = mobileSearchQuery.trim();
+    if (q) {
+      setMobileMenuOpen(false);
+      router.push(`/products?q=${encodeURIComponent(q)}`);
+    }
+  };
 
   if (pathname === "/login" || pathname === "/signup") {
     return null;
@@ -60,6 +77,13 @@ function NavbarInner() {
   const isGiftingActive =
     pathname.startsWith("/products") && isGiftingCategory;
   const isStoryActive = pathname === "/story";
+
+  const displayName =
+    user?.fullName ||
+    user?.full_name ||
+    user?.name ||
+    user?.companyName ||
+    (user?.email ? user.email.split("@")[0] : "Corporate Buyer");
 
   return (
     <>
@@ -128,37 +152,41 @@ function NavbarInner() {
             </nav>
           </div>
 
-          {/* RIGHT: Actions - Amazon-style unified alignment */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+          {/* RIGHT: Actions with uniform h-10 height */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             <NavbarSearch />
             <UserNav />
 
-            {/* Quote Basket - Amazon-style shopping bag with floating count badge on mobile */}
+            {/* Quote Basket */}
             <Link
               href="/quote"
-              className="relative h-9 w-9 md:w-auto md:px-3.5 flex items-center justify-center gap-2 rounded-lg border border-slate-200/90 md:border-brand-500 bg-slate-50/80 md:bg-brand-600 hover:bg-slate-100 md:hover:bg-brand-700 text-slate-700 md:text-white transition-all shadow-2xs cursor-pointer active:scale-95 flex-shrink-0"
+              className="relative w-10 h-10 md:w-auto md:h-10 md:px-3.5 flex items-center justify-center gap-2 rounded-xl border border-emerald-200/90 bg-emerald-50/80 hover:bg-emerald-100/90 text-emerald-900 transition-all shadow-2xs hover:shadow-xs cursor-pointer active:scale-95 flex-shrink-0"
               aria-label="View Wholesale Quote Basket"
             >
               <div className="relative flex items-center justify-center">
-                <ShoppingBag className="w-4.5 h-4.5 text-slate-700 md:text-white flex-shrink-0" />
+                <ShoppingBag className="w-4.5 h-4.5 text-emerald-700 flex-shrink-0" strokeWidth={2} />
                 <span className="absolute -top-2 -right-2.5 flex items-center justify-center">
-                  <Count className="bg-brand-600 text-white md:bg-white md:text-brand-800 shadow-xs" />
+                  <Count className="bg-emerald-600 text-white font-extrabold shadow-xs text-[10px] ring-1.5 ring-white" />
                 </span>
               </div>
-              <span className="hidden md:inline text-xs font-bold whitespace-nowrap pl-0.5">
+              <span className="hidden md:inline text-xs font-bold text-emerald-950 whitespace-nowrap pl-0.5">
                 Quote Basket
               </span>
             </Link>
 
-            {/* Mobile Hamburger Menu */}
+            {/* Clean Aesthetic Mobile Menu Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90 bg-slate-50/80 transition-colors cursor-pointer shadow-2xs flex-shrink-0"
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-700 hover:text-emerald-900 hover:bg-emerald-50/70 border border-slate-200/90 hover:border-emerald-200 bg-white transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0"
               aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5 text-slate-700" strokeWidth={2} />
+              ) : (
+                <Menu className="w-5 h-5 text-slate-700" strokeWidth={2} />
+              )}
             </button>
           </div>
         </div>
@@ -173,23 +201,116 @@ function NavbarInner() {
           />
           <div className="fixed top-0 right-0 bottom-0 w-full max-w-sm bg-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-250">
             <div>
-              <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+              {/* Drawer Header */}
+              <div className="p-4 border-b border-slate-100 flex items-center justify-between">
                 <img
                   src="/images/logo.png"
                   alt="Green Fibre Logo"
-                  className="h-11 w-auto max-w-[150px] object-contain"
+                  className="h-8.5 w-auto max-w-[140px] object-contain"
                 />
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors cursor-pointer border border-transparent hover:border-slate-200"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-4 space-y-1.5">
+              {/* User Account / Profile Card in Sidebar */}
+              <div className="p-4 pb-2">
+                {isAuthenticated && user ? (
+                  <div className="bg-emerald-50/80 border border-emerald-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-brand-700 text-white flex items-center justify-center font-bold text-xs shadow-xs flex-shrink-0">
+                        {displayName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-slate-900 truncate">
+                          {displayName}
+                        </div>
+                        <div className="text-[11px] text-emerald-800 font-medium truncate flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600 flex-shrink-0" />
+                          <span>{user.companyName || "Verified B2B Buyer"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        logout?.();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-white transition-colors"
+                      title="Sign Out"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200 flex-shrink-0">
+                        <User className="w-4.5 h-4.5 text-emerald-700" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 block leading-tight">
+                          Corporate B2B Desk
+                        </span>
+                        <span className="text-[11px] text-slate-500 block leading-tight">
+                          Unlock wholesale tier pricing &amp; GST invoices
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-0.5">
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-2xs"
+                      >
+                        <User className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Sign In</span>
+                      </Link>
+                      <Link
+                        href="/signup"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-xs"
+                      >
+                        <Building className="w-3.5 h-3.5 text-white" />
+                        <span>Register B2B</span>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Sidebar Search Bar */}
+              <div className="px-4 pb-2">
+                <form onSubmit={handleMobileSearchSubmit} className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    value={mobileSearchQuery}
+                    onChange={(e) => setMobileSearchQuery(e.target.value)}
+                    placeholder="Search eco tableware catalog..."
+                    className="w-full h-10 text-xs font-medium pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 flex items-center"
+                  />
+                  {mobileSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setMobileSearchQuery("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </form>
+              </div>
+
+              {/* Navigation Menu */}
+              <div className="p-4 pt-1 space-y-1.5">
                 <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Menu Navigation
                 </div>

@@ -11,8 +11,8 @@ export default async function Home() {
 
   return (
     <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
-      {/* Full Width Hero Swiper (Max 95% screen height) */}
-      <section className="w-full max-w-full overflow-hidden max-h-[88vh]">
+      {/* Full Width Hero Swiper */}
+      <section className="w-full max-w-full overflow-hidden max-h-[96vh]">
         <HeroSwiper />
       </section>
 
