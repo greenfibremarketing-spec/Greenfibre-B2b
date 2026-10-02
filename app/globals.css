@@ -207,11 +207,16 @@
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
 }
 
-/* Ensure the hero banner fits completely on a single screen without vertical clipping */
+/* Hero banner framed at 1200px width with clean 16:9 slide aspect ratio */
 .hero-card-frame {
-  width: calc((100vh - 140px) * 1.77778);
-  max-width: 100%;
+  width: 100%;
+  max-width: 1200px;
   aspect-ratio: 16 / 9;
-  height: auto;
-  max-height: calc(100vh - 140px);
+}
+
+.hero-card-frame .swiper,
+.hero-card-frame .swiper-wrapper,
+.hero-card-frame .swiper-slide {
+  width: 100% !important;
+  height: 100% !important;
 }
