@@ -50,8 +50,8 @@ export default function HeroSwiper() {
   const [swiperInstance, setSwiperInstance] = useState(null);
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-6">
-      <div className="relative w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 bg-stone-100 group select-none">
+    <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 sm:pt-3">
+      <div className="hero-card-frame relative mx-auto rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 bg-stone-100 group select-none">
         <Swiper
           modules={[Autoplay, Pagination]}
           speed={800}
@@ -70,7 +70,7 @@ export default function HeroSwiper() {
             bulletClass: "hero-bullet",
             bulletActiveClass: "hero-bullet-active"
           }}
-          className="w-full max-w-full aspect-[16/9]"
+          className="w-full h-full aspect-[16/9]"
         >
           {heroSlides.map((s, index) => (
             <SwiperSlide
