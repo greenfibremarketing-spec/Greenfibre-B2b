@@ -9,31 +9,31 @@ const QuoteContext = createContext(null);
 export const useQuote = () => useContext(QuoteContext);
 
 // ── Pricing constants & Dynamic Volume Tier Rules ────────────────────────────
-// Tier 1: 1–49 units  -> 10% wholesale discount
-// Tier 2: 50–99 units -> 15% volume discount
-// Tier 3: 100+ units  -> 20% enterprise bulk discount
+// Tier 1: 1–100 units   -> 10% wholesale discount
+// Tier 2: 101–200 units -> 15% volume discount
+// Tier 3: 201+ units    -> 20% enterprise bulk discount
 // Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are in basket.
 export const BUNDLE_BONUS_PCT = 5;
 
 export function getItemDiscountPct(qty) {
   const q = Number(qty) || 1;
-  if (q >= 100) return 20; // Tier 3: 100+ units -> 20% off
-  if (q >= 50) return 15;  // Tier 2: 50–99 units -> 15% off
-  return 10;               // Tier 1: 1–49 units -> 10% off
+  if (q >= 201 || q >= 200) return 20; // Tier 3: 200+ units -> 20% off
+  if (q >= 101) return 15;  // Tier 2: 101–200 units -> 15% off
+  return 10;                // Tier 1: 1–100 units -> 10% off
 }
 
 export function getItemTierNumber(qty) {
   const q = Number(qty) || 1;
-  if (q >= 100) return 3;
-  if (q >= 50) return 2;
+  if (q >= 201 || q >= 200) return 3;
+  if (q >= 101) return 2;
   return 1;
 }
 
 export function getItemTierLabel(qty) {
   const q = Number(qty) || 1;
-  if (q >= 100) return "Tier 3 (100+ units • 20% Off)";
-  if (q >= 50) return "Tier 2 (50–99 units • 15% Off)";
-  return "Tier 1 (Wholesale • 10% Off)";
+  if (q >= 201 || q >= 200) return "Tier 3 (200+ units • 20% Off)";
+  if (q >= 101) return "Tier 2 (101–200 units • 15% Off)";
+  return "Tier 1 (Wholesale 1–100 • 10% Off)";
 }
 
 // Safely resolve the original MRP — NEVER from an already-discounted price

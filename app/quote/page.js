@@ -65,8 +65,8 @@ export default function QuotePage() {
     const isPair = Boolean(item.isPairItem || item.isPair || item.bundleDiscountApplied || item.activeTierTitle?.includes("Bundle") || item.moq === 1);
     const minQty = isPair ? 1 : (item.moq || 10);
     const mrp = item.wholesalePrice || item.originalBasePrice || item.mrp || 0;
-    const discountPct = getItemDiscountPct ? getItemDiscountPct(item.qty) : (item.qty >= 100 ? 20 : item.qty >= 50 ? 15 : 10);
-    const tierNumber = getItemTierNumber ? getItemTierNumber(item.qty) : (item.qty >= 100 ? 3 : item.qty >= 50 ? 2 : 1);
+    const discountPct = getItemDiscountPct ? getItemDiscountPct(item.qty) : (item.qty >= 201 ? 20 : item.qty >= 101 ? 15 : 10);
+    const tierNumber = getItemTierNumber ? getItemTierNumber(item.qty) : (item.qty >= 201 ? 3 : item.qty >= 101 ? 2 : 1);
     const lineGross = mrp * item.qty;
     const lineDiscount = Math.round(lineGross * (discountPct / 100));
     const lineNet = lineGross - lineDiscount;
@@ -166,7 +166,7 @@ export default function QuotePage() {
           </div>
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            Response within 2–4 business hours
+            Response within 2 business hours
           </span>
         </div>
 
@@ -235,7 +235,7 @@ export default function QuotePage() {
               <div className="space-y-2 text-xs sm:text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Follow-up SLA</span>
-                  <span className="font-bold text-slate-900">Within 2–4 business hours</span>
+                  <span className="font-bold text-slate-900">Within 2 business hours</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Sent to</span>
@@ -358,7 +358,7 @@ export default function QuotePage() {
         </p>
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Response within 4 business hours
+          Response within 2 business hours
         </span>
       </div>
 
