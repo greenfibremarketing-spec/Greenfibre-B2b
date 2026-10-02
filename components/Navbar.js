@@ -70,13 +70,13 @@ function NavbarInner() {
           <div className="flex items-center gap-3 sm:gap-6 xl:gap-8 flex-shrink-0">
             <Link
               href="/"
-              className="flex items-center group select-none flex-shrink-0"
+              className="flex items-center h-full group select-none flex-shrink-0 py-1"
               aria-label="Green Fibre Home"
             >
               <img
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
-                className="h-8.5 sm:h-10 w-auto max-w-[155px] sm:max-w-[200px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
+                className="h-8 sm:h-9 w-auto max-w-[140px] sm:max-w-[180px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
               />
             </Link>
 
