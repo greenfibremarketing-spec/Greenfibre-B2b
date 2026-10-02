@@ -33,7 +33,7 @@ export default function BottleModelViewer({
   };
 
   return (
-    <div className="relative w-full max-w-[380px] mx-auto h-[480px] sm:h-[530px] flex items-center justify-center bg-transparent group">
+    <div className="relative w-full max-w-[380px] mx-auto h-[380px] sm:h-[480px] md:h-[530px] flex items-center justify-center bg-transparent group">
       {/* Load Google model-viewer library */}
       <Script
         type="module"

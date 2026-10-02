@@ -8,19 +8,44 @@ const QuoteContext = createContext(null);
 
 export const useQuote = () => useContext(QuoteContext);
 
-// ── Pricing constants (single source of truth) ────────────────────────────────
-// Every product always gets 10% off its own line total.
-// Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are paired.
-const ITEM_DISCOUNT_PCT = 10;
-const BUNDLE_BONUS_PCT  = 5;
+// ── Pricing constants & Dynamic Volume Tier Rules ────────────────────────────
+// Tier 1: 1–100 units   -> 10% wholesale discount
+// Tier 2: 101–200 units -> 15% volume discount
+// Tier 3: 201+ units    -> 20% enterprise bulk discount
+// Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are in basket.
+export const BUNDLE_BONUS_PCT = 5;
+
+export function getItemDiscountPct(qty) {
+  const q = Number(qty) || 1;
+  if (q >= 201 || q >= 200) return 20; // Tier 3: 200+ units -> 20% off
+  if (q >= 101) return 15;  // Tier 2: 101–200 units -> 15% off
+  return 10;                // Tier 1: 1–100 units -> 10% off
+}
+
+export function getItemTierNumber(qty) {
+  const q = Number(qty) || 1;
+  if (q >= 201 || q >= 200) return 3;
+  if (q >= 101) return 2;
+  return 1;
+}
+
+export function getItemTierLabel(qty) {
+  const q = Number(qty) || 1;
+  if (q >= 201 || q >= 200) return "Tier 3 (200+ units • 20% Off)";
+  if (q >= 101) return "Tier 2 (101–200 units • 15% Off)";
+  return "Tier 1 (Wholesale 1–100 • 10% Off)";
+}
 
 // Safely resolve the original MRP — NEVER from an already-discounted price
 function resolveMRP(product) {
   if (product.wholesalePrice    > 0) return product.wholesalePrice;
   if (product.originalBasePrice > 0) return product.originalBasePrice;
   if (product.retailPrice       > 0) return product.retailPrice;
-  if (product.price             > 0)
-    return Math.round(product.price / (1 - ITEM_DISCOUNT_PCT / 100));
+  if (product.mrp               > 0) return product.mrp;
+  if (product.price             > 0) {
+    const discount = product.discountPct || getItemDiscountPct(product.qty || 1);
+    return Math.round(product.price / (1 - discount / 100));
+  }
   return 500;
 }
 
@@ -57,26 +82,28 @@ export function QuoteProvider({ children }) {
     const key = `${product.slug}-${colour || "standard"}`;
 
     // Lock the MRP on first add — this value never changes regardless of qty updates
-    const mrp       = resolveMRP(product);
-    const unitPrice = Math.round(mrp * (1 - ITEM_DISCOUNT_PCT / 100));
+    const mrp = resolveMRP(product);
 
     const existing = items.find((x) => x.key === key);
     let updated;
 
     if (existing) {
+      const newQty       = existing.qty + qty;
       const lockedMRP    = existing.wholesalePrice || existing.originalBasePrice || mrp;
-      const lockedUnitPx = Math.round(lockedMRP * (1 - ITEM_DISCOUNT_PCT / 100));
+      const discountPct  = getItemDiscountPct(newQty);
+      const lockedUnitPx = Math.round(lockedMRP * (1 - discountPct / 100));
 
       updated = items.map((x) =>
         x.key === key
           ? {
               ...x,
-              qty:              x.qty + qty,
+              qty:              newQty,
               price:            lockedUnitPx,
               wholesalePrice:   lockedMRP,
               originalBasePrice: lockedMRP,
               retailPrice:      lockedMRP,
-              discountPct:      ITEM_DISCOUNT_PCT,
+              discountPct,
+              tierNumber:       getItemTierNumber(newQty),
               customBranding:           product.customBranding          ?? x.customBranding,
               selectedCustomizations:   product.selectedCustomizations  ?? x.selectedCustomizations,
               customizationCount:       product.customizationCount      ?? x.customizationCount,
@@ -96,6 +123,9 @@ export function QuoteProvider({ children }) {
       );
     } else {
       const isPair = Boolean(product.isPairItem || product.isPair || product.bundleDiscountApplied || product.activeTierTitle?.includes("Bundle"));
+      const discountPct = getItemDiscountPct(qty);
+      const unitPrice = Math.round(mrp * (1 - discountPct / 100));
+
       updated = [
         ...items,
         {
@@ -108,7 +138,8 @@ export function QuoteProvider({ children }) {
           wholesalePrice:   mrp,           // LOCKED MRP — never recalculated
           originalBasePrice: mrp,
           retailPrice:      mrp,
-          discountPct:      ITEM_DISCOUNT_PCT,
+          discountPct,
+          tierNumber:       getItemTierNumber(qty),
           moq:              isPair ? 1 : (product.moq || 10),
           isPairItem:       isPair,
           isPair:           isPair,
@@ -141,9 +172,10 @@ export function QuoteProvider({ children }) {
       const isPair = Boolean(x.isPairItem || x.isPair || x.bundleDiscountApplied || x.moq === 1);
       const minAllowed = isPair ? 1 : (x.moq || 10);
       const parsedQty = Math.max(minAllowed, parseInt(rawQty, 10) || minAllowed);
-      // Always recalculate from the LOCKED MRP
-      const lockedMRP  = x.wholesalePrice || x.originalBasePrice || 500;
-      const newUnitPx  = Math.round(lockedMRP * (1 - ITEM_DISCOUNT_PCT / 100));
+      // Always recalculate from the LOCKED MRP with dynamic tier discount
+      const lockedMRP   = x.wholesalePrice || x.originalBasePrice || x.mrp || 500;
+      const discountPct = getItemDiscountPct(parsedQty);
+      const newUnitPx   = Math.round(lockedMRP * (1 - discountPct / 100));
       return {
         ...x,
         qty:          parsedQty,
@@ -151,7 +183,8 @@ export function QuoteProvider({ children }) {
         wholesalePrice: lockedMRP,
         originalBasePrice: lockedMRP,
         retailPrice:  lockedMRP,
-        discountPct:  ITEM_DISCOUNT_PCT,
+        discountPct,
+        tierNumber:   getItemTierNumber(parsedQty),
         moq:          isPair ? 1 : (x.moq || 10),
         isPairItem:   isPair,
         isPair:       isPair,
@@ -172,17 +205,26 @@ export function QuoteProvider({ children }) {
     saveItems(items.map((x) => (x.key === key ? { ...x, ...data } : x)));
   };
 
-  // ── Derived cart-level totals ─────────────────────────────────────────────
+  // ── Derived cart-level totals with dynamic tier discounts ────────────────
   const totalUnits = items.reduce((acc, it) => acc + (it.qty || 0), 0);
 
   // Bundle bonus: 5% extra off when 2+ distinct products are paired in basket
   const hasBundleBonus = items.length >= 2;
 
-  // Each item net after 10% off (always from locked MRP)
-  const netSubtotalBeforeBundle = items.reduce((acc, it) => {
-    const mrp = it.wholesalePrice || it.originalBasePrice || 0;
-    return acc + Math.round(mrp * (1 - ITEM_DISCOUNT_PCT / 100)) * (it.qty || 0);
+  const totalGross = items.reduce((acc, it) => {
+    const mrp = it.wholesalePrice || it.originalBasePrice || it.mrp || 0;
+    return acc + (mrp * (it.qty || 0));
   }, 0);
+
+  const totalItemDiscount = items.reduce((acc, it) => {
+    const mrp = it.wholesalePrice || it.originalBasePrice || it.mrp || 0;
+    const q = it.qty || 0;
+    const discountPct = getItemDiscountPct(q);
+    const lineGross = mrp * q;
+    return acc + Math.round(lineGross * (discountPct / 100));
+  }, 0);
+
+  const netSubtotalBeforeBundle = totalGross - totalItemDiscount;
 
   const bundleBonusAmount = hasBundleBonus
     ? Math.round(netSubtotalBeforeBundle * (BUNDLE_BONUS_PCT / 100))
@@ -201,11 +243,15 @@ export function QuoteProvider({ children }) {
         updateCustomizations,
         count: items.length,
         totalUnits,
+        totalGross,
+        totalItemDiscount,
         hasBundleBonus,
         bundleBonusAmount,
         netSubtotalBeforeBundle,
         estimatedTotal,
-        ITEM_DISCOUNT_PCT,
+        getItemDiscountPct,
+        getItemTierNumber,
+        getItemTierLabel,
         BUNDLE_BONUS_PCT,
         drawerOpen,
         setDrawerOpen,
@@ -214,15 +260,15 @@ export function QuoteProvider({ children }) {
     >
       {children}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
-          <div className="flex items-center gap-3 bg-[#FAF7F0] text-slate-800 px-4 py-3 rounded-xl shadow-xl border border-[#E5DAC8] max-w-md">
+        <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:bottom-6 z-50 animate-slide-up flex justify-center sm:justify-end pointer-events-none">
+          <div className="flex items-center gap-3 bg-[#FAF7F0] text-slate-800 px-4 py-3 rounded-xl shadow-xl border border-[#E5DAC8] max-w-md w-full sm:w-auto pointer-events-auto">
             <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-100 text-brand-800 flex items-center justify-center font-bold text-xs border border-brand-200">
               <Leaf className="w-3.5 h-3.5" />
             </span>
             <span className="text-xs sm:text-sm font-medium text-slate-800 flex-1">{toast}</span>
             <Link
               href="/quote"
-              className="text-xs font-bold text-brand-700 hover:text-brand-800 underline uppercase tracking-wider ml-1"
+              className="text-xs font-bold text-brand-700 hover:text-brand-800 underline uppercase tracking-wider ml-1 flex-shrink-0"
             >
               View
             </Link>
@@ -319,7 +365,7 @@ export function AddToQuote({ p }) {
           type="button"
           onClick={handleAdd}
           title={`Add ${qty} ${p.unit} to wholesale basket`}
-          className={`h-10 flex-1 px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] cursor-pointer whitespace-nowrap ${
+          className={`h-10 flex-1 px-2.5 sm:px-4 text-xs sm:text-sm font-bold rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm active:scale-[0.98] cursor-pointer whitespace-nowrap min-w-0 ${
             added
               ? "bg-emerald-600 text-white shadow-emerald-600/30"
               : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-md hover:-translate-y-0.5"
@@ -327,12 +373,12 @@ export function AddToQuote({ p }) {
         >
           {added ? (
             <>
-              <Check className="w-4 h-4 stroke-[2.5]" />
+              <Check className="w-4 h-4 stroke-[2.5] flex-shrink-0" />
               <span>Added to Basket</span>
             </>
           ) : (
             <>
-              <ShoppingBag className="w-4 h-4" />
+              <ShoppingBag className="w-4 h-4 flex-shrink-0" />
               <span>Add to Basket</span>
             </>
           )}

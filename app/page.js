@@ -11,8 +11,8 @@ export default async function Home() {
 
   return (
     <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
-      {/* Hero Swiper Banner */}
-      <section className="w-full">
+      {/* Full Width Hero Swiper (Max 95% screen height) */}
+      <section className="w-full max-w-full overflow-hidden max-h-[95vh]">
         <HeroSwiper />
       </section>
 
@@ -24,7 +24,7 @@ export default async function Home() {
               Wholesale Catalog
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Most Popular Products for Bulk Orders
+              Featured Products for Bulk Orders
             </h2>
           </div>
           <Link

@@ -267,11 +267,11 @@ function NavbarInner() {
               <div className="flex items-center justify-between text-xs text-slate-600">
                 <span className="font-medium">Direct B2B Desk:</span>
                 <a
-                  href="tel:+919810844210"
+                  href="tel:+919217328777"
                   className="font-bold text-brand-800 flex items-center gap-1 hover:underline"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>+91 98108 44210</span>
+                  <span>+91 92173 28777</span>
                 </a>
               </div>
               <Link

@@ -74,32 +74,32 @@ export const B2B_OCCASIONS = [
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
-        max: 49,
-        rangeLabel: "10–49 Sets",
+        max: 100,
+        rangeLabel: "10–100 Sets",
         price: 1700,
         savingsPct: 10,
         leadTime: "7–10 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 complimentary customizations below.",
-        nextTierUnlockText: "Tier 2 (50+) unlocks 3 →",
+        nextTierUnlockText: "Tier 2 (101+) unlocks 3 →",
         perks: ["10% Off MRP", "Welcome & Thank-You Kit Included", "Standard 7-10 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Tier 2 — Personalized",
-        badge: "★ POPULAR",
-        isPopular: true,
-        min: 50,
-        max: 99,
-        rangeLabel: "50–99 Sets",
-        price: 1530,
-        savingsPct: 12,
+        badge: "15% OFF",
+        isPopular: false,
+        min: 101,
+        max: 200,
+        rangeLabel: "101–200 Sets",
+        price: 1445,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
-        nextTierUnlockText: "Tier 3 (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
+        nextTierUnlockText: "Tier 3 (201+) unlocks all 5 →",
+        perks: ["15% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
       },
       {
         id: "tier-3",
@@ -107,16 +107,16 @@ export const B2B_OCCASIONS = [
         title: "Tier 3 — Fully Custom",
         badge: "Max Value",
         isPopular: false,
-        min: 100,
+        min: 201,
         max: null,
-        rangeLabel: "100+ Sets",
+        rangeLabel: "201+ Sets",
         price: 1360,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
+        perks: ["20% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
       }
     ],
     customizations: [
@@ -182,32 +182,32 @@ export const B2B_OCCASIONS = [
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
-        max: 49,
-        rangeLabel: "10–49 Sets",
+        max: 100,
+        rangeLabel: "10–100 Sets",
         price: 1900,
         savingsPct: 10,
         leadTime: "5–7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 anniversary customizations below.",
-        nextTierUnlockText: "Silver Jubilee (50+) unlocks 3 →",
+        nextTierUnlockText: "Silver Jubilee (101+) unlocks 3 →",
         perks: ["10% Off MRP", "Gold Satin Ribbon", "5-7 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Silver Jubilee",
-        badge: "★ POPULAR",
-        isPopular: true,
-        min: 50,
-        max: 99,
-        rangeLabel: "50–99 Sets",
-        price: 1600,
-        savingsPct: 12,
+        badge: "15% OFF",
+        isPopular: false,
+        min: 101,
+        max: 200,
+        rangeLabel: "101–200 Sets",
+        price: 1530,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 anniversary customizations below.",
-        nextTierUnlockText: "Platinum (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
+        nextTierUnlockText: "Platinum (201+) unlocks all 5 →",
+        perks: ["15% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -215,16 +215,16 @@ export const B2B_OCCASIONS = [
         title: "Platinum Jubilee",
         badge: "Max Value",
         isPopular: false,
-        min: 100,
+        min: 201,
         max: null,
-        rangeLabel: "100+ Sets",
-        price: 1400,
-        savingsPct: 15,
+        rangeLabel: "201+ Sets",
+        price: 1440,
+        savingsPct: 20,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 anniversary customizations included complimentary.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
+        perks: ["20% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
       }
     ],
     customizations: [
@@ -290,32 +290,32 @@ export const B2B_OCCASIONS = [
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
-        max: 49,
-        rangeLabel: "10–49 Sets",
+        max: 100,
+        rangeLabel: "10–100 Sets",
         price: 1800,
         savingsPct: 10,
         leadTime: "7–8 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 wedding customizations below.",
-        nextTierUnlockText: "Grand Wedding (50+) unlocks 3 →",
+        nextTierUnlockText: "Grand Wedding (101+) unlocks 3 →",
         perks: ["10% Off MRP", "Blush Ribbon", "7-Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Grand Wedding",
-        badge: "★ POPULAR",
-        isPopular: true,
-        min: 50,
-        max: 99,
-        rangeLabel: "50–99 Sets",
-        price: 1550,
-        savingsPct: 12,
+        badge: "15% OFF",
+        isPopular: false,
+        min: 101,
+        max: 200,
+        rangeLabel: "101–200 Sets",
+        price: 1530,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 wedding customizations below.",
-        nextTierUnlockText: "Royal Wedding (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
+        nextTierUnlockText: "Royal Wedding (201+) unlocks all 5 →",
+        perks: ["15% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
       },
       {
         id: "tier-3",
@@ -323,16 +323,16 @@ export const B2B_OCCASIONS = [
         title: "Royal Wedding",
         badge: "Max Value",
         isPopular: false,
-        min: 100,
+        min: 201,
         max: null,
-        rangeLabel: "100+ Sets",
-        price: 1350,
-        savingsPct: 15,
+        rangeLabel: "201+ Sets",
+        price: 1440,
+        savingsPct: 20,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 wedding customizations included free.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
+        perks: ["20% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
       }
     ],
     customizations: [
@@ -398,32 +398,32 @@ export const B2B_OCCASIONS = [
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
-        max: 49,
-        rangeLabel: "10–49 Sets",
+        max: 100,
+        rangeLabel: "10–100 Sets",
         price: 1750,
         savingsPct: 10,
         leadTime: "7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 festive customizations below.",
-        nextTierUnlockText: "Festive Bulk (50+) unlocks 3 →",
+        nextTierUnlockText: "Festive Bulk (101+) unlocks 3 →",
         perks: ["10% Off MRP", "Festive Hamper Box", "2 Free Customizations"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Festive Bulk",
-        badge: "★ POPULAR",
-        isPopular: true,
-        min: 50,
-        max: 99,
-        rangeLabel: "50–99 Sets",
-        price: 1500,
-        savingsPct: 12,
+        badge: "15% OFF",
+        isPopular: false,
+        min: 101,
+        max: 200,
+        rangeLabel: "101–200 Sets",
+        price: 1485,
+        savingsPct: 15,
         leadTime: "5 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 festive customizations free.",
-        nextTierUnlockText: "Mega Festive (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
+        nextTierUnlockText: "Mega Festive (201+) unlocks all 5 →",
+        perks: ["15% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -431,16 +431,16 @@ export const B2B_OCCASIONS = [
         title: "Mega Festive",
         badge: "Max Value",
         isPopular: false,
-        min: 100,
+        min: 201,
         max: null,
-        rangeLabel: "100+ Sets",
-        price: 1300,
-        savingsPct: 15,
+        rangeLabel: "201+ Sets",
+        price: 1400,
+        savingsPct: 20,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 festive customizations included free.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
+        perks: ["20% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
       }
     ],
     customizations: [
@@ -506,32 +506,32 @@ export const B2B_OCCASIONS = [
         badge: "MOQ 10",
         isPopular: false,
         min: 10,
-        max: 49,
-        rangeLabel: "10–49 Sets",
+        max: 100,
+        rangeLabel: "10–100 Sets",
         price: 1700,
         savingsPct: 10,
         leadTime: "5 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "2 complimentary onboarding customizations included.",
-        nextTierUnlockText: "Growing Team (50+) unlocks 3 →",
+        nextTierUnlockText: "Growing Team (101+) unlocks 3 →",
         perks: ["10% Off MRP", "Suitable for startups", "2 Free Customizations"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Growing Team",
-        badge: "★ POPULAR",
-        isPopular: true,
-        min: 50,
-        max: 99,
-        rangeLabel: "50–99 Sets",
-        price: 1550,
-        savingsPct: 12,
+        badge: "15% OFF",
+        isPopular: false,
+        min: 101,
+        max: 200,
+        rangeLabel: "101–200 Sets",
+        price: 1445,
+        savingsPct: 15,
         leadTime: "4 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 onboarding customizations free.",
-        nextTierUnlockText: "Enterprise (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Priority Production"]
+        nextTierUnlockText: "Enterprise (201+) unlocks all 5 →",
+        perks: ["15% Off MRP", "3 Free Customizations", "Priority Production"]
       },
       {
         id: "tier-3",
@@ -539,16 +539,16 @@ export const B2B_OCCASIONS = [
         title: "Enterprise Hiring",
         badge: "Max Value",
         isPopular: false,
-        min: 100,
+        min: 201,
         max: null,
-        rangeLabel: "100+ Sets",
-        price: 1350,
-        savingsPct: 15,
+        rangeLabel: "201+ Sets",
+        price: 1360,
+        savingsPct: 20,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 onboarding customizations included.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
+        perks: ["20% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
       }
     ],
     customizations: [
@@ -632,7 +632,8 @@ function normalizeImageUrl(img) {
   if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("/")) {
     return img;
   }
-  return `http://localhost:5500/${img.replace(/^\/+/, "")}`;
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.greenfibre.org";
+  return `${apiBase}/${img.replace(/^\/+/, "")}`;
 }
 
 export default function ProductDetailView({ product, context, relatedProducts = [] }) {
@@ -713,7 +714,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   // Tiers: same discount percentages but now just for unlocking perks / displaying the tier.
   // The actual final price = wholesaleUnitPrice × qty × (1 - discountPct/100)
   const currentTiers = activeOccasion.tiers.map((t) => {
-    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 12 : 15;
+    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 15 : 20;
     // Effective per-unit after discount (for display in tier chips)
     const effectivePricePerUnit = wholesaleUnitPrice > 0
       ? Math.round(wholesaleUnitPrice * (1 - discountPct / 100))
@@ -829,7 +830,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   };
 
   // Pricing breakdown:
-  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 12 : 15;
+  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 15 : 20;
   // Gross wholesale subtotal before discount
   const grossWholesaleSubtotal = wholesaleUnitPrice * qty;
   // Discount amount on the total
@@ -2105,15 +2106,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             }`}
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
-                                <img
-                                  src={rel.image || "/images/gift-set-classic.jpg"}
-                                  alt={rel.name}
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => {
-                                    e.currentTarget.src = "/images/gift-set-classic.jpg";
-                                  }}
-                                />
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1 relative">
+                                {rel.image ? (
+                                  <img
+                                    src={rel.image}
+                                    alt={rel.name}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-lg">
+                                    {rel.name ? rel.name.charAt(0).toUpperCase() : "G"}
+                                  </div>
+                                )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <h4 className="text-sm font-semibold text-slate-900 truncate leading-snug">
@@ -2293,7 +2300,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
                   </div>
 
-                  {/* Perk 2: Tier 2 Personalized (Unlocked at 50+ sets) */}
+                  {/* Perk 2: Tier 2 Personalized (Unlocked at 101+ sets) */}
                   {activeTierObj.tierNumber >= 2 ? (
                     <div
                       className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-400 shadow-2xs relative overflow-hidden group"
@@ -2334,7 +2341,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                               Your Name Engraved on the Product
                             </h4>
                             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                              Tier 2 (50+ Sets)
+                              Tier 2 (101–200 Sets)
                             </span>
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
@@ -2344,21 +2351,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       </div>
                       <div className="pl-10 pt-1 flex items-center justify-between gap-2">
                         <span className="text-[10px] text-slate-500 font-medium">
-                          Add {Math.max(0, 50 - qty)} more sets to unlock
+                          Add {Math.max(0, 101 - qty)} more sets to unlock
                         </span>
                         <button
                           type="button"
-                          onClick={() => handleSetExactQty(50)}
+                          onClick={() => handleSetExactQty(101)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
                           <Zap className="w-3 h-3 text-brand-600" />
-                          <span>Upgrade to 50 sets</span>
+                          <span>Upgrade to 101 sets</span>
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* Perk 3: Tier 3 Fully Custom (Unlocked at 100+ sets) */}
+                  {/* Perk 3: Tier 3 Fully Custom (Unlocked at 201+ sets) */}
                   {activeTierObj.tierNumber >= 3 ? (
                     <div
                       className="p-3.5 rounded-2xl border transition-all duration-300 bg-gradient-to-r from-amber-50/50 via-white to-emerald-50/50 border-amber-300 shadow-2xs relative overflow-hidden group"
@@ -2399,7 +2406,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                               Custom Product Name + Branded Box Sleeve
                             </h4>
                             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
-                              Tier 3 (100+ Sets)
+                              Tier 3 (201+ Sets)
                             </span>
                           </div>
                           <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
@@ -2409,15 +2416,15 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       </div>
                       <div className="pl-10 pt-1 flex items-center justify-between gap-2">
                         <span className="text-[10px] text-slate-500 font-medium">
-                          Add {Math.max(0, 100 - qty)} more sets to unlock
+                          Add {Math.max(0, 201 - qty)} more sets to unlock
                         </span>
                         <button
                           type="button"
-                          onClick={() => handleSetExactQty(100)}
+                          onClick={() => handleSetExactQty(201)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:border-amber-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
                           <Crown className="w-3 h-3 text-amber-600" />
-                          <span>Upgrade to 100 sets</span>
+                          <span>Upgrade to 201 sets</span>
                         </button>
                       </div>
                     </div>
@@ -2611,16 +2618,16 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           </div>
                           <div>
                             <h4 className="text-xs font-bold text-slate-700">Product Name Laser Engraving</h4>
-                            <p className="text-[11px] text-slate-500">Unlocked at 50+ sets (Tier 2)</p>
+                            <p className="text-[11px] text-slate-500">Unlocked at 101–200 sets (Tier 2)</p>
                           </div>
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleSetExactQty(50)}
+                          onClick={() => handleSetExactQty(101)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
                           <Zap className="w-3 h-3 text-brand-600" />
-                          <span>Unlock (50 sets)</span>
+                          <span>Unlock (101 sets)</span>
                         </button>
                       </div>
                     </div>
@@ -2667,16 +2674,16 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           </div>
                           <div>
                             <h4 className="text-xs font-bold text-amber-950">Custom Product Name &amp; Branded Box Sleeve / Logo</h4>
-                            <p className="text-[11px] text-amber-900/80">Unlocked at 100+ sets (Tier 3 VIP)</p>
+                            <p className="text-[11px] text-amber-900/80">Unlocked at 201+ sets (Tier 3 VIP)</p>
                           </div>
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleSetExactQty(100)}
+                          onClick={() => handleSetExactQty(201)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
                           <Crown className="w-3 h-3" />
-                          <span>Unlock (100 sets)</span>
+                          <span>Unlock (201 sets)</span>
                         </button>
                       </div>
                     </div>

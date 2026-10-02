@@ -236,7 +236,7 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
             <input
               name="q"
               defaultValue={q}
-              placeholder="Search by name, SKU, or type..."
+              placeholder="Search products or categories..."
               aria-label="Search catalog"
               className="w-full text-xs font-medium pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors"
             />
