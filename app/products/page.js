@@ -162,19 +162,19 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
         <HeroSwiper />
       </section>
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
         {/* Dynamic Page Header */}
-        <div className="space-y-2">
-          <div className="badge-green">
+        <div className="space-y-1.5 sm:space-y-2">
+          <div className="badge-green text-[10px] sm:text-xs py-0.5 px-2.5 inline-flex items-center">
             {headerInfo.badge}
           </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          {headerInfo.title}
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-          {headerInfo.desc}
-        </p>
-      </div>
+          <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug sm:leading-tight">
+            {headerInfo.title}
+          </h1>
+          <p className="text-[11px] sm:text-sm text-slate-500 sm:text-slate-600 max-w-2xl leading-relaxed">
+            {headerInfo.desc}
+          </p>
+        </div>
 
       {/* Filter and Search Bar */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
