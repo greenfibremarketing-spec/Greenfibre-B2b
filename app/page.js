@@ -12,7 +12,7 @@ export default async function Home() {
   return (
     <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
       {/* Full Width Hero Swiper (Max 95% screen height) */}
-      <section className="w-full max-w-full overflow-hidden max-h-[95vh]">
+      <section className="w-full max-w-full overflow-hidden max-h-[88vh]">
         <HeroSwiper />
       </section>
 
@@ -23,7 +23,7 @@ export default async function Home() {
             <div className="badge-green mb-2">
               Wholesale Catalog
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Featured Products for Bulk Orders
             </h2>
           </div>
@@ -56,7 +56,7 @@ export default async function Home() {
 
         {/* Products Grid */}
         {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {featuredProducts.map((p) => (
               <Card key={p.slug} p={p} />
             ))}
@@ -80,7 +80,7 @@ export default async function Home() {
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" id="branding">
         {/* Section Header */}
         <div className="text-left max-w-3xl mb-10 space-y-3">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
             Eco Bottle Engineering & Custom Corporate Branding
           </h2>
           <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-normal">

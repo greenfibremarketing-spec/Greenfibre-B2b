@@ -59,18 +59,18 @@ export default function Card({ p, context }) {
       </div>
 
       {/* Body Content */}
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
         <div>
-          <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mb-1">
-            <span className="font-semibold text-brand-800 bg-brand-50 px-2 py-0.5 rounded border border-brand-200 text-[10px] uppercase tracking-wide">
+          <div className="flex items-center justify-between gap-1 text-xs text-slate-500 mb-1">
+            <span className="font-semibold text-brand-800 bg-brand-50 px-1.5 py-0.5 rounded border border-brand-200 text-[9px] sm:text-[10px] uppercase tracking-wide">
               Gift Set • {p.size || "Multi-Piece"}
             </span>
-            <span className="inline-flex items-center text-[11px] font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            <span className="inline-flex items-center text-[9px] sm:text-[11px] font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
               {p.colours?.length || 1} Finishes
             </span>
           </div>
 
-          <h3 className="text-base font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">
+          <h3 className="text-sm font-bold text-slate-900 group-hover:text-brand-700 transition-colors line-clamp-1">
             <Link href={productHref}>
               {p.name}
             </Link>
@@ -88,7 +88,7 @@ export default function Card({ p, context }) {
             <div>
               <span className="text-[11px] font-medium text-slate-400 block">From</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-lg font-bold text-slate-900 tracking-tight">
+                <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
                   {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
                 </span>
                 <span className="text-xs text-slate-500 font-semibold">
