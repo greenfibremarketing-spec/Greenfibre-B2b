@@ -11,13 +11,13 @@ export default async function Home() {
 
   return (
     <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
-      {/* Full Width Hero Swiper */}
-      <section className="w-full max-w-full overflow-hidden">
+      {/* Hero Swiper Banner */}
+      <section className="w-full">
         <HeroSwiper />
       </section>
 
       {/* Featured Products Catalog */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
             <div className="badge-green mb-2">
@@ -72,12 +72,12 @@ export default async function Home() {
       </section>
 
       {/* Lush Greenery & Sustainability Showcase Section */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <GreeneryShowcase />
       </section>
 
       {/* 3D Interactive Bottle & Laser Workshop Showcase - 3-Column Centerpiece Layout */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" id="branding">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" id="branding">
         {/* Section Header */}
         <div className="text-left max-w-3xl mb-10 space-y-3">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
