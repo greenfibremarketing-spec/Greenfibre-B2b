@@ -63,7 +63,7 @@ function NavbarInner() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
         <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
 
           {/* LEFT: Logo + Nav */}
@@ -136,7 +136,7 @@ function NavbarInner() {
             {/* Quote Basket - Amazon-style shopping bag with floating count badge on mobile */}
             <Link
               href="/quote"
-              className="relative h-9 w-9 md:w-auto md:px-3.5 flex items-center justify-center gap-2 rounded-lg border border-slate-200/90 md:border-brand-500 bg-slate-50/80 md:bg-brand-600 hover:bg-slate-100 md:hover:bg-brand-700 text-slate-700 md:text-white transition-all shadow-2xs cursor-pointer active:scale-95 flex-shrink-0"
+              className="relative h-9 w-9 md:w-auto md:px-3.5 flex items-center justify-center gap-2 rounded-xl border border-slate-200/70 md:border-brand-500 bg-white/90 md:bg-brand-600 hover:bg-slate-50 md:hover:bg-brand-700 text-slate-800 md:text-white transition-all shadow-[0_1px_3px_rgba(0,0,0,0.04)] cursor-pointer active:scale-95 flex-shrink-0"
               aria-label="View Wholesale Quote Basket"
             >
               <div className="relative flex items-center justify-center">
@@ -154,7 +154,7 @@ function NavbarInner() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90 bg-slate-50/80 transition-colors cursor-pointer shadow-2xs flex-shrink-0"
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-50 border border-slate-200/70 bg-white/90 transition-all cursor-pointer shadow-[0_1px_3px_rgba(0,0,0,0.04)] active:scale-95 flex-shrink-0"
               aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
             >

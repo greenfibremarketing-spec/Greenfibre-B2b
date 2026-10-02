@@ -14,7 +14,7 @@ const heroSlide = {
 
 export default function HeroSwiper() {
   return (
-    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none h-[45vh] sm:h-[60vh] md:h-[75vh] lg:h-[88vh] max-h-[88vh]">
+    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none h-[45vh] sm:h-[60vh] md:h-[75vh] lg:h-[92vh] xl:h-[95vh] max-h-[96vh]">
       <Link
         href={heroSlide.link}
         className="relative w-full h-full block cursor-pointer overflow-hidden group/slide"

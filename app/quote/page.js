@@ -80,10 +80,23 @@ export default function QuotePage() {
   const totalWithGST = estimatedTotal + estimatedGST;
 
   const [state, setState] = useState({ busy: false, error: null, ref: null });
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if (state.busy) return;
+
+    // Strict validation: Require authentication before submitting quote
+    if (!isAuthenticated && !user) {
+      setShowLoginModal(true);
+      setState({
+        busy: false,
+        error: "Please log in to your account first before submitting your quotation request.",
+        ref: null
+      });
+      return;
+    }
+
     setState({ busy: true, error: null, ref: null });
     try {
       const response = await fetch("/api/enquiry", {
@@ -421,35 +434,44 @@ export default function QuotePage() {
                 <div className="px-5 py-4">
                   {/* Per-product rows */}
                   {lineItems.map((item, idx) => (
-                    <div key={item.key} className="py-2.5 border-b border-slate-100 last:border-b-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs">
-                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 flex-wrap">
-                          <span className="text-slate-400 font-mono text-[10px] w-5 flex-shrink-0">{String(idx + 1).padStart(2, "0")}</span>
-                          <span className="font-semibold text-slate-800 truncate">{item.name}</span>
-                          {item.isPair && (
-                            <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-300 font-bold flex-shrink-0 flex items-center gap-1">
-                              <span>🔗</span> Pair
-                            </span>
-                          )}
-                          {item.colour && item.colour !== "Standard" && (
-                            <span className="text-[10px] px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded border border-slate-200 font-medium truncate flex-shrink-0">
-                              {item.colour}
-                            </span>
-                          )}
-                          {item.tierNumber > 1 && (
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold flex-shrink-0 border ${item.tierNumber === 3
-                                ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                                : "bg-teal-50 text-teal-800 border-teal-200"
-                              }`}>
-                              Tier {item.tierNumber} ({item.discountPct}% Off)
-                            </span>
-                          )}
-                          <span className="text-slate-500 font-medium flex-shrink-0">× {item.qty}</span>
+                    <div key={item.key} className="py-3 border-b border-slate-100 last:border-b-0">
+                      <div className="flex items-start justify-between gap-3 text-xs">
+                        <div className="min-w-0 flex-1 space-y-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-slate-400 font-mono text-[10px] w-4 flex-shrink-0">{String(idx + 1).padStart(2, "0")}</span>
+                            <span className="font-bold text-slate-900 text-xs sm:text-sm">{item.name}</span>
+                            {item.isPair && (
+                              <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-300 font-bold flex-shrink-0">
+                                🔗 Pair
+                              </span>
+                            )}
+                            {item.colour && item.colour !== "Standard" && (
+                              <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200 font-medium flex-shrink-0">
+                                {item.colour}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap pl-5 sm:pl-5">
+                            <span>Quantity: <strong className="text-slate-800 font-bold">{item.qty} {item.unit || "pcs"}</strong></span>
+                            {item.tierNumber > 1 && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${item.tierNumber === 3
+                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                  : "bg-teal-50 text-teal-800 border-teal-200"
+                                }`}>
+                                Tier {item.tierNumber} ({item.discountPct}% Off)
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center justify-end gap-2.5 sm:gap-3 flex-shrink-0 pl-6 sm:pl-0">
-                          <span className="text-slate-400 line-through text-[11px]">₹{item.lineGross.toLocaleString("en-IN")}</span>
-                          <span className="text-emerald-700 font-bold text-[11px]">−₹{item.lineDiscount.toLocaleString("en-IN")} ({item.discountPct}%)</span>
-                          <span className="font-extrabold text-slate-900 w-20 text-right">₹{item.lineNet.toLocaleString("en-IN")}</span>
+
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-xs sm:text-sm font-black text-slate-900">
+                            ₹{item.lineNet.toLocaleString("en-IN")}
+                          </div>
+                          <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                            <span className="line-through">₹{item.lineGross.toLocaleString("en-IN")}</span>
+                            <span className="text-emerald-700 font-bold">−{item.discountPct}%</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -550,6 +572,31 @@ export default function QuotePage() {
             )}
           </div>
 
+          {(!isAuthenticated && !user) && (
+            <div className="p-4 bg-emerald-50/70 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#1b5e3f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
+                    Login Required to Request Quote
+                  </h4>
+                  <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
+                    Please log in or register before submitting your request to lock in your direct factory wholesale rate.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/login?redirect=/quote"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1b5e3f] hover:bg-[#144830] text-white shadow-xs transition-all whitespace-nowrap cursor-pointer flex-shrink-0"
+              >
+                <span>Login to Continue</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -644,51 +691,62 @@ export default function QuotePage() {
             )}
 
             <div className="pt-2">
-              <button
-                type="submit"
-                disabled={state.busy || items.length === 0}
-                className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
-                  state.busy
-                    ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
-                    : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {state.busy ? (
-                  <>
-                    {/* Revolving Circle Spinner */}
-                    <span className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
-                      <svg
-                        className="animate-spin w-5 h-5 text-emerald-300"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="3.5"
-                        />
-                        <path
-                          className="opacity-100"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    </span>
-                    {/* Eco Leaf Icon */}
-                    <Leaf className="w-4 h-4 text-emerald-200 animate-pulse flex-shrink-0" />
-                    <span>Generating Official Quote…</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Submit Quote Request</span>
-                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                  </>
-                )}
-              </button>
+              {!isAuthenticated && !user ? (
+                <Link
+                  href="/login?redirect=/quote"
+                  className="w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md bg-[#1b5e3f] hover:bg-[#144830] text-white active:scale-[0.99] cursor-pointer"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Please Login First to Submit Quote</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={state.busy || items.length === 0}
+                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
+                    state.busy
+                      ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
+                      : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {state.busy ? (
+                    <>
+                      {/* Revolving Circle Spinner */}
+                      <span className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
+                        <svg
+                          className="animate-spin w-5 h-5 text-emerald-300"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="3.5"
+                          />
+                          <path
+                            className="opacity-100"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                      </span>
+                      {/* Eco Leaf Icon */}
+                      <Leaf className="w-4 h-4 text-emerald-200 animate-pulse flex-shrink-0" />
+                      <span>Generating Official Quote…</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Submit Quote Request</span>
+                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
             <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 pt-1">
@@ -865,6 +923,70 @@ export default function QuotePage() {
               >
                 Save &amp; Close
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Login Required Modal Popup ──────────────────────────────── */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setShowLoginModal(false)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-md p-6 overflow-hidden z-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200">
+                <Lock className="w-5 h-5 text-[#1b5e3f]" />
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLoginModal(false)}
+                className="w-8 h-8 rounded-full border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                Account Login Required
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                To generate an official GST wholesale quotation with your custom volume pricing, please log in to your account first.
+              </p>
+            </div>
+
+            <div className="p-3 bg-emerald-50/80 border border-emerald-200/90 rounded-2xl text-xs space-y-1 text-slate-700">
+              <div className="font-bold text-emerald-950 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                <span>Why is login required?</span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Your quote reference, GST invoice details, and dedicated B2B account manager are linked directly to your verified account.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => setShowLoginModal(false)}
+                className="py-2.5 px-4 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all cursor-pointer text-center"
+              >
+                Review Basket
+              </button>
+              <Link
+                href="/login?redirect=/quote"
+                className="btn-primary py-2.5 px-4 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 shadow-sm text-center cursor-pointer"
+              >
+                <span>Log In Now</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </div>

@@ -55,7 +55,7 @@ export default function UserNav() {
         {/* Mobile: icon button h-9 w-9; Desktop: full text button h-9 */}
         <Link
           href="/signup"
-          className="w-9 h-9 sm:w-auto sm:px-3 inline-flex items-center justify-center gap-1.5 text-xs font-bold bg-slate-50/80 hover:bg-slate-100 text-slate-700 border border-slate-200/90 hover:border-slate-300 rounded-lg transition-all shadow-2xs flex-shrink-0"
+          className="w-9 h-9 sm:w-auto sm:px-3 inline-flex items-center justify-center gap-1.5 text-xs font-bold bg-white/90 hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-slate-200/70 hover:border-slate-300 rounded-xl transition-all shadow-[0_1px_3px_rgba(0,0,0,0.04)] active:scale-95 flex-shrink-0"
           aria-label="Register B2B Account"
         >
           <User className="w-4 h-4 text-slate-700 flex-shrink-0" />
@@ -89,10 +89,10 @@ export default function UserNav() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-9 flex items-center gap-1.5 px-1.5 sm:px-2.5 rounded-lg border transition-all cursor-pointer shadow-2xs group flex-shrink-0 ${
+        className={`h-9 flex items-center gap-1.5 px-1.5 sm:px-2.5 rounded-xl border transition-all cursor-pointer shadow-[0_1px_3px_rgba(0,0,0,0.04)] active:scale-95 group flex-shrink-0 ${
           isOpen
             ? "border-brand-600 bg-white ring-2 ring-brand-500/15"
-            : "border-slate-200/90 hover:border-slate-300 bg-slate-50/80 hover:bg-slate-100"
+            : "border-slate-200/70 hover:border-slate-300 bg-white/90 hover:bg-slate-50"
         }`}
         aria-expanded={isOpen}
         aria-haspopup="menu"

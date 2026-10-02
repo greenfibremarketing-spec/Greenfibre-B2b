@@ -2466,7 +2466,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
-              className="absolute -top-12 right-0 w-10 h-10 rounded-full bg-white/20 hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors cursor-pointer"
+              className="absolute top-3 right-3 sm:-top-12 sm:right-0 w-10 h-10 rounded-full bg-black/60 sm:bg-white/20 hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors cursor-pointer z-30 shadow-md backdrop-blur-sm"
               aria-label="Close zoom modal"
             >
               <X className="w-5 h-5" />
@@ -2501,7 +2501,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "16px",
+            padding: "12px",
             backgroundColor: "rgba(15, 23, 42, 0.72)",
             backdropFilter: "blur(8px)",
             WebkitBackdropFilter: "blur(8px)",
@@ -2516,9 +2516,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               position: "relative",
               width: "100%",
               maxWidth: "520px",
-              maxHeight: "90vh",
+              maxHeight: "88vh",
               background: "#ffffff",
-              borderRadius: "28px",
+              borderRadius: "24px",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06)",
               display: "flex",
               flexDirection: "column",
