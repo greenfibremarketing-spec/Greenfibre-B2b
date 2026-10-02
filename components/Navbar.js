@@ -64,7 +64,7 @@ function NavbarInner() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
 
           {/* LEFT: Logo + Nav */}
           <div className="flex items-center gap-4 sm:gap-6 xl:gap-8 flex-shrink-0">
@@ -267,11 +267,11 @@ function NavbarInner() {
               <div className="flex items-center justify-between text-xs text-slate-600">
                 <span className="font-medium">Direct B2B Desk:</span>
                 <a
-                  href="tel:+919810844210"
+                  href="tel:+919217328777"
                   className="font-bold text-brand-800 flex items-center gap-1 hover:underline"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>+91 98108 44210</span>
+                  <span>+91 92173 28777</span>
                 </a>
               </div>
               <Link

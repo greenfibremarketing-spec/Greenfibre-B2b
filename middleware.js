@@ -29,6 +29,11 @@ export function middleware(request) {
     pathname === "/" ||
     pathname.startsWith("/products") ||
     pathname.startsWith("/story") ||
+    pathname.startsWith("/our-story") ||
+    pathname.startsWith("/terms") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/quote") ||
+    pathname.startsWith("/contact") ||
     isAuthPage;
 
   // If user is NOT authenticated and trying to access strictly protected routes (e.g. /quote)

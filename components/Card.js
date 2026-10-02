@@ -23,23 +23,16 @@ export default function Card({ p, context }) {
     <article className="group bg-white rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-sm hover:shadow-card-hover hover:-translate-y-1.5 transition-all duration-300 ease-out flex flex-col overflow-hidden">
       {/* Media & Badges */}
       <div className="relative aspect-square bg-white overflow-hidden flex items-center justify-center">
-        {/* Floating Badges */}
-        <div className="absolute top-2.5 left-2.5 right-2.5 z-10 flex items-center justify-between gap-1 pointer-events-none">
-          {p.popular ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase bg-brand-600 text-white shadow-sm">
-              Bestseller
+        {/* Category Badge */}
+        {p.category && (
+          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold bg-white/95 text-slate-700 border border-slate-200 shadow-sm">
+              {p.category}
             </span>
-          ) : (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] shadow-sm">
-              {p.sku}
-            </span>
-          )}
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-semibold bg-white/95 text-slate-700 border border-slate-200 shadow-sm">
-            {p.category}
-          </span>
-        </div>
+          </div>
+        )}
 
-        <Link href={productHref} className="block w-full h-full" aria-label={`View ${p.name}`}>
+        <Link href={productHref} className="block w-full h-full relative" aria-label={`View ${p.name}`}>
           {p.image ? (
             <img
               src={p.image}
@@ -47,28 +40,21 @@ export default function Card({ p, context }) {
               loading="lazy"
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                const text = `${p.name || ""} ${p.category || ""} ${p.subCategory || ""}`.toLowerCase();
-                if (text.includes("mug") || text.includes("cup") || text.includes("drink")) {
-                  e.currentTarget.src = "/images/coffee-mug.jpg";
-                } else if (text.includes("bottle") || text.includes("flask") || text.includes("tumbler")) {
-                  e.currentTarget.src = "/images/thermal-bottle.jpg";
-                } else if (text.includes("bowl") || text.includes("casserole") || text.includes("dining")) {
-                  e.currentTarget.src = "/images/dining-bowl-set-5.jpg";
-                } else if (text.includes("tray") || text.includes("basket") || text.includes("storage")) {
-                  e.currentTarget.src = "/images/storage-basket.jpg";
-                } else if (text.includes("bento") || text.includes("box") || text.includes("lunch")) {
-                  e.currentTarget.src = "/images/bento-box.jpg";
-                } else {
-                  e.currentTarget.src = "/images/gift-set-classic.jpg";
-                }
+                e.currentTarget.style.display = "none";
+                const fallback = e.currentTarget.parentElement?.querySelector(".img-fallback-badge");
+                if (fallback) fallback.style.display = "flex";
               }}
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out"
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 font-bold text-3xl">
-              {p.name[0]}
+          ) : null}
+          <div
+            className="img-fallback-badge w-full h-full flex flex-col items-center justify-center bg-slate-50 text-emerald-800 p-4"
+            style={{ display: p.image ? "none" : "flex" }}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-2xl font-black shadow-2xs">
+              {p.name ? p.name[0].toUpperCase() : "G"}
             </div>
-          )}
+          </div>
         </Link>
       </div>
 

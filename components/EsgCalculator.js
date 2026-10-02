@@ -41,11 +41,11 @@ export default function EsgCalculator() {
 
       {/* Interactive Range Slider */}
       <div className="py-6">
-        <div className="flex justify-between items-center text-xs font-semibold text-slate-500 mb-2">
-          <span>50 units (Trial MOQ)</span>
-          <span>500 units</span>
-          <span>2,500 units</span>
-          <span className="text-brand-800 font-bold">5,000+ units (Enterprise)</span>
+        <div className="flex justify-between items-center text-[10.5px] sm:text-xs font-semibold text-slate-500 mb-2">
+          <span>50 <span className="hidden sm:inline">units (Trial MOQ)</span><span className="sm:hidden">(MOQ)</span></span>
+          <span className="hidden xs:inline">500 <span className="hidden sm:inline">units</span></span>
+          <span className="hidden sm:inline">2,500 units</span>
+          <span className="text-brand-800 font-bold">5,000+ <span className="hidden sm:inline">units (Enterprise)</span><span className="sm:hidden">(Bulk)</span></span>
         </div>
 
         <div className="relative flex items-center">

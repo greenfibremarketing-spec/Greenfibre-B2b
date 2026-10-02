@@ -125,7 +125,7 @@ export default function NavbarSearch() {
 
       {/* Real-Time Dropdown Results Modal */}
       {isOpen && (
-        <div className="absolute top-full right-0 md:left-0 md:right-auto mt-2 w-[320px] sm:w-[380px] bg-white rounded-2xl border border-slate-200/90 shadow-2xl overflow-hidden z-50 animate-in fade-in-0 zoom-in-95 duration-150">
+        <div className="absolute top-full right-0 md:left-0 md:right-auto mt-2 w-[calc(100vw-2rem)] max-w-[380px] bg-white rounded-2xl border border-slate-200/90 shadow-2xl overflow-hidden z-50 animate-in fade-in-0 zoom-in-95 duration-150">
           {/* Mobile Input inside popup */}
           <div className="md:hidden p-3 border-b border-slate-100">
             <div className="relative flex items-center">

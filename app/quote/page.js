@@ -6,7 +6,8 @@ import { useQuote } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
 import {
   CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
-  BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal
+  BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal,
+  Clock, Copy, Check, ArrowRight, Leaf
 } from "lucide-react";
 
 export default function QuotePage() {
@@ -20,13 +21,16 @@ export default function QuotePage() {
     bundleBonusAmount,
     netSubtotalBeforeBundle,
     estimatedTotal,
-    ITEM_DISCOUNT_PCT = 10,
-    BUNDLE_BONUS_PCT  = 5,
+    getItemDiscountPct,
+    getItemTierNumber,
+    getItemTierLabel,
+    BUNDLE_BONUS_PCT = 5,
   } = useQuote() || { items: [], count: 0, estimatedTotal: 0, hasBundleBonus: false, netSubtotalBeforeBundle: 0, bundleBonusAmount: 0 };
 
   const { user, isAuthenticated } = useAuth() || {};
 
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "", company: "", email: "", phone: "",
@@ -38,14 +42,14 @@ export default function QuotePage() {
     if (user) {
       setFormData((prev) => ({
         ...prev,
-        name:      prev.name      || user.fullName      || user.full_name || "",
-        company:   prev.company   || user.companyName   || "",
-        email:     prev.email     || user.email         || "",
-        phone:     prev.phone     || user.phone         || "",
-        buyerType: prev.buyerType || user.businessType  || "Corporate Gifting",
-        gstin:     prev.gstin     || user.gstin         || "",
-        city:      prev.city      || user.billingAddress?.city    || "",
-        pin:       prev.pin       || user.billingAddress?.pincode || "",
+        name: prev.name || user.fullName || user.full_name || "",
+        company: prev.company || user.companyName || "",
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+        buyerType: prev.buyerType || user.businessType || "Corporate Gifting",
+        gstin: prev.gstin || user.gstin || "",
+        city: prev.city || user.billingAddress?.city || "",
+        pin: prev.pin || user.billingAddress?.pincode || "",
       }));
     }
   }, [user]);
@@ -55,6 +59,25 @@ export default function QuotePage() {
       setIsAdjustOpen(false);
     }
   }, [items.length, isAdjustOpen]);
+
+  // ── Per-item dynamic tier discount & display values ────────────────────────
+  const lineItems = items.map((item) => {
+    const isPair = Boolean(item.isPairItem || item.isPair || item.bundleDiscountApplied || item.activeTierTitle?.includes("Bundle") || item.moq === 1);
+    const minQty = isPair ? 1 : (item.moq || 10);
+    const mrp = item.wholesalePrice || item.originalBasePrice || item.mrp || 0;
+    const discountPct = getItemDiscountPct ? getItemDiscountPct(item.qty) : (item.qty >= 100 ? 20 : item.qty >= 50 ? 15 : 10);
+    const tierNumber = getItemTierNumber ? getItemTierNumber(item.qty) : (item.qty >= 100 ? 3 : item.qty >= 50 ? 2 : 1);
+    const lineGross = mrp * item.qty;
+    const lineDiscount = Math.round(lineGross * (discountPct / 100));
+    const lineNet = lineGross - lineDiscount;
+    return { ...item, isPair, minQty, mrp, discountPct, tierNumber, lineGross, lineDiscount, lineNet };
+  });
+
+  const totalGross = lineItems.reduce((s, it) => s + it.lineGross, 0);
+  const totalItemDiscount = lineItems.reduce((s, it) => s + it.lineDiscount, 0);
+  const totalUnitsCount = lineItems.reduce((s, it) => s + (it.qty || 0), 0);
+  const estimatedGST = Math.round(estimatedTotal * 0.18);
+  const totalWithGST = estimatedTotal + estimatedGST;
 
   const [state, setState] = useState({ busy: false, error: null, ref: null });
 
@@ -70,14 +93,56 @@ export default function QuotePage() {
           ...formData,
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
-          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations, isPairItem, isPair, bundleDiscountApplied }) => ({
-            slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations,
-            isPairItem: Boolean(isPairItem || isPair || bundleDiscountApplied)
+          totalGross,
+          totalItemDiscount,
+          totalUnitsCount,
+          hasBundleBonus,
+          bundleBonusAmount,
+          netSubtotalBeforeBundle,
+          estimatedTotal,
+          estimatedGST,
+          totalWithGST,
+          items: lineItems.map((it) => ({
+            slug: it.slug,
+            name: it.name,
+            colour: it.colour || "Standard",
+            qty: it.qty,
+            unit: it.unit || "piece",
+            mrp: it.mrp,
+            lineGross: it.lineGross,
+            discountPct: it.discountPct,
+            tierNumber: it.tierNumber,
+            lineDiscount: it.lineDiscount,
+            lineNet: it.lineNet,
+            isPairItem: it.isPair,
+            senderName: it.senderName || "",
+            receiverName: it.receiverName || "",
+            giftMessage: it.giftMessage || "",
+            engravingName: it.engravingName || "",
+            customProductName: it.customProductName || "",
+            selectedCustomizations: it.selectedCustomizations || [],
+            brandingNotes: it.brandingNotes || ""
           }))
         })
       });
-      const resJson = await response.json();
-      if (!response.ok) throw new Error(resJson.error || "Failed to submit quote enquiry.");
+
+      let resJson = null;
+      const rawText = await response.text();
+      try {
+        resJson = JSON.parse(rawText);
+      } catch {
+        console.error("Non-JSON API response received:", rawText);
+        throw new Error(
+          response.status === 429
+            ? "Too many requests. Please wait a moment and try again."
+            : `Server encountered an error (${response.status}). Please try again.`
+        );
+      }
+
+      if (!response.ok || !resJson?.reference) {
+        throw new Error(resJson?.error || "Failed to submit quote enquiry. Please try again.");
+      }
+
       clear();
       setState({ busy: false, error: null, ref: resJson.reference });
     } catch (err) {
@@ -85,52 +150,204 @@ export default function QuotePage() {
     }
   }
 
-  // ── Success screen ───────────────────────────────────────────────────────
+  // ── Success screen (Aligned with Navbar Left Edge) ────────────────────────
   if (state.ref) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 shadow-sm text-center space-y-5">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto border border-emerald-200">
-            <CheckCircle2 className="w-8 h-8 text-emerald-700" />
-          </div>
-          <div className="space-y-1.5">
-            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full">
-              Quote Request Received
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+        {/* Page header banner matching Quote page layout */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+          <div className="inline-flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-[#15803d] text-white flex items-center justify-center text-[10px] font-black shadow-2xs">
+              ✓
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">We're On It!</h2>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-              Our B2B account team will respond with an official itemized GST quotation within 4 business hours.
-            </p>
+            <span className="text-xs font-bold text-slate-800 tracking-tight">
+              Wholesale enquiry submitted &amp; quotation dispatched
+            </span>
           </div>
-          <div className="inline-flex items-center gap-2 bg-slate-100 px-5 py-2 rounded-lg font-mono text-xs font-semibold border border-slate-200">
-            <span className="text-slate-600">Reference ID:</span>
-            <span className="text-emerald-800 font-bold">{state.ref}</span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Response within 2–4 business hours
+          </span>
+        </div>
+
+        {/* Two-column layout spanning full container width */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-1">
+          {/* Left Column: Headline, Subtext, Ticket Card, Buttons & Contact */}
+          <div className="lg:col-span-7 space-y-5">
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f3428] tracking-tight leading-[1.15]">
+                We&apos;ve got your<br />request.
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
+                Your order summary and official quotation PDF have been generated and dispatched to{" "}
+                <strong className="text-slate-900 font-bold">{formData.email}</strong>.
+              </p>
+            </div>
+
+            {/* Ticket-style light green card */}
+            <div className="relative bg-[#ebf7ee] border border-[#cbebd4] rounded-2xl p-5 sm:p-6 overflow-hidden shadow-2xs max-w-xl">
+              {/* Semicircle notches on left and right */}
+              <div className="absolute left-0 top-[52%] -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-white rounded-full border-r border-[#cbebd4]" />
+              <div className="absolute right-0 top-[52%] -translate-y-1/2 translate-x-1/2 w-4 h-4 bg-white rounded-full border-l border-[#cbebd4]" />
+
+              {/* Top part of ticket */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                    Quotation reference
+                  </span>
+                  <div className="text-2xl sm:text-3xl font-black text-[#0f3428] tracking-tight mt-1 font-mono">
+                    {state.ref}
+                  </div>
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (navigator.clipboard) {
+                        navigator.clipboard.writeText(state.ref);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#cbebd4] rounded-lg text-xs font-bold text-slate-800 shadow-2xs hover:bg-slate-50 transition-all cursor-pointer active:scale-95"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Copy reference</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Dashed divider */}
+              <div className="border-t border-dashed border-[#b3e5c0] my-4" />
+
+              {/* Bottom part of ticket */}
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Follow-up SLA</span>
+                  <span className="font-bold text-slate-900">Within 2–4 business hours</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Sent to</span>
+                  <span className="font-bold text-slate-900 truncate max-w-[240px]">{formData.email}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Tax Status</span>
+                  <span className="font-bold text-slate-900">18% GST • Input credit eligible</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Buttons & Support line */}
+            <div className="pt-2 space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  href="/products"
+                  className="bg-[#15803d] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-2xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  Browse product catalog
+                </Link>
+                <Link
+                  href="/"
+                  className="bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-2xs cursor-pointer active:scale-95"
+                >
+                  Back to homepage
+                </Link>
+              </div>
+
+              <p className="text-xs text-slate-500 pt-1">
+                Need help now? Email{" "}
+                <a
+                  href="mailto:support.greenfibre@gmail.com"
+                  className="font-bold text-slate-900 underline hover:text-emerald-800"
+                >
+                  support.greenfibre@gmail.com
+                </a>{" "}
+                or call / WhatsApp{" "}
+                <a
+                  href="tel:+919217328777"
+                  className="font-bold text-slate-900 underline hover:text-emerald-800"
+                >
+                  +91 92173 28777
+                </a>
+                .
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
-            <Link href="/products" className="btn-primary">Continue Browsing</Link>
-            <Link href="/" className="btn-secondary">Back to Home</Link>
+
+          {/* Right Column: What Happens Next Stepper Box */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="bg-slate-50/80 border border-slate-200/90 rounded-2xl p-5 sm:p-6 space-y-4 shadow-2xs">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                What happens next
+              </h3>
+
+              <div className="space-y-4 relative">
+                {/* Step 1 */}
+                <div className="flex items-start gap-3 relative">
+                  <div className="w-6 h-6 rounded-full bg-[#ebf7ee] text-[#15803d] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
+                    1
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                      We check stock &amp; pricing
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                      Our team confirms factory stock and applies your wholesale volume discount tier.
+                    </p>
+                  </div>
+                  {/* Connecting Line to step 2 */}
+                  <div className="absolute left-3 top-7 bottom-[-16px] w-px bg-slate-200" />
+                </div>
+
+                {/* Step 2 */}
+                <div className="flex items-start gap-3 relative">
+                  <div className="w-6 h-6 rounded-full bg-[#ebf7ee] text-[#15803d] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
+                    2
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                      A specialist contacts you
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                      Expect an email or WhatsApp message with custom sleeve mockups, sample options, and timeline.
+                    </p>
+                  </div>
+                  {/* Connecting Line to step 3 */}
+                  <div className="absolute left-3 top-7 bottom-[-16px] w-px bg-slate-200" />
+                </div>
+
+                {/* Step 3 */}
+                <div className="flex items-start gap-3 relative">
+                  <div className="w-6 h-6 rounded-full bg-[#ebf7ee] text-[#15803d] font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-2xs">
+                    3
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                      Production and GST invoice
+                    </h4>
+                    <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-relaxed">
+                      Production starts with full 18% GST input tax credit documentation &amp; Pan-India tracking.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     );
   }
-
-  // ── Per-item display values ────────────────────────────────────────────────
-  const lineItems = items.map((item) => {
-    const isPair       = Boolean(item.isPairItem || item.isPair || item.bundleDiscountApplied || item.activeTierTitle?.includes("Bundle") || item.moq === 1);
-    const minQty       = isPair ? 1 : (item.moq || 10);
-    const mrp          = item.wholesalePrice || item.originalBasePrice || 0;
-    const lineGross    = mrp * item.qty;
-    const lineDiscount = Math.round(lineGross * (ITEM_DISCOUNT_PCT / 100));
-    const lineNet      = lineGross - lineDiscount;
-    return { ...item, isPair, minQty, mrp, lineGross, lineDiscount, lineNet };
-  });
-
-  const totalGross        = lineItems.reduce((s, it) => s + it.lineGross,    0);
-  const totalItemDiscount = lineItems.reduce((s, it) => s + it.lineDiscount, 0);
-  const totalUnitsCount   = lineItems.reduce((s, it) => s + (it.qty || 0),   0);
-  const estimatedGST      = Math.round(estimatedTotal * 0.18);
-  const totalWithGST      = estimatedTotal + estimatedGST;
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
@@ -205,8 +422,8 @@ export default function QuotePage() {
                   {/* Per-product rows */}
                   {lineItems.map((item, idx) => (
                     <div key={item.key} className="py-2.5 border-b border-slate-100 last:border-b-0">
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 text-xs">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 flex-wrap">
                           <span className="text-slate-400 font-mono text-[10px] w-5 flex-shrink-0">{String(idx + 1).padStart(2, "0")}</span>
                           <span className="font-semibold text-slate-800 truncate">{item.name}</span>
                           {item.isPair && (
@@ -219,11 +436,19 @@ export default function QuotePage() {
                               {item.colour}
                             </span>
                           )}
-                          <span className="text-slate-400 flex-shrink-0">× {item.qty}</span>
+                          {item.tierNumber > 1 && (
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold flex-shrink-0 border ${item.tierNumber === 3
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                                : "bg-teal-50 text-teal-800 border-teal-200"
+                              }`}>
+                              Tier {item.tierNumber} ({item.discountPct}% Off)
+                            </span>
+                          )}
+                          <span className="text-slate-500 font-medium flex-shrink-0">× {item.qty}</span>
                         </div>
-                        <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="flex items-center justify-end gap-2.5 sm:gap-3 flex-shrink-0 pl-6 sm:pl-0">
                           <span className="text-slate-400 line-through text-[11px]">₹{item.lineGross.toLocaleString("en-IN")}</span>
-                          <span className="text-emerald-700 font-bold text-[11px]">−₹{item.lineDiscount.toLocaleString("en-IN")} ({ITEM_DISCOUNT_PCT}%)</span>
+                          <span className="text-emerald-700 font-bold text-[11px]">−₹{item.lineDiscount.toLocaleString("en-IN")} ({item.discountPct}%)</span>
                           <span className="font-extrabold text-slate-900 w-20 text-right">₹{item.lineNet.toLocaleString("en-IN")}</span>
                         </div>
                       </div>
@@ -240,13 +465,13 @@ export default function QuotePage() {
                     <div className="flex items-center justify-between text-xs">
                       <span className="flex items-center gap-1.5 text-slate-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                        Volume Discount (10% on each product):
+                        Volume Tier Discount:
                       </span>
                       <span className="font-semibold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-slate-600 border-t border-dashed border-slate-200 pt-2">
-                      <span>Subtotal after 10% discount:</span>
+                      <span>Subtotal after tier discounts:</span>
                       <span className="font-bold text-slate-800">₹{(netSubtotalBeforeBundle || 0).toLocaleString("en-IN")}</span>
                     </div>
 
@@ -273,7 +498,7 @@ export default function QuotePage() {
                     {(totalItemDiscount + (bundleBonusAmount || 0)) > 0 && (
                       <div className="flex items-center justify-between text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
                         <span className="font-semibold text-slate-700">
-                          Total Savings ({hasBundleBonus ? "10% + 5% Bundle" : "10%"}):
+                          Total Savings ({hasBundleBonus ? "Tier Savings + 5% Bundle" : "Volume Tier Savings"}):
                         </span>
                         <span className="font-extrabold text-emerald-800">
                           −₹{(totalItemDiscount + (bundleBonusAmount || 0)).toLocaleString("en-IN")}
@@ -350,7 +575,7 @@ export default function QuotePage() {
               </div>
               <div className="space-y-1">
                 <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">Phone / WhatsApp *</label>
-                <input id="q-phone" name="phone" required placeholder="+91 98765 43210" value={formData.phone}
+                <input id="q-phone" name="phone" required placeholder="+91 92173 28777" value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
               </div>
@@ -422,9 +647,47 @@ export default function QuotePage() {
               <button
                 type="submit"
                 disabled={state.busy || items.length === 0}
-                className="btn-primary w-full py-3.5 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow transition-all"
+                className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
+                  state.busy
+                    ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
+                    : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {state.busy ? "Generating Official Quote…" : "Submit Quote Request →"}
+                {state.busy ? (
+                  <>
+                    {/* Revolving Circle Spinner */}
+                    <span className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
+                      <svg
+                        className="animate-spin w-5 h-5 text-emerald-300"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="3.5"
+                        />
+                        <path
+                          className="opacity-100"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    </span>
+                    {/* Eco Leaf Icon */}
+                    <Leaf className="w-4 h-4 text-emerald-200 animate-pulse flex-shrink-0" />
+                    <span>Generating Official Quote…</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit Quote Request</span>
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
               </button>
             </div>
 
@@ -516,8 +779,13 @@ export default function QuotePage() {
                             MOQ: {item.minQty}
                           </span>
                         )}
-                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                          10% OFF
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded border transition-colors ${item.tierNumber === 3
+                            ? "text-emerald-900 bg-emerald-100 border-emerald-300"
+                            : item.tierNumber === 2
+                              ? "text-teal-900 bg-teal-50 border-teal-200"
+                              : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                          }`}>
+                          {item.discountPct}% OFF • Tier {item.tierNumber}
                         </span>
                       </div>
                     </div>
@@ -525,7 +793,7 @@ export default function QuotePage() {
 
                   {/* Right: Quantity Stepper & Net Price & Delete */}
                   <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50">
-                    <div className="text-right hidden sm:block">
+                    <div className="text-left sm:text-right">
                       <p className="text-xs font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
                       <p className="text-[10px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
                     </div>

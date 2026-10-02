@@ -88,18 +88,18 @@ export const B2B_OCCASIONS = [
         id: "tier-2",
         tierNumber: 2,
         title: "Tier 2 — Personalized",
-        badge: "★ POPULAR",
-        isPopular: true,
+        badge: "15% OFF",
+        isPopular: false,
         min: 50,
         max: 99,
         rangeLabel: "50–99 Sets",
-        price: 1530,
-        savingsPct: 12,
+        price: 1445,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 3 (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
+        perks: ["15% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
       },
       {
         id: "tier-3",
@@ -111,12 +111,12 @@ export const B2B_OCCASIONS = [
         max: null,
         rangeLabel: "100+ Sets",
         price: 1360,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
+        perks: ["20% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
       }
     ],
     customizations: [
@@ -196,18 +196,18 @@ export const B2B_OCCASIONS = [
         id: "tier-2",
         tierNumber: 2,
         title: "Silver Jubilee",
-        badge: "★ POPULAR",
-        isPopular: true,
+        badge: "15% OFF",
+        isPopular: false,
         min: 50,
         max: 99,
         rangeLabel: "50–99 Sets",
-        price: 1600,
-        savingsPct: 12,
+        price: 1530,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 anniversary customizations below.",
         nextTierUnlockText: "Platinum (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
+        perks: ["15% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -218,13 +218,13 @@ export const B2B_OCCASIONS = [
         min: 100,
         max: null,
         rangeLabel: "100+ Sets",
-        price: 1400,
-        savingsPct: 15,
+        price: 1440,
+        savingsPct: 20,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 anniversary customizations included complimentary.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
+        perks: ["20% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
       }
     ],
     customizations: [
@@ -304,18 +304,18 @@ export const B2B_OCCASIONS = [
         id: "tier-2",
         tierNumber: 2,
         title: "Grand Wedding",
-        badge: "★ POPULAR",
-        isPopular: true,
+        badge: "15% OFF",
+        isPopular: false,
         min: 50,
         max: 99,
         rangeLabel: "50–99 Sets",
-        price: 1550,
-        savingsPct: 12,
+        price: 1530,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 wedding customizations below.",
         nextTierUnlockText: "Royal Wedding (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
+        perks: ["15% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
       },
       {
         id: "tier-3",
@@ -326,13 +326,13 @@ export const B2B_OCCASIONS = [
         min: 100,
         max: null,
         rangeLabel: "100+ Sets",
-        price: 1350,
-        savingsPct: 15,
+        price: 1440,
+        savingsPct: 20,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 wedding customizations included free.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
+        perks: ["20% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
       }
     ],
     customizations: [
@@ -412,18 +412,18 @@ export const B2B_OCCASIONS = [
         id: "tier-2",
         tierNumber: 2,
         title: "Festive Bulk",
-        badge: "★ POPULAR",
-        isPopular: true,
+        badge: "15% OFF",
+        isPopular: false,
         min: 50,
         max: 99,
         rangeLabel: "50–99 Sets",
-        price: 1500,
-        savingsPct: 12,
+        price: 1485,
+        savingsPct: 15,
         leadTime: "5 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 festive customizations free.",
         nextTierUnlockText: "Mega Festive (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
+        perks: ["15% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
       },
       {
         id: "tier-3",
@@ -434,13 +434,13 @@ export const B2B_OCCASIONS = [
         min: 100,
         max: null,
         rangeLabel: "100+ Sets",
-        price: 1300,
-        savingsPct: 15,
+        price: 1400,
+        savingsPct: 20,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 festive customizations included free.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
+        perks: ["20% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
       }
     ],
     customizations: [
@@ -520,18 +520,18 @@ export const B2B_OCCASIONS = [
         id: "tier-2",
         tierNumber: 2,
         title: "Growing Team",
-        badge: "★ POPULAR",
-        isPopular: true,
+        badge: "15% OFF",
+        isPopular: false,
         min: 50,
         max: 99,
         rangeLabel: "50–99 Sets",
-        price: 1550,
-        savingsPct: 12,
+        price: 1445,
+        savingsPct: 15,
         leadTime: "4 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 onboarding customizations free.",
         nextTierUnlockText: "Enterprise (100+) unlocks all 5 →",
-        perks: ["12% Off MRP", "3 Free Customizations", "Priority Production"]
+        perks: ["15% Off MRP", "3 Free Customizations", "Priority Production"]
       },
       {
         id: "tier-3",
@@ -542,13 +542,13 @@ export const B2B_OCCASIONS = [
         min: 100,
         max: null,
         rangeLabel: "100+ Sets",
-        price: 1350,
-        savingsPct: 15,
+        price: 1360,
+        savingsPct: 20,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 onboarding customizations included.",
         nextTierUnlockText: "",
-        perks: ["15% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
+        perks: ["20% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
       }
     ],
     customizations: [
@@ -632,7 +632,8 @@ function normalizeImageUrl(img) {
   if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("/")) {
     return img;
   }
-  return `http://localhost:5500/${img.replace(/^\/+/, "")}`;
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.greenfibre.org";
+  return `${apiBase}/${img.replace(/^\/+/, "")}`;
 }
 
 export default function ProductDetailView({ product, context, relatedProducts = [] }) {
@@ -713,7 +714,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   // Tiers: same discount percentages but now just for unlocking perks / displaying the tier.
   // The actual final price = wholesaleUnitPrice × qty × (1 - discountPct/100)
   const currentTiers = activeOccasion.tiers.map((t) => {
-    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 12 : 15;
+    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 15 : 20;
     // Effective per-unit after discount (for display in tier chips)
     const effectivePricePerUnit = wholesaleUnitPrice > 0
       ? Math.round(wholesaleUnitPrice * (1 - discountPct / 100))
@@ -829,7 +830,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   };
 
   // Pricing breakdown:
-  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 12 : 15;
+  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 15 : 20;
   // Gross wholesale subtotal before discount
   const grossWholesaleSubtotal = wholesaleUnitPrice * qty;
   // Discount amount on the total
@@ -2105,15 +2106,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             }`}
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
-                                <img
-                                  src={rel.image || "/images/gift-set-classic.jpg"}
-                                  alt={rel.name}
-                                  className="w-full h-full object-contain"
-                                  onError={(e) => {
-                                    e.currentTarget.src = "/images/gift-set-classic.jpg";
-                                  }}
-                                />
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1 relative">
+                                {rel.image ? (
+                                  <img
+                                    src={rel.image}
+                                    alt={rel.name}
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-lg">
+                                    {rel.name ? rel.name.charAt(0).toUpperCase() : "G"}
+                                  </div>
+                                )}
                               </div>
                               <div className="min-w-0 flex-1">
                                 <h4 className="text-sm font-semibold text-slate-900 truncate leading-snug">
