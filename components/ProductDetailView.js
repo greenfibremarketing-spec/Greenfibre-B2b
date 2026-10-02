@@ -1026,965 +1026,964 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         {/* TOP SECTION: Gallery & Gifting Customization */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
 
-        {/* LEFT COLUMN: Large Gallery & Compliance Trust Bar */}
-        <div className="md:col-span-6 lg:col-span-6 space-y-4 w-full max-w-[540px] mx-auto md:mx-0 min-w-0 md:sticky md:top-24">
+          {/* LEFT COLUMN: Large Gallery & Compliance Trust Bar */}
+          <div className="md:col-span-6 lg:col-span-6 space-y-4 w-full max-w-[540px] mx-auto md:mx-0 min-w-0 md:sticky md:top-24">
 
-          {/* Gallery Canvas with Left Vertical Thumbnails */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start min-w-0 w-full">
-            {/* Left Vertical Thumbnails Strip (Desktop only - hidden on mobile) */}
-            {images.length > 1 && (
-              <div className="hidden sm:flex sm:flex-col gap-2 sm:overflow-y-auto sm:max-h-[460px] sm:w-auto pb-0 no-scrollbar flex-shrink-0">
-                {images.map((img, idx) => {
-                  const isActive = activeImageIndex === idx;
-                  return (
+            {/* Gallery Canvas with Left Vertical Thumbnails */}
+            <div className="flex flex-col sm:flex-row gap-3 items-start min-w-0 w-full">
+              {/* Left Vertical Thumbnails Strip (Desktop only - hidden on mobile) */}
+              {images.length > 1 && (
+                <div className="hidden sm:flex sm:flex-col gap-2 sm:overflow-y-auto sm:max-h-[460px] sm:w-auto pb-0 no-scrollbar flex-shrink-0">
+                  {images.map((img, idx) => {
+                    const isActive = activeImageIndex === idx;
+                    return (
+                      <button
+                        key={img + idx}
+                        type="button"
+                        onClick={() => handleSelectImage(idx)}
+                        className={`relative w-14 h-14 sm:w-16 sm:h-16 aspect-square rounded-xl overflow-hidden border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${isActive
+                          ? "ring-2 ring-brand-600 border-brand-600 shadow-sm scale-102 bg-white"
+                          : "border-slate-200 hover:border-brand-400 opacity-75 hover:opacity-100 bg-slate-50"
+                          }`}
+                        aria-label={`View angle ${idx + 1}`}
+                      >
+                        <img
+                          src={img}
+                          alt={`Thumbnail ${idx + 1}`}
+                          className="w-full h-full object-cover object-center"
+                          onError={(e) => {
+                            e.currentTarget.src = "/images/placeholder.jpg";
+                          }}
+                        />
+                        {isActive && (
+                          <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-xs">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Main Stage Image Frame */}
+              <div className="relative aspect-square max-h-[460px] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-sm flex items-center justify-center group flex-1 min-w-0">
+                <img
+                  src={activeImage}
+                  alt={`${product.name} - ${selectedColour}`}
+                  className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-103"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/placeholder.jpg";
+                  }}
+                />
+
+                {/* Floating Gift Set Badge */}
+                <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200/80 text-xs font-bold shadow-xs">
+                  <Gift className="w-3.5 h-3.5 text-brand-700" />
+                  <span>GIFT SET</span>
+                </div>
+
+                {/* Navigation Arrows */}
+                {images.length > 1 && (
+                  <>
                     <button
-                      key={img + idx}
                       type="button"
-                      onClick={() => handleSelectImage(idx)}
-                      className={`relative w-14 h-14 sm:w-16 sm:h-16 aspect-square rounded-xl overflow-hidden border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${isActive
-                        ? "ring-2 ring-brand-600 border-brand-600 shadow-sm scale-102 bg-white"
-                        : "border-slate-200 hover:border-brand-400 opacity-75 hover:opacity-100 bg-slate-50"
-                        }`}
-                      aria-label={`View angle ${idx + 1}`}
+                      onClick={handlePrevImage}
+                      aria-label="Previous photo"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-md border border-slate-200 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer z-10"
                     >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover object-center"
-                        onError={(e) => {
-                          e.currentTarget.src = "/images/placeholder.jpg";
-                        }}
-                      />
-                      {isActive && (
-                        <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-xs">
-                          <Check className="w-2.5 h-2.5 stroke-[3]" />
-                        </span>
-                      )}
+                      <ChevronLeft className="w-4 h-4 text-slate-800" />
                     </button>
-                  );
-                })}
+                    <button
+                      type="button"
+                      onClick={handleNextImage}
+                      aria-label="Next photo"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-md border border-slate-200 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer z-10"
+                    >
+                      <ChevronRight className="w-4 h-4 text-slate-800" />
+                    </button>
+                  </>
+                )}
+
+                {/* Lightbox Zoom Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsLightboxOpen(true)}
+                  aria-label="Zoom image"
+                  title="Inspect high-res image"
+                  className="absolute top-3.5 right-3.5 w-8 h-8 rounded-lg bg-white/90 hover:bg-white text-slate-700 hover:text-brand-800 shadow-sm border border-slate-200 flex items-center justify-center transition-colors cursor-pointer z-10"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+
+                {/* Bottom Badge: Photo Index */}
+                <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900/75 backdrop-blur-md text-white text-[10px] font-medium shadow-xs pointer-events-none">
+                  <span>
+                    {activeImageIndex + 1} / {images.length}
+                  </span>
+                  <span className="text-slate-400">•</span>
+                  <span className="text-brand-200 font-semibold">{activeOccasion.label}</span>
+                </div>
+
+                {/* Mobile pagination dots */}
+                {images.length > 1 && (
+                  <div className="sm:hidden absolute bottom-3.5 right-3.5 flex items-center gap-1 bg-slate-900/60 backdrop-blur-xs px-2 py-1 rounded-full z-10">
+                    {images.map((_, dotIdx) => (
+                      <button
+                        key={dotIdx}
+                        type="button"
+                        onClick={() => handleSelectImage(dotIdx)}
+                        className={`h-1.5 rounded-full transition-all cursor-pointer ${dotIdx === activeImageIndex
+                          ? "w-3.5 bg-brand-400"
+                          : "w-1.5 bg-white/60 hover:bg-white"
+                          }`}
+                        aria-label={`Jump to photo ${dotIdx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 4 Compliance Trust Pills */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
+                <Sprout className="w-4 h-4 text-brand-700 mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-900 block">Rice Husk</span>
+                <span className="text-[10px] text-slate-500">Bio-Composite</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-brand-700 mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-900 block">Food Grade</span>
+                <span className="text-[10px] text-slate-500">TUV Certified</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
+                <DishwasherIcon className="w-4 h-4 text-brand-700 mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-900 block">Dishwasher</span>
+                <span className="text-[10px] text-slate-500">Commercial Safe</span>
+              </div>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
+                <Flame className="w-4 h-4 text-brand-700 mb-0.5" />
+                <span className="text-[11px] font-bold text-slate-900 block">Microwave</span>
+                <span className="text-[10px] text-slate-500">Reheat Safe</span>
+              </div>
+            </div>
+
+            {/* Packaging Guarantee & Factory Stock Note */}
+            <div className="bg-slate-50/80 border border-slate-200/90 rounded-xl p-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-slate-900 font-bold text-xs">
+                  <Gift className="w-3.5 h-3.5 text-brand-700" />
+                  <span>Gifting &amp; Bulk Dispatch Ready</span>
+                </div>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                  <span>{product.totalStock || product.stockQuantity || "1,000+"} Units Available</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                {product.package?.type
+                  ? `Packaged in protective ${product.package.type} with cushioning. Ready for corporate distribution and Pan-India logistics.`
+                  : "Every item is individually packed in a recyclable kraft gift box with cushioning and story booklet. Ready for corporate distribution."}
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: Product Details & Gifting Customizer */}
+          <div className="md:col-span-6 lg:col-span-6 space-y-4 min-w-0">
+
+            {/* Header Badges & Title */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="badge-green text-[11px] py-0.5 px-2 inline-flex items-center gap-1">
+                  <Package className="w-3 h-3 text-emerald-800" />
+                  <span>{typeof product.category === "string" ? product.category : product.category?.name || "Gifting Collection"}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold bg-brand-700 text-white shadow-xs">
+                  <Gift className="w-3 h-3" />
+                  <span>{activeOccasion.label}</span>
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <CheckCheck className="w-3 h-3 text-emerald-600" />
+                  <span>{activeOccasion.subtitle}</span>
+                </span>
+              </div>
+
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
+                {product.name}
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {product.shortDescription || product.tagline || product.desc}
+              </p>
+
+              {/* Wholesale Price + Tier Discount Callout */}
+              <div className="pt-1 space-y-1.5">
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                    ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice : activeTierObj.price}
+                    <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (B2B Wholesale Price)</span>
+                  </div>
+                  {wholesaleUnitPrice > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                      <Percent className="w-3 h-3" />
+                      {activeTierDiscountPct}% Bulk Discount Applied on Total
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* COMPACT VOLUME TIER WIDGET (UNIFORM BRAND GREEN - NO MODAL POPUP) */}
+            <div className="bg-brand-600 rounded-2xl p-3.5 text-white shadow-md relative overflow-hidden border border-brand-500">
+              <div className="relative z-10 space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 select-none">
+                    <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center shadow-xs border border-brand-400/50 ring-1 ring-white/30">
+                      <SlidersHorizontal className="w-3.5 h-3.5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-extrabold tracking-wide uppercase text-white block leading-tight">
+                        Volume Pricing Tiers
+                      </span>
+                      <span className="text-[10px] text-emerald-100 font-medium">
+                        Active: Tier {activeTierObj.tierNumber} (₹{activeTierObj.price}/{unitLabel}) • {activeOccasion.label}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-white/20 text-white border border-white/30">
+                    3 TIERS
+                  </span>
+                </div>
+
+                {/* 3 Interactive Horizontal Quick-Select Chips */}
+                <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+                  {currentTiers.map((tier) => {
+                    const isActive = activeTierObj.id === tier.id;
+                    return (
+                      <button
+                        key={tier.id}
+                        type="button"
+                        onClick={() => handleSelectTier(tier)}
+                        className={`p-2 rounded-xl text-left transition-all relative border cursor-pointer ${isActive
+                          ? "bg-white text-slate-900 border-white shadow-xl ring-2 ring-emerald-300 scale-[1.02]"
+                          : "bg-brand-700/40 hover:bg-brand-700/60 text-white border-white/25 hover:border-white/40 shadow-xs"
+                          }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? "text-brand-800" : "text-emerald-100"}`}>
+                            Tier {tier.tierNumber}
+                          </span>
+                          {tier.isPopular ? (
+                            <span className="text-[8px] font-extrabold uppercase bg-amber-400 text-amber-950 px-1 py-0.2 rounded font-mono shadow-xs">
+                              ★ POPULAR
+                            </span>
+                          ) : tier.savingsPct > 0 ? (
+                            <span className={`text-[8px] font-bold px-1 py-0.2 rounded ${isActive ? "bg-emerald-100 text-emerald-800" : "bg-black/20 text-white border border-white/20"}`}>
+                              -{tier.savingsPct}%
+                            </span>
+                          ) : null}
+                        </div>
+
+                        <div className={`text-xs sm:text-sm font-black tracking-tight ${isActive ? "text-slate-900" : "text-white"}`}>
+                          ₹{tier.price}
+                          <span className={`text-[10px] font-normal ${isActive ? "text-slate-500" : "text-emerald-100/70"}`}>/{unitLabel}</span>
+                        </div>
+
+                        <div className={`text-[10px] truncate ${isActive ? "text-brand-900 font-bold" : "text-emerald-100/90 font-medium"}`}>
+                          {tier.rangeLabel}
+                        </div>
+                        {isActive && wholesaleUnitPrice > 0 && (
+                          <div className="text-[9px] text-brand-600 font-semibold mt-0.5">
+                            Save {tier.savingsPct}% on total
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* 3. ORDER QUANTITY & PRICE CALCULATION CARD */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
+
+              {/* Set Quantity Stepper, Quick Addons & Price Calculation */}
+              <div className="bg-slate-50/80 border border-slate-200/90 rounded-xl p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8">
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
+                      <span>Order Quantity ({unitLabelPlural}):</span>
+                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                        MOQ: {currentMoq} {unitLabelPlural}
+                      </span>
+                    </label>
+
+                    {/* Stepper + Free Typing Input + Quick Addons */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="inline-flex items-center bg-white rounded-xl p-1 border border-slate-200 shadow-xs focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-200 transition-all">
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustQty(-1)}
+                          disabled={qty <= (currentMoq || 10)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                          title="Decrease quantity by 1"
+                          aria-label="Decrease quantity by 1"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={qtyInput}
+                          onChange={(e) => handleQtyInputChange(e.target.value)}
+                          onBlur={handleQtyInputBlur}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleQtyInputBlur();
+                          }}
+                          className="w-16 bg-transparent text-center font-extrabold text-slate-900 text-sm sm:text-base focus:outline-none select-all"
+                          aria-label={`Order quantity in ${unitLabelPlural}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustQty(1)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                          title="Increase quantity by 1"
+                          aria-label="Increase quantity by 1"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Quick Add-ons (+10, +50, +100) */}
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustQty(10)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                          title="Add 10 more sets"
+                        >
+                          +10
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustQty(50)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                          title="Add 50 more sets"
+                        >
+                          +50
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAdjustQty(100)}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                          title="Add 100 more sets"
+                        >
+                          +100
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Price Breakdown: Gross → Discount → Net */}
+                  <div className="text-left sm:text-right pt-2 sm:pt-0 min-w-[220px] sm:pl-4 space-y-1">
+                    <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block mb-1.5">
+                      Price Breakdown:
+                    </span>
+
+                    {/* Row 1: Gross wholesale */}
+                    <div className="flex items-center sm:justify-end gap-2 text-xs text-slate-600">
+                      <span className="text-slate-500">{qty} {unitLabelPlural} × ₹{wholesaleUnitPrice}</span>
+                      <span className="font-semibold text-slate-800">= ₹{grossWholesaleSubtotal.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    {/* Row 2: Discount deduction */}
+                    {mainDiscountAmount > 0 && (
+                      <div className="flex items-center sm:justify-end gap-2 text-xs text-emerald-700 font-bold">
+                        <span className="flex items-center gap-1">
+                          <Tag className="w-3 h-3" />
+                          <span>{activeTierDiscountPct}% Bulk Discount</span>
+                        </span>
+                        <span>− ₹{mainDiscountAmount.toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
+
+                    {/* Divider + You Pay */}
+                    <div className="mt-1.5 pt-1.5 border-t border-slate-200">
+                      <div className="flex items-baseline sm:justify-end gap-2">
+                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">You Pay:</span>
+                        <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                          ₹{estimatedSubtotal.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                      <div className="flex items-center sm:justify-end gap-1.5 mt-0.5 flex-wrap">
+                        {totalSavings > 0 && (
+                          <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                            Save ₹{totalSavings.toLocaleString("en-IN")} ({effectiveSavingsPct}% OFF)
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Excl. {product.tax?.gstRate || 18}% GST
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons: Add to Basket & Review Basket */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className={`btn-primary w-full py-2.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer ${added ? "bg-brand-500 border-brand-600" : ""
+                    }`}
+                >
+                  {added ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Added {qty} {unitLabelPlural} to Basket</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Add {qty} {unitLabelPlural} to Basket</span>
+                    </>
+                  )}
+                </button>
+
+                <Link
+                  href="/quote"
+                  className="btn-secondary w-full py-2.5 text-xs sm:text-sm text-center font-bold flex items-center justify-center gap-1.5"
+                >
+                  <span>Review Basket &amp; Order</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              {/* Assurance & Lead Time */}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 pt-3 border-t border-slate-100">
+                <span className="inline-flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-brand-600" />
+                  <span>
+                    <strong>Lead Time:</strong> {activeOccasion.leadTime || "5–7 Days"}
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-brand-600" />
+                  <span>
+                    <strong>Logistics:</strong> Pan-India Direct
+                  </span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-brand-600" />
+                  <span>
+                    <strong>Tax Invoice:</strong> {product.tax?.gstRate || 18}% GST Credit
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            {/* PACKAGING & PRESENTATION BOX (Located under Quantity & Price Calculation Card) */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <Box className="w-3.5 h-3.5 text-brand-700" />
+                <span>Packaging &amp; Presentation:</span>
+              </label>
+              <div className="p-3 bg-brand-50/70 border border-brand-200 rounded-xl flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 font-bold text-slate-900">
+                  <Box className="w-4 h-4 text-brand-700" />
+                  <span>Standard Recyclable Eco Kraft Gift Box</span>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                  Included FREE
+                </span>
+              </div>
+            </div>
+
+            {/* 4. B2B BULK ORDER POLICY BOX */}
+            <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-brand-700" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                    B2B Bulk Order Policy &amp; Procurement Terms
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold text-brand-800 bg-brand-100/80 px-2 py-0.5 rounded-full border border-brand-200">
+                  Verified B2B Direct
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700">
+                <div className="flex items-start gap-2">
+                  <Boxes className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong className="text-slate-900 block font-semibold text-[11px]">Minimum Order Quantity</strong>
+                    <span className="text-[11px] text-slate-500">MOQ starts at {currentMoq} {unitLabelPlural}. Tier rates auto-apply on larger lots.</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <PackageCheck className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong className="text-slate-900 block font-semibold text-[11px]">Sampling Policy</strong>
+                    <span className="text-[11px] text-slate-500">Sample evaluation kits dispatched within 24–48h. Sample fee credited on bulk orders.</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <Clock className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong className="text-slate-900 block font-semibold text-[11px]">Production &amp; Dispatch</strong>
+                    <span className="text-[11px] text-slate-500">Standard batch dispatch in {activeOccasion.leadTime || "5–7 business days"} with live GPS tracking.</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <ShieldCheck className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong className="text-slate-900 block font-semibold text-[11px]">Quality &amp; GST Compliance</strong>
+                    <span className="text-[11px] text-slate-500">100% factory QA inspected. Official B2B tax invoice issued for 18% input tax credit.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 5. KEY PRODUCT FEATURES & MATERIAL BENEFITS BOX */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                <Leaf className="w-3.5 h-3.5 text-brand-700" />
+                <span>Key Product Features &amp; Material Benefits</span>
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
+                {Array.isArray(product.productFeatures) && product.productFeatures.length > 0 ? (
+                  product.productFeatures.map((feat, fIdx) => (
+                    <div key={fIdx} className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>{feat}</span>
+                    </div>
+                  ))
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>Made from Agricultural Rice Husk Biocomposite</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>100% Food Contact Safe (US FDA / LFGB Certified)</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>Microwave Reheat &amp; Dishwasher Safe</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>Durable, Lightweight &amp; Break-Resistant</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>Zero Melamine, BPA &amp; Formaldehyde</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                      <span>Individual Recyclable Kraft Gift Box Included</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* LOWER SECTION: Complete Detailed Information Tabs */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+          {/* Tab Headers */}
+          <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/60 no-scrollbar">
+            <button
+              type="button"
+              onClick={() => setActiveTab("set_contents")}
+              className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "set_contents"
+                ? "border-brand-600 text-brand-800 bg-white shadow-xs"
+                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+                }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>Product Details &amp; All Specifications</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("sustainability")}
+              className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "sustainability"
+                ? "border-brand-600 text-brand-800 bg-white shadow-xs"
+                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+                }`}
+            >
+              <Leaf className="w-4 h-4" />
+              <span>Sustainability &amp; Footprint</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("ordering")}
+              className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "ordering"
+                ? "border-brand-600 text-brand-800 bg-white shadow-xs"
+                : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
+                }`}
+            >
+              <Truck className="w-4 h-4" />
+              <span>B2B Ordering &amp; Logistics</span>
+            </button>
+          </div>
+
+          {/* Tab Content Body */}
+          <div className="p-6">
+            {/* TAB 1: Product Details & All Specifications */}
+            {activeTab === "set_contents" && (
+              <div className="space-y-6">
+                {giftItems.length > 0 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">
+                        Gift Set Contents ({giftItems.length} Products Included)
+                      </h3>
+                      <p className="text-xs text-slate-600">
+                        Each product in this set is crafted from sustainable BioDur biocomposite.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {giftItems.map((item, idx) => (
+                        <div key={item._id || idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-bold text-slate-900 text-sm">{item.name}</h4>
+                            <span className="text-[11px] font-bold text-brand-800 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded">
+                              Qty: {item.quantity} {item.unit || "pc"}
+                            </span>
+                          </div>
+                          {item.description && (
+                            <p className="text-xs text-slate-600 leading-relaxed">{item.description}</p>
+                          )}
+                          {item.specifications && Object.keys(item.specifications).length > 0 && (
+                            <div className="pt-2 border-t border-slate-200/80">
+                              <table className="w-full text-[11px]">
+                                <tbody className="divide-y divide-slate-200/60">
+                                  {Object.entries(item.specifications).slice(0, 5).map(([sk, sv]) => (
+                                    <tr key={sk}>
+                                      <td className="py-1 font-semibold text-slate-500 w-1/2">{sk}</td>
+                                      <td className="py-1 text-slate-800">{String(sv)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Comprehensive Gifting Classification & Event Purpose Breakdown */}
+                <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-2 flex-wrap pb-3 border-b border-slate-200">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-brand-700 text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                        <Gift className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                          <span>Gifting Classification &amp; Purpose</span>
+                          <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                            {activeOccasion.badgeText}
+                          </span>
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium">
+                          This product comes under: <strong className="text-brand-800">{activeOccasion.comesUnder}</strong>
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
+                      Package Type: {activeOccasion.label}
+                    </span>
+                  </div>
+
+                  {/* Plain-English Explanation Banner */}
+                  <div className="bg-white border border-emerald-200/80 rounded-xl p-3.5 shadow-2xs">
+                    <div className="flex items-start gap-2.5">
+                      <Info className="w-4 h-4 text-brand-700 mt-0.5 flex-shrink-0" />
+                      <div className="space-y-1">
+                        <div className="text-xs font-bold text-slate-900">
+                          Why this product is listed under {activeOccasion.label}:
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                          {activeOccasion.plainExplanation}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4 Detail Specification Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        🏷️ Gifting Category
+                      </span>
+                      <span className="text-xs font-bold text-slate-900 block">
+                        {activeOccasion.label}
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        {activeOccasion.subtitle}
+                      </span>
+                    </div>
+
+                    <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        🎯 Best Suited For
+                      </span>
+                      <span className="text-xs font-semibold text-slate-800 block line-clamp-2">
+                        {activeOccasion.bestSuitedFor}
+                      </span>
+                    </div>
+
+                    <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        📦 Packaging Format
+                      </span>
+                      <span className="text-xs font-semibold text-slate-800 block line-clamp-2">
+                        {activeOccasion.packagingDetails}
+                      </span>
+                    </div>
+
+                    <div className="bg-white border border-slate-200/80 rounded-xl p-3">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                        ⚡ MOQ &amp; Lead Time
+                      </span>
+                      <span className="text-xs font-bold text-emerald-800 block">
+                        MOQ: {currentMoq} {unitLabelPlural}
+                      </span>
+                      <span className="text-[11px] text-slate-500">
+                        Lead Time: {activeOccasion.leadTime || "5–7 Days"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 5 Gifting Categories Comparison Grid */}
+                  <div className="pt-2 border-t border-slate-200/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                        <Gift className="w-3.5 h-3.5 text-brand-700" />
+                        <span>How this product serves different gifting occasions:</span>
+                      </h5>
+                      <span className="text-[10px] text-slate-400">5 Event Packages Available</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+                      {B2B_OCCASIONS.map((occ) => {
+                        const isCurrent = occ.key === activeOccasion.key;
+                        const OccIcon = occ.icon;
+                        return (
+                          <Link
+                            key={occ.key}
+                            href={`/products/${product.slug}?context=${occ.key}`}
+                            className={`p-2.5 rounded-xl border text-left transition-all block ${isCurrent
+                              ? "bg-emerald-50 border-brand-600 ring-1 ring-brand-600 shadow-xs"
+                              : "bg-white border-slate-200 hover:border-brand-400 hover:bg-slate-50"
+                              }`}
+                          >
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <div className={`w-5 h-5 rounded flex items-center justify-center ${isCurrent ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-600"}`}>
+                                <OccIcon className="w-3 h-3" />
+                              </div>
+                              {isCurrent ? (
+                                <span className="text-[8px] font-extrabold uppercase bg-brand-700 text-white px-1.5 py-0.2 rounded">
+                                  Current
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-semibold text-slate-400">
+                                  MOQ {occ.moq}
+                                </span>
+                              )}
+                            </div>
+                            <div className={`text-xs font-bold leading-tight ${isCurrent ? "text-brand-900" : "text-slate-800"}`}>
+                              {occ.label}
+                            </div>
+                            <div className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-1">
+                              {occ.subtitle}
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Master Technical Specifications & Dimensions Table */}
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 mb-2">
+                    Technical Specifications &amp; Material Data
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
+                    Precision-engineered tableware made from upcycled agricultural rice husk composite. Designed for commercial durability and everyday corporate gifting.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <table className="w-full text-xs">
+                        <tbody className="divide-y divide-slate-100">
+                          {Object.entries(combinedSpecs).map(([key, val]) => (
+                            <tr key={key} className="hover:bg-slate-50/50">
+                              <td className="py-2.5 px-4 font-semibold text-slate-600 bg-slate-50/60 w-2/5">
+                                {key}
+                              </td>
+                              <td className="py-2.5 px-4 text-slate-900 font-medium">
+                                {typeof val === "object" ? JSON.stringify(val) : String(val)}
+                              </td>
+                            </tr>
+                          ))}
+                          <tr className="hover:bg-slate-50/50">
+                            <td className="py-2.5 px-4 font-semibold text-slate-600 bg-slate-50/60">
+                              Set Contents
+                            </td>
+                            <td className="py-2.5 px-4 text-slate-900 font-medium">
+                              {setContentsText}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="bg-slate-50/80 border border-slate-200/90 rounded-xl p-4 space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-brand-800 flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-brand-700" />
+                        <span>Compliance &amp; Quality Assurances</span>
+                      </h4>
+                      <ul className="space-y-2 text-xs text-slate-700">
+                        <li className="flex items-start gap-2">
+                          <Check className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                          <span><strong>Thermal Tolerance:</strong> Tested from -20°C up to +120°C for microwave and cold dish applications.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                          <span><strong>Commercial Dishwasher:</strong> Safe for up to 1,000 commercial wash cycles without surface degradation.</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+                          <span><strong>Zero Migration:</strong> 100% free from heavy metals, formaldehyde, BPA, and microplastics.</span>
+                        </li>
+                      </ul>
+
+                      {product.careInstructions && (
+                        <div className="pt-2 border-t border-slate-200">
+                          <h5 className="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-1">
+                            Care &amp; Cleaning Instructions:
+                          </h5>
+                          <p className="text-[11px] text-slate-600 leading-relaxed">
+                            {product.careInstructions}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Main Stage Image Frame */}
-            <div className="relative aspect-square max-h-[460px] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-sm flex items-center justify-center group flex-1 min-w-0">
-              <img
-                src={activeImage}
-                alt={`${product.name} - ${selectedColour}`}
-                className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-103"
-                onError={(e) => {
-                  e.currentTarget.src = "/images/placeholder.jpg";
-                }}
-              />
-
-              {/* Floating Gift Set Badge */}
-              <div className="absolute top-3.5 left-3.5 z-10 flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/90 backdrop-blur-md text-slate-800 border border-slate-200/80 text-xs font-bold shadow-xs">
-                <Gift className="w-3.5 h-3.5 text-brand-700" />
-                <span>GIFT SET</span>
-              </div>
-
-              {/* Navigation Arrows */}
-              {images.length > 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={handlePrevImage}
-                    aria-label="Previous photo"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-md border border-slate-200 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer z-10"
-                  >
-                    <ChevronLeft className="w-4 h-4 text-slate-800" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleNextImage}
-                    aria-label="Next photo"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/95 hover:bg-white text-slate-800 shadow-md border border-slate-200 flex items-center justify-center transition-all opacity-85 hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer z-10"
-                  >
-                    <ChevronRight className="w-4 h-4 text-slate-800" />
-                  </button>
-                </>
-              )}
-
-              {/* Lightbox Zoom Button */}
-              <button
-                type="button"
-                onClick={() => setIsLightboxOpen(true)}
-                aria-label="Zoom image"
-                title="Inspect high-res image"
-                className="absolute top-3.5 right-3.5 w-8 h-8 rounded-lg bg-white/90 hover:bg-white text-slate-700 hover:text-brand-800 shadow-sm border border-slate-200 flex items-center justify-center transition-colors cursor-pointer z-10"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
-
-              {/* Bottom Badge: Photo Index */}
-              <div className="absolute bottom-3.5 left-3.5 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900/75 backdrop-blur-md text-white text-[10px] font-medium shadow-xs pointer-events-none">
-                <span>
-                  {activeImageIndex + 1} / {images.length}
-                </span>
-                <span className="text-slate-400">•</span>
-                <span className="text-brand-200 font-semibold">{activeOccasion.label}</span>
-              </div>
-
-              {/* Mobile pagination dots */}
-              {images.length > 1 && (
-                <div className="sm:hidden absolute bottom-3.5 right-3.5 flex items-center gap-1 bg-slate-900/60 backdrop-blur-xs px-2 py-1 rounded-full z-10">
-                  {images.map((_, dotIdx) => (
-                    <button
-                      key={dotIdx}
-                      type="button"
-                      onClick={() => handleSelectImage(dotIdx)}
-                      className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                        dotIdx === activeImageIndex
-                          ? "w-3.5 bg-brand-400"
-                          : "w-1.5 bg-white/60 hover:bg-white"
-                      }`}
-                      aria-label={`Jump to photo ${dotIdx + 1}`}
-                    />
-                  ))}
+            {/* TAB 2: Sustainability & Footprint */}
+            {activeTab === "sustainability" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 mb-2">
+                    Environmental Impact &amp; Circular Bio-Economy
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    Green Fibre transforms agricultural crop residue into high-performance, carbon-negative dining goods, preventing open stubble burning in India.
+                  </p>
                 </div>
-              )}
-            </div>
-          </div>
 
-          {/* 4 Compliance Trust Pills */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-              <Sprout className="w-4 h-4 text-brand-700 mb-0.5" />
-              <span className="text-[11px] font-bold text-slate-900 block">Rice Husk</span>
-              <span className="text-[10px] text-slate-500">Bio-Composite</span>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-              <ShieldCheck className="w-4 h-4 text-brand-700 mb-0.5" />
-              <span className="text-[11px] font-bold text-slate-900 block">Food Grade</span>
-              <span className="text-[10px] text-slate-500">TUV Certified</span>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-              <DishwasherIcon className="w-4 h-4 text-brand-700 mb-0.5" />
-              <span className="text-[11px] font-bold text-slate-900 block">Dishwasher</span>
-              <span className="text-[10px] text-slate-500">Commercial Safe</span>
-            </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-              <Flame className="w-4 h-4 text-brand-700 mb-0.5" />
-              <span className="text-[11px] font-bold text-slate-900 block">Microwave</span>
-              <span className="text-[10px] text-slate-500">Reheat Safe</span>
-            </div>
-          </div>
-
-          {/* Packaging Guarantee & Factory Stock Note */}
-          <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-3 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-slate-900 font-bold text-xs">
-                <Gift className="w-3.5 h-3.5 text-brand-700" />
-                <span>Gifting &amp; Bulk Dispatch Ready</span>
-              </div>
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                <span>{product.totalStock || product.stockQuantity || "1,000+"} Units Available</span>
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              {product.package?.type
-                ? `Packaged in protective ${product.package.type} with cushioning. Ready for corporate distribution and Pan-India logistics.`
-                : "Every item is individually packed in a recyclable kraft gift box with cushioning and story booklet. Ready for corporate distribution."}
-            </p>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: Product Details & Gifting Customizer */}
-        <div className="md:col-span-6 lg:col-span-6 space-y-4 min-w-0">
-
-          {/* Header Badges & Title */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="badge-green text-[11px] py-0.5 px-2 inline-flex items-center gap-1">
-                <Package className="w-3 h-3 text-emerald-800" />
-                <span>{typeof product.category === "string" ? product.category : product.category?.name || "Gifting Collection"}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold bg-brand-700 text-white shadow-xs">
-                <Gift className="w-3 h-3" />
-                <span>{activeOccasion.label}</span>
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <CheckCheck className="w-3 h-3 text-emerald-600" />
-                <span>{activeOccasion.subtitle}</span>
-              </span>
-            </div>
-
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
-              {product.name}
-            </h1>
-
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              {product.shortDescription || product.tagline || product.desc}
-            </p>
-
-            {/* Wholesale Price + Tier Discount Callout */}
-            <div className="pt-1 space-y-1.5">
-              <div className="flex items-baseline gap-3 flex-wrap">
-                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice : activeTierObj.price}
-                  <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (B2B Wholesale Price)</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-black text-emerald-800 mb-1">0%</div>
+                    <div className="text-xs font-bold text-slate-900 mb-1">Virgin Plastic Used</div>
+                    <p className="text-[11px] text-slate-600">Replaces petroleum plastics with agricultural rice husk composite.</p>
+                  </div>
+                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-black text-emerald-800 mb-1">70%</div>
+                    <div className="text-xs font-bold text-slate-900 mb-1">Carbon Reduction</div>
+                    <p className="text-[11px] text-slate-600">Significant lifecycle CO2 savings compared to conventional tableware.</p>
+                  </div>
+                  <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 text-center">
+                    <div className="text-2xl font-black text-emerald-800 mb-1">100%</div>
+                    <div className="text-xs font-bold text-slate-900 mb-1">Stubble Burning Prevention</div>
+                    <p className="text-[11px] text-slate-600">Every ton of crop waste processed prevents toxic open field burning smoke.</p>
+                  </div>
                 </div>
-                {wholesaleUnitPrice > 0 && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                    <Percent className="w-3 h-3" />
-                    {activeTierDiscountPct}% Bulk Discount Applied on Total
-                  </span>
+
+                {product.sustainability?.madeWith && (
+                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sprout className="w-4 h-4 text-brand-700" />
+                      <span>Bio-Composite Formulation &amp; Traceability</span>
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {product.sustainability.madeWith}
+                    </p>
+                    {Array.isArray(product.sustainability.highlights) && product.sustainability.highlights.length > 0 && (
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-2 text-xs text-slate-700">
+                        {product.sustainability.highlights.map((h, hIdx) => (
+                          <li key={hIdx} className="flex items-center gap-2">
+                            <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
+                            <span>{h}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* COMPACT VOLUME TIER WIDGET (UNIFORM BRAND GREEN - NO MODAL POPUP) */}
-          <div className="bg-brand-600 rounded-2xl p-3.5 text-white shadow-md relative overflow-hidden border border-brand-500">
-            <div className="relative z-10 space-y-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 select-none">
-                  <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center shadow-xs border border-brand-400/50 ring-1 ring-white/30">
-                    <SlidersHorizontal className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-extrabold tracking-wide uppercase text-white block leading-tight">
-                      Volume Pricing Tiers
-                    </span>
-                    <span className="text-[10px] text-emerald-100 font-medium">
-                      Active: Tier {activeTierObj.tierNumber} (₹{activeTierObj.price}/{unitLabel}) • {activeOccasion.label}
-                    </span>
-                  </div>
-                </div>
-
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-white/20 text-white border border-white/30">
-                  3 TIERS
-                </span>
-              </div>
-
-              {/* 3 Interactive Horizontal Quick-Select Chips */}
-              <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-                {currentTiers.map((tier) => {
-                  const isActive = activeTierObj.id === tier.id;
-                  return (
-                    <button
-                      key={tier.id}
-                      type="button"
-                      onClick={() => handleSelectTier(tier)}
-                      className={`p-2 rounded-xl text-left transition-all relative border cursor-pointer ${isActive
-                        ? "bg-white text-slate-900 border-white shadow-xl ring-2 ring-emerald-300 scale-[1.02]"
-                        : "bg-brand-700/40 hover:bg-brand-700/60 text-white border-white/25 hover:border-white/40 shadow-xs"
-                        }`}
-                    >
-                      <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? "text-brand-800" : "text-emerald-100"}`}>
-                          Tier {tier.tierNumber}
-                        </span>
-                        {tier.isPopular ? (
-                          <span className="text-[8px] font-extrabold uppercase bg-amber-400 text-amber-950 px-1 py-0.2 rounded font-mono shadow-xs">
-                            ★ POPULAR
-                          </span>
-                        ) : tier.savingsPct > 0 ? (
-                          <span className={`text-[8px] font-bold px-1 py-0.2 rounded ${isActive ? "bg-emerald-100 text-emerald-800" : "bg-black/20 text-white border border-white/20"}`}>
-                            -{tier.savingsPct}%
-                          </span>
-                        ) : null}
-                      </div>
-
-                      <div className={`text-xs sm:text-sm font-black tracking-tight ${isActive ? "text-slate-900" : "text-white"}`}>
-                        ₹{tier.price}
-                        <span className={`text-[10px] font-normal ${isActive ? "text-slate-500" : "text-emerald-100/70"}`}>/{unitLabel}</span>
-                      </div>
-
-                      <div className={`text-[10px] truncate ${isActive ? "text-brand-900 font-bold" : "text-emerald-100/90 font-medium"}`}>
-                        {tier.rangeLabel}
-                      </div>
-                      {isActive && wholesaleUnitPrice > 0 && (
-                        <div className="text-[9px] text-brand-600 font-semibold mt-0.5">
-                          Save {tier.savingsPct}% on total
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* 3. ORDER QUANTITY & PRICE CALCULATION CARD */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
-
-            {/* Set Quantity Stepper, Quick Addons & Price Calculation */}
-            <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-4 sm:p-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8">
-                <div className="space-y-2">
-                  <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
-                    <span>Order Quantity ({unitLabelPlural}):</span>
-                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
-                      MOQ: {currentMoq} {unitLabelPlural}
-                    </span>
-                  </label>
-
-                  {/* Stepper + Free Typing Input + Quick Addons */}
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="inline-flex items-center bg-white rounded-xl p-1 border-2 border-[#D5CABB] shadow-xs focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-200 transition-all">
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustQty(-1)}
-                        disabled={qty <= (currentMoq || 10)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                        title="Decrease quantity by 1"
-                        aria-label="Decrease quantity by 1"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        value={qtyInput}
-                        onChange={(e) => handleQtyInputChange(e.target.value)}
-                        onBlur={handleQtyInputBlur}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleQtyInputBlur();
-                        }}
-                        className="w-16 bg-transparent text-center font-extrabold text-slate-900 text-sm sm:text-base focus:outline-none select-all"
-                        aria-label={`Order quantity in ${unitLabelPlural}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustQty(1)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                        title="Increase quantity by 1"
-                        aria-label="Increase quantity by 1"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Quick Add-ons (+10, +50, +100) */}
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustQty(10)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                        title="Add 10 more sets"
-                      >
-                        +10
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustQty(50)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                        title="Add 50 more sets"
-                      >
-                        +50
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAdjustQty(100)}
-                        className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                        title="Add 100 more sets"
-                      >
-                        +100
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Price Breakdown: Gross → Discount → Net */}
-                <div className="text-left sm:text-right pt-2 sm:pt-0 min-w-[220px] sm:pl-4 space-y-1">
-                  <span className="text-[11px] font-bold text-brand-800 uppercase tracking-wider block mb-1.5">
-                    Price Breakdown:
-                  </span>
-
-                  {/* Row 1: Gross wholesale */}
-                  <div className="flex items-center sm:justify-end gap-2 text-xs text-slate-600">
-                    <span className="text-slate-500">{qty} {unitLabelPlural} × ₹{wholesaleUnitPrice}</span>
-                    <span className="font-semibold text-slate-800">= ₹{grossWholesaleSubtotal.toLocaleString("en-IN")}</span>
-                  </div>
-
-                  {/* Row 2: Discount deduction */}
-                  {mainDiscountAmount > 0 && (
-                    <div className="flex items-center sm:justify-end gap-2 text-xs text-emerald-700 font-bold">
-                      <span className="flex items-center gap-1">
-                        <Tag className="w-3 h-3" />
-                        <span>{activeTierDiscountPct}% Bulk Discount</span>
-                      </span>
-                      <span>− ₹{mainDiscountAmount.toLocaleString("en-IN")}</span>
-                    </div>
-                  )}
-
-                  {/* Divider + You Pay */}
-                  <div className="mt-1.5 pt-1.5 border-t border-[#D5CABB]">
-                    <div className="flex items-baseline sm:justify-end gap-2">
-                      <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">You Pay:</span>
-                      <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                    <div className="flex items-center sm:justify-end gap-1.5 mt-0.5 flex-wrap">
-                      {totalSavings > 0 && (
-                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
-                          Save ₹{totalSavings.toLocaleString("en-IN")} ({effectiveSavingsPct}% OFF)
-                        </span>
-                      )}
-                      <span className="text-[10px] text-slate-500 font-medium">
-                        Excl. {product.tax?.gstRate || 18}% GST
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Action Buttons: Add to Basket & Review Basket */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={handleAddToCart}
-                className={`btn-primary w-full py-2.5 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer ${added ? "bg-brand-500 border-brand-600" : ""
-                  }`}
-              >
-                {added ? (
-                  <>
-                    <Check className="w-4 h-4 stroke-[3]" />
-                    <span>Added {qty} {unitLabelPlural} to Basket</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4" />
-                    <span>Add {qty} {unitLabelPlural} to Basket</span>
-                  </>
-                )}
-              </button>
-
-              <Link
-                href="/quote"
-                className="btn-secondary w-full py-2.5 text-xs sm:text-sm text-center font-bold flex items-center justify-center gap-1.5"
-              >
-                <span>Review Basket &amp; Order</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Assurance & Lead Time */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500 pt-3 border-t border-slate-100">
-              <span className="inline-flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-brand-600" />
-                <span>
-                  <strong>Lead Time:</strong> {activeOccasion.leadTime || "5–7 Days"}
-                </span>
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Truck className="w-3.5 h-3.5 text-brand-600" />
-                <span>
-                  <strong>Logistics:</strong> Pan-India Direct
-                </span>
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-brand-600" />
-                <span>
-                  <strong>Tax Invoice:</strong> {product.tax?.gstRate || 18}% GST Credit
-                </span>
-              </span>
-            </div>
-          </div>
-
-          {/* PACKAGING & PRESENTATION BOX (Located under Quantity & Price Calculation Card) */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-              <Box className="w-3.5 h-3.5 text-brand-700" />
-              <span>Packaging &amp; Presentation:</span>
-            </label>
-            <div className="p-3 bg-brand-50/70 border border-brand-200 rounded-xl flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2 font-bold text-slate-900">
-                <Box className="w-4 h-4 text-brand-700" />
-                <span>Standard Recyclable Eco Kraft Gift Box</span>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                Included FREE
-              </span>
-            </div>
-          </div>
-
-          {/* 4. B2B BULK ORDER POLICY BOX */}
-          <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-4 shadow-xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-brand-700" />
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                  B2B Bulk Order Policy &amp; Procurement Terms
-                </span>
-              </div>
-              <span className="text-[10px] font-bold text-brand-800 bg-brand-100/80 px-2 py-0.5 rounded-full border border-brand-200">
-                Verified B2B Direct
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700">
-              <div className="flex items-start gap-2">
-                <Boxes className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
+            {/* TAB 3: B2B Ordering & Logistics */}
+            {activeTab === "ordering" && (
+              <div className="space-y-6">
                 <div>
-                  <strong className="text-slate-900 block font-semibold text-[11px]">Minimum Order Quantity</strong>
-                  <span className="text-[11px] text-slate-500">MOQ starts at {currentMoq} {unitLabelPlural}. Tier rates auto-apply on larger lots.</span>
+                  <h3 className="text-base font-bold text-slate-900 mb-2">
+                    Seamless B2B Ordering, Dispatch &amp; Logistics
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                    We supply enterprises, multinational companies, and event organizers across India with reliable dispatch schedules and dedicated support.
+                  </p>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-2">
-                <PackageCheck className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong className="text-slate-900 block font-semibold text-[11px]">Sampling Policy</strong>
-                  <span className="text-[11px] text-slate-500">Sample evaluation kits dispatched within 24–48h. Sample fee credited on bulk orders.</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <Clock className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong className="text-slate-900 block font-semibold text-[11px]">Production &amp; Dispatch</strong>
-                  <span className="text-[11px] text-slate-500">Standard batch dispatch in {activeOccasion.leadTime || "5–7 business days"} with live GPS tracking.</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong className="text-slate-900 block font-semibold text-[11px]">Quality &amp; GST Compliance</strong>
-                  <span className="text-[11px] text-slate-500">100% factory QA inspected. Official B2B tax invoice issued for 18% input tax credit.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 5. KEY PRODUCT FEATURES & MATERIAL BENEFITS BOX */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2.5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-              <Leaf className="w-3.5 h-3.5 text-brand-700" />
-              <span>Key Product Features &amp; Material Benefits</span>
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
-              {Array.isArray(product.productFeatures) && product.productFeatures.length > 0 ? (
-                product.productFeatures.map((feat, fIdx) => (
-                  <div key={fIdx} className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>{feat}</span>
-                  </div>
-                ))
-              ) : (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>Made from Agricultural Rice Husk Biocomposite</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>100% Food Contact Safe (US FDA / LFGB Certified)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>Microwave Reheat &amp; Dishwasher Safe</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>Durable, Lightweight &amp; Break-Resistant</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>Zero Melamine, BPA &amp; Formaldehyde</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                    <span>Individual Recyclable Kraft Gift Box Included</span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* LOWER SECTION: Complete Detailed Information Tabs */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-        {/* Tab Headers */}
-        <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/60 no-scrollbar">
-          <button
-            type="button"
-            onClick={() => setActiveTab("set_contents")}
-            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "set_contents"
-              ? "border-brand-600 text-brand-800 bg-white shadow-xs"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-              }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>Product Details &amp; All Specifications</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("sustainability")}
-            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "sustainability"
-              ? "border-brand-600 text-brand-800 bg-white shadow-xs"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-              }`}
-          >
-            <Leaf className="w-4 h-4" />
-            <span>Sustainability &amp; Footprint</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("ordering")}
-            className={`px-5 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 transition-all cursor-pointer whitespace-nowrap ${activeTab === "ordering"
-              ? "border-brand-600 text-brand-800 bg-white shadow-xs"
-              : "border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/60"
-              }`}
-          >
-            <Truck className="w-4 h-4" />
-            <span>B2B Ordering &amp; Logistics</span>
-          </button>
-        </div>
-
-        {/* Tab Content Body */}
-        <div className="p-6">
-          {/* TAB 1: Product Details & All Specifications */}
-          {activeTab === "set_contents" && (
-            <div className="space-y-6">
-              {giftItems.length > 0 && (
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">
-                      Gift Set Contents ({giftItems.length} Products Included)
-                    </h3>
-                    <p className="text-xs text-slate-600">
-                      Each product in this set is crafted from sustainable BioDur biocomposite.
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="border border-slate-200 rounded-xl p-4 space-y-2">
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
+                      <Truck className="w-4 h-4 text-brand-700" />
+                      <span>Pan-India Logistics Support</span>
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Direct door-to-door delivery to corporate offices, distribution centers, or multi-location branches across India with live consignment tracking.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {giftItems.map((item, idx) => (
-                      <div key={item._id || idx} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-2.5">
-                        <div className="flex items-start justify-between gap-2">
-                          <h4 className="font-bold text-slate-900 text-sm">{item.name}</h4>
-                          <span className="text-[11px] font-bold text-brand-800 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded">
-                            Qty: {item.quantity} {item.unit || "pc"}
-                          </span>
-                        </div>
-                        {item.description && (
-                          <p className="text-xs text-slate-600 leading-relaxed">{item.description}</p>
-                        )}
-                        {item.specifications && Object.keys(item.specifications).length > 0 && (
-                          <div className="pt-2 border-t border-slate-200/80">
-                            <table className="w-full text-[11px]">
-                              <tbody className="divide-y divide-slate-200/60">
-                                {Object.entries(item.specifications).slice(0, 5).map(([sk, sv]) => (
-                                  <tr key={sk}>
-                                    <td className="py-1 font-semibold text-slate-500 w-1/2">{sk}</td>
-                                    <td className="py-1 text-slate-800">{String(sv)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Comprehensive Gifting Classification & Event Purpose Breakdown */}
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-5 space-y-4">
-                <div className="flex items-center justify-between gap-2 flex-wrap pb-3 border-b border-slate-200">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-brand-700 text-white flex items-center justify-center shadow-xs flex-shrink-0">
-                      <Gift className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                        <span>Gifting Classification &amp; Purpose</span>
-                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                          {activeOccasion.badgeText}
-                        </span>
-                      </h4>
-                      <p className="text-xs text-slate-500 font-medium">
-                        This product comes under: <strong className="text-brand-800">{activeOccasion.comesUnder}</strong>
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full shadow-2xs">
-                    Package Type: {activeOccasion.label}
-                  </span>
-                </div>
-
-                {/* Plain-English Explanation Banner */}
-                <div className="bg-white border border-emerald-200/80 rounded-xl p-3.5 shadow-2xs">
-                  <div className="flex items-start gap-2.5">
-                    <Info className="w-4 h-4 text-brand-700 mt-0.5 flex-shrink-0" />
-                    <div className="space-y-1">
-                      <div className="text-xs font-bold text-slate-900">
-                        Why this product is listed under {activeOccasion.label}:
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed">
-                        {activeOccasion.plainExplanation}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4 Detail Specification Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      🏷️ Gifting Category
-                    </span>
-                    <span className="text-xs font-bold text-slate-900 block">
-                      {activeOccasion.label}
-                    </span>
-                    <span className="text-[11px] text-slate-500">
-                      {activeOccasion.subtitle}
-                    </span>
-                  </div>
-
-                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      🎯 Best Suited For
-                    </span>
-                    <span className="text-xs font-semibold text-slate-800 block line-clamp-2">
-                      {activeOccasion.bestSuitedFor}
-                    </span>
-                  </div>
-
-                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      📦 Packaging Format
-                    </span>
-                    <span className="text-xs font-semibold text-slate-800 block line-clamp-2">
-                      {activeOccasion.packagingDetails}
-                    </span>
-                  </div>
-
-                  <div className="bg-white border border-slate-200/80 rounded-xl p-3">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                      ⚡ MOQ &amp; Lead Time
-                    </span>
-                    <span className="text-xs font-bold text-emerald-800 block">
-                      MOQ: {currentMoq} {unitLabelPlural}
-                    </span>
-                    <span className="text-[11px] text-slate-500">
-                      Lead Time: {activeOccasion.leadTime || "5–7 Days"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* 5 Gifting Categories Comparison Grid */}
-                <div className="pt-2 border-t border-slate-200/80 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                      <Gift className="w-3.5 h-3.5 text-brand-700" />
-                      <span>How this product serves different gifting occasions:</span>
-                    </h5>
-                    <span className="text-[10px] text-slate-400">5 Event Packages Available</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
-                    {B2B_OCCASIONS.map((occ) => {
-                      const isCurrent = occ.key === activeOccasion.key;
-                      const OccIcon = occ.icon;
-                      return (
-                        <Link
-                          key={occ.key}
-                          href={`/products/${product.slug}?context=${occ.key}`}
-                          className={`p-2.5 rounded-xl border text-left transition-all block ${isCurrent
-                            ? "bg-emerald-50 border-brand-600 ring-1 ring-brand-600 shadow-xs"
-                            : "bg-white border-slate-200 hover:border-brand-400 hover:bg-slate-50"
-                            }`}
-                        >
-                          <div className="flex items-center justify-between gap-1 mb-1">
-                            <div className={`w-5 h-5 rounded flex items-center justify-center ${isCurrent ? "bg-brand-700 text-white" : "bg-slate-100 text-slate-600"}`}>
-                              <OccIcon className="w-3 h-3" />
-                            </div>
-                            {isCurrent ? (
-                              <span className="text-[8px] font-extrabold uppercase bg-brand-700 text-white px-1.5 py-0.2 rounded">
-                                Current
-                              </span>
-                            ) : (
-                              <span className="text-[9px] font-semibold text-slate-400">
-                                MOQ {occ.moq}
-                              </span>
-                            )}
-                          </div>
-                          <div className={`text-xs font-bold leading-tight ${isCurrent ? "text-brand-900" : "text-slate-800"}`}>
-                            {occ.label}
-                          </div>
-                          <div className="text-[10px] text-slate-500 leading-tight mt-0.5 line-clamp-1">
-                            {occ.subtitle}
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Master Technical Specifications & Dimensions Table */}
-              <div>
-                <h3 className="text-base font-bold text-slate-900 mb-2">
-                  Technical Specifications &amp; Material Data
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-4">
-                  Precision-engineered tableware made from upcycled agricultural rice husk composite. Designed for commercial durability and everyday corporate gifting.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
-                    <table className="w-full text-xs">
-                      <tbody className="divide-y divide-slate-100">
-                        {Object.entries(combinedSpecs).map(([key, val]) => (
-                          <tr key={key} className="hover:bg-slate-50/50">
-                            <td className="py-2.5 px-4 font-semibold text-slate-600 bg-slate-50/60 w-2/5">
-                              {key}
-                            </td>
-                            <td className="py-2.5 px-4 text-slate-900 font-medium">
-                              {typeof val === "object" ? JSON.stringify(val) : String(val)}
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2.5 px-4 font-semibold text-slate-600 bg-slate-50/60">
-                            Set Contents
-                          </td>
-                          <td className="py-2.5 px-4 text-slate-900 font-medium">
-                            {setContentsText}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="bg-[#FAF7F0] border border-[#E5DAC8] rounded-xl p-4 space-y-3">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-brand-800 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-brand-700" />
-                      <span>Compliance &amp; Quality Assurances</span>
+                  <div className="border border-slate-200 rounded-xl p-4 space-y-2">
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
+                      <FileText className="w-4 h-4 text-brand-700" />
+                      <span>GST Invoicing &amp; Credit Terms</span>
                     </h4>
-                    <ul className="space-y-2 text-xs text-slate-700">
-                      <li className="flex items-start gap-2">
-                        <Check className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
-                        <span><strong>Thermal Tolerance:</strong> Tested from -20°C up to +120°C for microwave and cold dish applications.</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
-                        <span><strong>Commercial Dishwasher:</strong> Safe for up to 1,000 commercial wash cycles without surface degradation.</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="w-3.5 h-3.5 text-brand-700 mt-0.5 flex-shrink-0" />
-                        <span><strong>Zero Migration:</strong> 100% free from heavy metals, formaldehyde, BPA, and microplastics.</span>
-                      </li>
-                    </ul>
-
-                    {product.careInstructions && (
-                      <div className="pt-2 border-t border-[#E5DAC8]/80">
-                        <h5 className="text-[11px] font-bold text-slate-800 uppercase tracking-wider mb-1">
-                          Care &amp; Cleaning Instructions:
-                        </h5>
-                        <p className="text-[11px] text-slate-600 leading-relaxed">
-                          {product.careInstructions}
-                        </p>
-                      </div>
-                    )}
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Official tax invoices with valid HSN codes for 18% GST Input Tax Credit. Verified enterprise buyers can request standard corporate procurement terms.
+                    </p>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* TAB 2: Sustainability & Footprint */}
-          {activeTab === "sustainability" && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 mb-2">
-                  Environmental Impact &amp; Circular Bio-Economy
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  Green Fibre transforms agricultural crop residue into high-performance, carbon-negative dining goods, preventing open stubble burning in India.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-black text-emerald-800 mb-1">0%</div>
-                  <div className="text-xs font-bold text-slate-900 mb-1">Virgin Plastic Used</div>
-                  <p className="text-[11px] text-slate-600">Replaces petroleum plastics with agricultural rice husk composite.</p>
-                </div>
-                <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-black text-emerald-800 mb-1">70%</div>
-                  <div className="text-xs font-bold text-slate-900 mb-1">Carbon Reduction</div>
-                  <p className="text-[11px] text-slate-600">Significant lifecycle CO2 savings compared to conventional tableware.</p>
-                </div>
-                <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-black text-emerald-800 mb-1">100%</div>
-                  <div className="text-xs font-bold text-slate-900 mb-1">Stubble Burning Prevention</div>
-                  <p className="text-[11px] text-slate-600">Every ton of crop waste processed prevents toxic open field burning smoke.</p>
-                </div>
-              </div>
-
-              {product.sustainability?.madeWith && (
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                    <Sprout className="w-4 h-4 text-brand-700" />
-                    <span>Bio-Composite Formulation &amp; Traceability</span>
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {product.sustainability.madeWith}
-                  </p>
-                  {Array.isArray(product.sustainability.highlights) && product.sustainability.highlights.length > 0 && (
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-2 text-xs text-slate-700">
-                      {product.sustainability.highlights.map((h, hIdx) => (
-                        <li key={hIdx} className="flex items-center gap-2">
-                          <Check className="w-3.5 h-3.5 text-brand-700 flex-shrink-0" />
-                          <span>{h}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 3: B2B Ordering & Logistics */}
-          {activeTab === "ordering" && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-base font-bold text-slate-900 mb-2">
-                  Seamless B2B Ordering, Dispatch &amp; Logistics
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                  We supply enterprises, multinational companies, and event organizers across India with reliable dispatch schedules and dedicated support.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="border border-slate-200 rounded-xl p-4 space-y-2">
-                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
-                    <Truck className="w-4 h-4 text-brand-700" />
-                    <span>Pan-India Logistics Support</span>
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Direct door-to-door delivery to corporate offices, distribution centers, or multi-location branches across India with live consignment tracking.
-                  </p>
-                </div>
-
-                <div className="border border-slate-200 rounded-xl p-4 space-y-2">
-                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
-                    <FileText className="w-4 h-4 text-brand-700" />
-                    <span>GST Invoicing &amp; Credit Terms</span>
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Official tax invoices with valid HSN codes for 18% GST Input Tax Credit. Verified enterprise buyers can request standard corporate procurement terms.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* =========================================================================
@@ -2034,9 +2033,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     key={dotIdx}
                     type="button"
                     onClick={() => handleSelectImage(dotIdx)}
-                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
-                      dotIdx === activeImageIndex ? "w-3.5 bg-brand-400" : "w-1.5 bg-white/60"
-                    }`}
+                    className={`h-1.5 rounded-full transition-all cursor-pointer ${dotIdx === activeImageIndex ? "w-3.5 bg-brand-400" : "w-1.5 bg-white/60"
+                      }`}
                     aria-label={`Jump to photo ${dotIdx + 1}`}
                   />
                 ))}
@@ -2067,19 +2065,6 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             <span className="text-[11px] font-bold text-slate-900 leading-tight">Microwave</span>
             <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Reheat safe</span>
           </div>
-        </div>
-
-        {/* 3. Occasion / Category Tags */}
-        <div className="flex items-center gap-2 flex-wrap pt-0.5">
-          <span className="text-xs font-bold text-brand-900 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
-            {typeof product.category === "string" ? product.category : product.category?.name || "Kitchen & Dining"}
-          </span>
-          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-            Corporate Gifting
-          </span>
-          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-            Client Gifting
-          </span>
         </div>
 
         {/* 4. Product Name & Short Description */}
@@ -2121,11 +2106,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   key={tier.id}
                   type="button"
                   onClick={() => handleSelectTier(tier)}
-                  className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${
-                    isActive
-                      ? "border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500 shadow-2xs"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
+                  className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${isActive
+                    ? "border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500 shadow-2xs"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                    }`}
                 >
                   <div className={`text-[11px] font-bold ${isActive ? "text-emerald-800" : "text-slate-500"}`}>
                     {tier.rangeLabel}
@@ -2418,11 +2402,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               <button
                 type="button"
                 onClick={() => handleAddPairToQuote(primaryAddon)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex-shrink-0 ${
-                  pairAdded[primaryAddon.slug]
-                    ? "bg-emerald-600 text-white"
-                    : "border border-emerald-600 text-emerald-700 hover:bg-emerald-50"
-                }`}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex-shrink-0 ${pairAdded[primaryAddon.slug]
+                  ? "bg-emerald-600 text-white"
+                  : "border border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                  }`}
               >
                 {pairAdded[primaryAddon.slug] ? "Added ✓" : "Add"}
               </button>
@@ -2442,11 +2425,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         <button
           type="button"
           onClick={handleAddToCart}
-          className={`px-4 sm:px-5 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs flex-shrink-0 ${
-            added
-              ? "bg-brand-600 text-white"
-              : "bg-[#1b5e3f] hover:bg-[#144830] active:scale-[0.98] text-white"
-          }`}
+          className={`px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm flex-shrink-0 ${added
+            ? "bg-brand-700 text-white"
+            : "bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white active:scale-[0.98]"
+            }`}
         >
           {added ? (
             <>
@@ -2538,8 +2520,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <div className="p-5 sm:p-7 space-y-4 bg-white overflow-y-auto flex-1">
                   {/* Top row: Bundle Offer Pill & Close Button */}
                   <div className="flex items-center justify-between">
-                    <div className="inline-flex items-center gap-2 text-[#9b6f38] text-xs sm:text-[13px] font-semibold tracking-wide">
-                      <span className="w-5 h-[2px] bg-[#9b6f38] rounded-full inline-block"></span>
+                    <div className="inline-flex items-center gap-2 text-emerald-800 text-xs sm:text-[13px] font-semibold tracking-wide">
+                      <span className="w-5 h-[2px] bg-emerald-600 rounded-full inline-block"></span>
                       <span>Bundle offer</span>
                     </div>
                     <button
@@ -2567,22 +2549,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   <div className="pt-2 pb-1 space-y-2">
                     <div className="relative flex items-center">
                       <div className="h-1 bg-slate-100 w-full rounded-full overflow-hidden">
-                        <div className={`h-full bg-[#1b5e3f] transition-all duration-300 ${primaryIsAdded || anyItemAdded ? "w-full" : "w-[4%]"}`} />
+                        <div className={`h-full bg-brand-600 transition-all duration-300 ${primaryIsAdded || anyItemAdded ? "w-full" : "w-[4%]"}`} />
                       </div>
                       {/* Left Dot */}
-                      <div className="absolute left-0 w-3 h-3 rounded-full bg-[#1b5e3f] ring-4 ring-[#1b5e3f]/20 -translate-x-0.5" />
+                      <div className="absolute left-0 w-3 h-3 rounded-full bg-brand-600 ring-4 ring-brand-500/20 -translate-x-0.5" />
                       {/* Right Dot */}
-                      <div className={`absolute right-0 w-3 h-3 rounded-full transition-all duration-300 translate-x-0.5 ${
-                        primaryIsAdded || anyItemAdded
-                          ? "bg-[#1b5e3f] ring-4 ring-[#1b5e3f]/20"
-                          : "border-2 border-slate-300 bg-white"
-                      }`} />
+                      <div className={`absolute right-0 w-3 h-3 rounded-full transition-all duration-300 translate-x-0.5 ${primaryIsAdded || anyItemAdded
+                        ? "bg-brand-600 ring-4 ring-brand-500/20"
+                        : "border-2 border-slate-300 bg-white"
+                        }`} />
                     </div>
                     <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-[#1b5e3f] font-semibold text-[11.5px]">
+                      <span className="text-brand-700 font-semibold text-[11.5px]">
                         {activeTierDiscountPct}% off • unlocked
                       </span>
-                      <span className={`text-[11.5px] transition-colors ${primaryIsAdded || anyItemAdded ? "text-[#1b5e3f] font-bold" : "text-slate-400 font-normal"}`}>
+                      <span className={`text-[11.5px] transition-colors ${primaryIsAdded || anyItemAdded ? "text-brand-700 font-bold" : "text-slate-400 font-normal"}`}>
                         {activeTierDiscountPct + 5}% off with bundle
                       </span>
                     </div>
@@ -2600,11 +2581,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         return (
                           <div
                             key={rel.slug}
-                            className={`rounded-2xl border p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
-                              isAdded
-                                ? "border-emerald-500 bg-emerald-50/20 shadow-xs"
-                                : "border-slate-200/90 bg-[#fafbfc] hover:border-slate-300"
-                            }`}
+                            className={`rounded-2xl border p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${isAdded
+                              ? "border-emerald-500 bg-emerald-50/20 shadow-xs"
+                              : "border-slate-200/90 bg-[#fafbfc] hover:border-slate-300"
+                              }`}
                           >
                             <div className="flex items-center gap-3.5 min-w-0 flex-1">
                               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1 relative">
@@ -2640,7 +2620,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                     /{rel.unit || "pc"}
                                   </span>
                                 </div>
-                                <span className="inline-block mt-1 text-[10px] font-medium text-[#8c5e28] border border-[#dfc3a1] bg-[#fefbf7] px-2 py-0.5 rounded-full">
+                                <span className="inline-block mt-1 text-[10px] font-medium text-emerald-800 border border-emerald-200 bg-emerald-50/80 px-2 py-0.5 rounded-full">
                                   +5% more off on combined order
                                 </span>
                               </div>
@@ -2689,11 +2669,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                               <button
                                 type="button"
                                 onClick={() => handleAddPairToQuote(rel)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                                  isAdded
-                                    ? "bg-[#1b5e3f] text-white"
-                                    : "border border-[#1b5e3f] text-[#1b5e3f] hover:bg-[#1b5e3f] hover:text-white"
-                                }`}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${isAdded
+                                  ? "bg-brand-600 text-white"
+                                  : "border border-brand-600 text-brand-700 hover:bg-brand-600 hover:text-white"
+                                  }`}
                                 aria-label={isAdded ? "Added to order" : `Add ${rel.name}`}
                               >
                                 {isAdded ? (
@@ -2725,7 +2704,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         }
                         setModalStep(2);
                       }}
-                      className="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-[#1b5e3f] hover:bg-[#154c32] shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2"
+                      className="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-500 active:bg-brand-700 shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                       <span>
                         Add {primaryPairQty > 1 ? `${primaryPairQty}× ` : ""}{primaryAddon ? primaryAddon.name.toLowerCase() : "companion"} &amp; get {activeTierDiscountPct + 5}% off

@@ -37,15 +37,15 @@ export default function TermsPage() {
             <span className="text-slate-900 font-bold">Terms &amp; Conditions</span>
           </nav>
 
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 text-brand-800 border border-brand-200 text-xs font-bold shadow-2xs">
+          <div className="space-y-1.5 sm:space-y-2">
+            <div className="badge-green">
               <FileText className="w-3.5 h-3.5 text-brand-700" />
               <span>B2B Commercial Terms of Supply</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="page-title">
               Terms &amp; Conditions
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+            <p className="page-desc">
               These terms govern all wholesale quotations, purchase orders (PO), custom laser engraving, inventory allocations, and deliveries between <strong>Green Fibre</strong> (Powered by Charvik Moulds and Product Private Limited) and institutional corporate clients.
             </p>
           </div>
@@ -224,7 +224,7 @@ export default function TermsPage() {
             </div>
 
             {/* Quality Certifications */}
-            <div className="bg-[#FAF7F0] p-6 rounded-3xl border border-[#E5DAC8] space-y-3 text-xs">
+            <div className="bg-slate-50/80 p-6 rounded-3xl border border-slate-200/90 space-y-3 text-xs">
               <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-brand-700" />
                 <span>Enterprise Manufacturing Standards</span>

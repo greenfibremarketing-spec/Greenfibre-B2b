@@ -104,13 +104,28 @@
     @apply inline-flex items-center justify-center font-semibold text-brand-800 bg-brand-100 hover:bg-brand-200 border border-brand-200 rounded-lg px-4 py-2 text-sm transition-all duration-200 active:scale-[0.98];
   }
 
+  /* Global Unified Typography & Headings System */
+  .page-title,
+  .section-title {
+    @apply text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug sm:leading-tight;
+  }
+
+  .page-desc,
+  .section-desc {
+    @apply text-[11px] sm:text-sm text-slate-500 sm:text-slate-600 max-w-2xl leading-relaxed font-normal;
+  }
+
+  .section-heading-card {
+    @apply text-base sm:text-lg lg:text-xl font-bold text-slate-900 tracking-tight leading-snug;
+  }
+
   /* Luxury Light-Green Badge with Micro Glow */
   .badge-green {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 shadow-sm;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-brand-50 text-brand-800 border border-brand-200 shadow-2xs;
   }
 
   .badge-cream {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] shadow-sm;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-xs font-semibold bg-slate-50 text-slate-800 border border-slate-200 shadow-2xs;
   }
 
   .badge-slate {

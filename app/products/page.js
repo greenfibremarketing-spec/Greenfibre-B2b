@@ -165,144 +165,143 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
         {/* Dynamic Page Header */}
         <div className="space-y-1.5 sm:space-y-2">
-          <div className="badge-green text-[10px] sm:text-xs py-0.5 px-2.5 inline-flex items-center">
+          <div className="badge-green">
             {headerInfo.badge}
           </div>
-          <h1 className="text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug sm:leading-tight">
+          <h1 className="page-title">
             {headerInfo.title}
           </h1>
-          <p className="text-[11px] sm:text-sm text-slate-500 sm:text-slate-600 max-w-2xl leading-relaxed">
+          <p className="page-desc">
             {headerInfo.desc}
           </p>
         </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-          {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
-            {categories.map((c) => {
-              const isAll = c === "All Products";
-              const cLower = c.toLowerCase();
-              const catLower = (category || "").toLowerCase();
+        {/* Filter and Search Bar */}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+            {/* Category Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+              {categories.map((c) => {
+                const isAll = c === "All Products";
+                const cLower = c.toLowerCase();
+                const catLower = (category || "").toLowerCase();
 
-              // Active state determination
-              let isActive = false;
-              if (isAll) {
-                isActive = (!category || category === "All Products") && !type && !context;
-              } else if (cLower.includes("gift") || cLower.includes("hamper")) {
-                isActive = (catLower.includes("gift") || catLower.includes("hamper")) && !type && !context;
-              } else if (cLower.includes("table")) {
-                isActive = catLower.includes("table") && !type && !context;
-              } else if (cLower.includes("kitch")) {
-                isActive = (catLower.includes("kitchen") || catLower.includes("dining")) && !type && !context;
-              } else if (cLower.includes("drink")) {
-                isActive = catLower.includes("drink") && !type && !context;
-              } else if (cLower.includes("home") || cLower.includes("living")) {
-                isActive = (catLower.includes("home") || catLower.includes("living")) && !type && !context;
-              } else if (cLower.includes("storage") || cLower.includes("organ")) {
-                isActive = (catLower.includes("storage") || catLower.includes("organ")) && !type && !context;
-              } else {
-                isActive = catLower === cLower && !type && !context;
-              }
+                // Active state determination
+                let isActive = false;
+                if (isAll) {
+                  isActive = (!category || category === "All Products") && !type && !context;
+                } else if (cLower.includes("gift") || cLower.includes("hamper")) {
+                  isActive = (catLower.includes("gift") || catLower.includes("hamper")) && !type && !context;
+                } else if (cLower.includes("table")) {
+                  isActive = catLower.includes("table") && !type && !context;
+                } else if (cLower.includes("kitch")) {
+                  isActive = (catLower.includes("kitchen") || catLower.includes("dining")) && !type && !context;
+                } else if (cLower.includes("drink")) {
+                  isActive = catLower.includes("drink") && !type && !context;
+                } else if (cLower.includes("home") || cLower.includes("living")) {
+                  isActive = (catLower.includes("home") || catLower.includes("living")) && !type && !context;
+                } else if (cLower.includes("storage") || cLower.includes("organ")) {
+                  isActive = (catLower.includes("storage") || catLower.includes("organ")) && !type && !context;
+                } else {
+                  isActive = catLower === cLower && !type && !context;
+                }
 
-              const targetHref = isAll
-                ? `/products${q ? `?q=${encodeURIComponent(q)}` : ""}`
-                : `/products?category=${encodeURIComponent(c)}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+                const targetHref = isAll
+                  ? `/products${q ? `?q=${encodeURIComponent(q)}` : ""}`
+                  : `/products?category=${encodeURIComponent(c)}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
 
-              return (
-                <Link
-                  key={c}
-                  href={targetHref}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                    isActive
+                return (
+                  <Link
+                    key={c}
+                    href={targetHref}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${isActive
                       ? "bg-brand-600 text-white shadow-sm"
                       : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200"
-                  }`}
-                >
-                  {c}
-                </Link>
-              );
-            })}
+                      }`}
+                  >
+                    {c}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Search Form */}
+            <form method="get" className="relative flex-shrink-0 min-w-[260px]" role="search">
+              {category && <input type="hidden" name="category" value={category} />}
+              {type && <input type="hidden" name="type" value={type} />}
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 flex items-center pointer-events-none">
+                <Search className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+              <input
+                name="q"
+                defaultValue={q}
+                placeholder="Search products or categories..."
+                aria-label="Search catalog"
+                className="w-full text-xs font-medium pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors"
+              />
+            </form>
           </div>
 
-          {/* Search Form */}
-          <form method="get" className="relative flex-shrink-0 min-w-[260px]" role="search">
-            {category && <input type="hidden" name="category" value={category} />}
-            {type && <input type="hidden" name="type" value={type} />}
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 flex items-center pointer-events-none">
-              <Search className="w-3.5 h-3.5 text-slate-400" />
-            </span>
-            <input
-              name="q"
-              defaultValue={q}
-              placeholder="Search products or categories..."
-              aria-label="Search catalog"
-              className="w-full text-xs font-medium pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none transition-colors"
-            />
-          </form>
-        </div>
-
-        {/* Results summary bar */}
-        <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
-          <div>
-            Showing <strong className="text-slate-900 font-bold">{filtered.length}</strong> {filtered.length === 1 ? "product" : "products"}
-            {category && category !== "All Products" && <span> in <strong className="text-slate-900">{category}</strong></span>}
-            {type && <span> • Occasion: <strong className="text-slate-900 capitalize">{type}</strong></span>}
-            {q && <span> matching &ldquo;<strong className="text-slate-900">{q}</strong>&rdquo;</span>}
-          </div>
-          {(q || type || context || (category && category !== "All Products")) && (
-            <Link
-              href="/products"
-              className="text-xs font-bold text-brand-700 hover:underline"
-            >
-              ✕ Clear filters
-            </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Products Grid */}
-      {filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {filtered.map((p) => (
-            <Card key={p.slug} p={p} context={activeContext} />
-          ))}
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center space-y-3 flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
-            <Search className="w-6 h-6" />
-          </div>
-          <h3 className="text-base font-bold text-slate-900">No products match your criteria</h3>
-          <p className="text-xs text-slate-500 max-w-sm mx-auto">
-            Try adjusting your search terms or clearing active category filters.
-          </p>
-          <div className="pt-1">
-            <Link href="/products" className="btn-primary text-xs py-2 px-4">
-              View All Products
-            </Link>
+          {/* Results summary bar */}
+          <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+            <div>
+              Showing <strong className="text-slate-900 font-bold">{filtered.length}</strong> {filtered.length === 1 ? "product" : "products"}
+              {category && category !== "All Products" && <span> in <strong className="text-slate-900">{category}</strong></span>}
+              {type && <span> • Occasion: <strong className="text-slate-900 capitalize">{type}</strong></span>}
+              {q && <span> matching &ldquo;<strong className="text-slate-900">{q}</strong>&rdquo;</span>}
+            </div>
+            {(q || type || context || (category && category !== "All Products")) && (
+              <Link
+                href="/products"
+                className="text-xs font-bold text-brand-700 hover:underline"
+              >
+                ✕ Clear filters
+              </Link>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Bespoke Enterprise Notice - Clean Light Green */}
-      <div className="bg-brand-50 border border-brand-200 rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
-        <div className="space-y-1 text-center sm:text-left">
-          <h3 className="text-base font-bold text-slate-900">
-            Need Custom Pantone Colors or Bespoke Tooling?
-          </h3>
-          <p className="text-xs text-slate-600 max-w-xl">
-            We manufacture bespoke molds, custom corporate Pantone colors, and bundled gift packaging for enterprise volumes.
-          </p>
+        {/* Products Grid */}
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            {filtered.map((p) => (
+              <Card key={p.slug} p={p} context={activeContext} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-dashed border-slate-300 p-12 text-center space-y-3 flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+              <Search className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">No products match your criteria</h3>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
+              Try adjusting your search terms or clearing active category filters.
+            </p>
+            <div className="pt-1">
+              <Link href="/products" className="btn-primary text-xs py-2 px-4">
+                View All Products
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Bespoke Enterprise Notice - Clean Light Green */}
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="space-y-1 text-center sm:text-left">
+            <h3 className="text-base font-bold text-slate-900">
+              Need Custom Pantone Colors or Bespoke Tooling?
+            </h3>
+            <p className="text-xs text-slate-600 max-w-xl">
+              We manufacture bespoke molds, custom corporate Pantone colors, and bundled gift packaging for enterprise volumes.
+            </p>
+          </div>
+          <Link
+            href="/quote"
+            className="btn-primary text-xs sm:text-sm py-2.5 px-5 whitespace-nowrap"
+          >
+            Contact Our Engineering Desk →
+          </Link>
         </div>
-        <Link
-          href="/quote"
-          className="btn-primary text-xs sm:text-sm py-2.5 px-5 whitespace-nowrap"
-        >
-          Contact Our Engineering Desk →
-        </Link>
-      </div>
       </div>
     </div>
   );

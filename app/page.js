@@ -23,13 +23,13 @@ export default async function Home() {
             <div className="badge-green mb-2">
               Wholesale Catalog
             </div>
-            <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="section-title">
               Featured Products for Bulk Orders
             </h2>
           </div>
           <Link
             href="/products"
-            className="btn-secondary text-xs sm:text-sm font-semibold self-start sm:self-auto"
+            className="hidden sm:inline-flex btn-secondary text-xs sm:text-sm font-semibold self-start sm:self-auto"
           >
             View All ({allProducts.length} Products) →
           </Link>
@@ -79,11 +79,11 @@ export default async function Home() {
       {/* 3D Interactive Bottle & Laser Workshop Showcase - 3-Column Centerpiece Layout */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10" id="branding">
         {/* Section Header */}
-        <div className="text-left max-w-3xl mb-10 space-y-3">
-          <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Eco Bottle Engineering & Custom Corporate Branding
+        <div className="text-left max-w-3xl mb-8 sm:mb-10 space-y-1.5 sm:space-y-2">
+          <h2 className="section-title">
+            Eco Bottle Engineering &amp; Custom Corporate Branding
           </h2>
-          <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed font-normal">
+          <p className="section-desc">
             Explore our rice-husk thermal bottle in 3D. We handle permanent laser engraving in-house for crisp detail, zero chemical inks, and fast turnaround.
           </p>
         </div>

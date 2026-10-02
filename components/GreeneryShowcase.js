@@ -4,15 +4,15 @@ export default function GreeneryShowcase() {
   return (
     <div className="space-y-6 py-2 sm:py-4">
       {/* Header */}
-      <div className="text-left max-w-3xl space-y-3">
-        <div className="badge-green inline-flex items-center gap-2 shadow-sm">
-          <Sprout className="w-4 h-4 text-brand-700" />
-          <span>Nurturing Our Planet & Clean Skies</span>
+      <div className="text-left max-w-3xl space-y-1.5 sm:space-y-2.5">
+        <div className="badge-green">
+          <Sprout className="w-3.5 h-3.5 text-brand-700" />
+          <span>Nurturing Our Planet &amp; Clean Skies</span>
         </div>
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+        <h2 className="section-title">
           From Lush Green Fields to Sustainable Workplaces
         </h2>
-        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+        <p className="section-desc">
           Instead of allowing post-harvest crop stubble to be burned into harmful smoke, we partner with regional farmers to upcycle natural rice husk into durable, food-safe dining and drinkware—keeping our skies clean and nature flourishing.
         </p>
       </div>

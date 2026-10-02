@@ -90,7 +90,7 @@ export default function Card({ p, context }) {
                 /{p.unit || "unit"}
               </span>
             </div>
-            <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold bg-[#FAF7F0] text-slate-800 border border-[#E5DAC8] whitespace-nowrap">
+            <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-800 border border-slate-200 whitespace-nowrap">
               MOQ {p.moq}
             </span>
           </div>

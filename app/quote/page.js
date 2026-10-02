@@ -422,135 +422,225 @@ export default function QuotePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* ── B2B Quotation Worksheet ── */}
-              <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
-                <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">B2B Quotation Worksheet</span>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    Direct Factory Wholesale
-                  </span>
-                </div>
-
-                <div className="px-5 py-4">
-                  {/* Per-product rows */}
-                  {lineItems.map((item, idx) => (
-                    <div key={item.key} className="py-3 border-b border-slate-100 last:border-b-0">
-                      <div className="flex items-start justify-between gap-3 text-xs">
-                        <div className="min-w-0 flex-1 space-y-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-slate-400 font-mono text-[10px] w-4 flex-shrink-0">{String(idx + 1).padStart(2, "0")}</span>
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm">{item.name}</span>
-                            {item.isPair && (
-                              <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-300 font-bold flex-shrink-0">
-                                🔗 Pair
-                              </span>
-                            )}
-                            {item.colour && item.colour !== "Standard" && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200 font-medium flex-shrink-0">
-                                {item.colour}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap pl-5 sm:pl-5">
-                            <span>Quantity: <strong className="text-slate-800 font-bold">{item.qty} {item.unit || "pcs"}</strong></span>
-                            {item.tierNumber > 1 && (
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${item.tierNumber === 3
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                                  : "bg-teal-50 text-teal-800 border-teal-200"
-                                }`}>
-                                Tier {item.tierNumber} ({item.discountPct}% Off)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-xs sm:text-sm font-black text-slate-900">
-                            ₹{item.lineNet.toLocaleString("en-IN")}
-                          </div>
-                          <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 mt-0.5">
-                            <span className="line-through">₹{item.lineGross.toLocaleString("en-IN")}</span>
-                            <span className="text-emerald-700 font-bold">−{item.discountPct}%</span>
-                          </div>
-                        </div>
+              {/* ── Authentic Cut Receipt Bill Slip ── */}
+              <div className="relative bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-md overflow-hidden transition-all">
+                {/* Top Bill Header Band */}
+                <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-dashed border-slate-200 bg-white">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-800">
+                          Green Fibre • Quotation Bill Slip
+                        </span>
                       </div>
-                    </div>
-                  ))}
-
-                  {/* Subtotals */}
-                  <div className="pt-3 space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-600">
-                      <span>Catalog Gross ({totalUnitsCount} units):</span>
-                      <span className="font-semibold text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
+                      <p className="text-[10px] text-slate-400 font-mono">
+                        Direct Factory Wholesale • Pan-India Logistics
+                      </p>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1.5 text-slate-700">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                        Volume Tier Discount:
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/90 px-2 py-0.5 rounded-md">
+                        Direct Wholesale Rate
                       </span>
-                      <span className="font-semibold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-slate-600 border-t border-dashed border-slate-200 pt-2">
-                      <span>Subtotal after tier discounts:</span>
-                      <span className="font-bold text-slate-800">₹{(netSubtotalBeforeBundle || 0).toLocaleString("en-IN")}</span>
-                    </div>
-
-                    {hasBundleBonus && (
-                      <div className="flex items-center justify-between text-xs rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5">
-                        <span className="flex items-center gap-1.5 text-emerald-900 font-semibold">
-                          <BadgePercent className="w-3.5 h-3.5 text-emerald-600" />
-                          Bundle Pairing Bonus (5% on combined total):
-                        </span>
-                        <span className="font-extrabold text-emerald-900">−₹{(bundleBonusAmount || 0).toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-baseline justify-between pt-2 border-t border-slate-200">
-                      <div>
-                        <span className="text-sm font-extrabold text-slate-900">Net Taxable Subtotal:</span>
-                        <span className="block text-[10px] text-slate-400 font-normal">Excl. GST — Direct factory rate</span>
-                      </div>
-                      <span className="text-xl sm:text-2xl font-black text-[#0f3428] tracking-tight">
-                        ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-
-                    {(totalItemDiscount + (bundleBonusAmount || 0)) > 0 && (
-                      <div className="flex items-center justify-between text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <span className="font-semibold text-slate-700">
-                          Total Savings ({hasBundleBonus ? "Tier Savings + 5% Bundle" : "Volume Tier Savings"}):
-                        </span>
-                        <span className="font-extrabold text-emerald-800">
-                          −₹{(totalItemDiscount + (bundleBonusAmount || 0)).toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between text-[11.5px] text-slate-500 pt-1">
-                      <span>Estimated 18% GST (Input Tax Credit Eligible):</span>
-                      <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
-                      <span>Final Estimated Quotation (Incl. GST):</span>
-                      <span className="text-base font-black text-slate-900">₹{totalWithGST.toLocaleString("en-IN")}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsAdjustOpen(true)}
+                        className="text-[11px] font-bold text-brand-700 hover:text-brand-800 hover:underline cursor-pointer"
+                      >
+                        Edit Qty →
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-                  <p className="text-[10.5px] text-slate-400 leading-relaxed">
-                    * Official Green Fibre Direct Manufacturer Quotation. 18% GST Input Tax Credit provided upon invoicing.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setIsAdjustOpen(true)}
-                    className="text-[11px] font-semibold text-[#1b5e3f] hover:underline flex-shrink-0 cursor-pointer"
+                {/* Bill Items List (Compact Tabular Receipt Rows) */}
+                <div className="px-4 sm:px-6 py-2 divide-y divide-slate-100">
+                  {lineItems.map((item, idx) => (
+                    <div
+                      key={item.key}
+                      className="py-2 sm:py-2.5 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/60 rounded-lg px-1 transition-colors"
+                    >
+                      {/* Left: Index + Name + Badges + Qty & Rate */}
+                      <div className="min-w-0 flex-1 flex items-start gap-2 sm:gap-2.5">
+                        <span className="text-[10.5px] font-mono font-bold text-slate-400 mt-0.5 flex-shrink-0">
+                          {String(idx + 1).padStart(2, "0")}.
+                        </span>
+                        <div className="min-w-0 flex-1 space-y-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight truncate">
+                              {item.name}
+                            </h4>
+                            {item.isPair && (
+                              <span className="text-[9px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold flex-shrink-0">
+                                🔗 Pair
+                              </span>
+                            )}
+                            {item.colour && item.colour !== "Standard" && (
+                              <span className="text-[9.5px] px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded font-medium flex-shrink-0 border border-slate-200/80">
+                                {item.colour}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
+                            <span>
+                              Qty: <strong className="text-slate-900 font-bold">{item.qty} {item.unit || "pcs"}</strong>
+                            </span>
+                            <span className="text-slate-300">•</span>
+                            <span>@ ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}</span>
+                            {item.discountPct > 0 && (
+                              <span className="text-[9.5px] font-extrabold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
+                                −{item.discountPct}%
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Net Price + Strikethrough Gross */}
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xs sm:text-[13.5px] font-black text-slate-900">
+                          ₹{item.lineNet.toLocaleString("en-IN")}
+                        </div>
+                        <div className="text-[10px] text-slate-400 line-through">
+                          ₹{item.lineGross.toLocaleString("en-IN")}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Perforation Cut Tear Line with Authentic Side Punch Holes */}
+                <div className="relative py-2 px-4 sm:px-6">
+                  {/* Left notch */}
+                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-100 rounded-full border border-slate-300/80 shadow-inner pointer-events-none" />
+                  {/* Right notch */}
+                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-100 rounded-full border border-slate-300/80 shadow-inner pointer-events-none" />
+                  {/* Perforated dashed divider */}
+                  <div className="border-t-2 border-dashed border-slate-200/90 mx-2" />
+                </div>
+
+                {/* Financial Ledger Summary (Receipt Style) */}
+                <div className="px-4 sm:px-6 pb-4 pt-1 space-y-2.5 bg-white text-xs">
+                  {/* Catalog Gross */}
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span>Catalog Gross ({totalUnitsCount} units):</span>
+                    <span className="font-semibold text-slate-900">₹{totalGross.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {/* Volume Tier Discount */}
+                  <div className="flex items-center justify-between text-slate-700">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                      <span>Volume Tier Discount:</span>
+                    </span>
+                    <span className="font-bold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {/* Subtotal after tier discount */}
+                  <div className="flex items-center justify-between text-slate-600 border-t border-dashed border-slate-200 pt-2">
+                    <span>Subtotal after tier discounts:</span>
+                    <span className="font-bold text-slate-900">₹{(netSubtotalBeforeBundle || 0).toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {/* Bundle Bonus */}
+                  {hasBundleBonus && (
+                    <div className="rounded-lg bg-emerald-50 border border-emerald-200/90 px-2.5 py-1.5 flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-1.5 text-emerald-950 font-bold text-xs truncate min-w-0">
+                        <BadgePercent className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                        <span className="sm:hidden truncate">Bundle Bonus (5% Off):</span>
+                        <span className="hidden sm:inline">Bundle Pairing Bonus (5% on combined total):</span>
+                      </span>
+                      <span className="font-black text-emerald-900 text-xs sm:text-sm flex-shrink-0">
+                        −₹{(bundleBonusAmount || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Net Taxable Subtotal */}
+                  <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
+                    <div>
+                      <span className="text-xs font-black text-slate-800 uppercase tracking-wide block">Net Taxable Subtotal:</span>
+                      <span className="block text-[10px] text-slate-400 font-medium">Excl. GST — Direct factory rate</span>
+                    </div>
+                    <span className="text-lg sm:text-xl font-black text-[#0f3428] tracking-tight">
+                      ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+
+                  {/* Total Savings Pill */}
+                  {(totalItemDiscount + (bundleBonusAmount || 0)) > 0 && (
+                    <div className="flex items-center justify-between gap-2 text-xs bg-emerald-50/80 border border-emerald-200/80 rounded-lg px-2.5 py-1.5">
+                      <span className="font-bold text-emerald-950 truncate min-w-0">
+                        <span className="sm:hidden truncate">✨ Total Savings:</span>
+                        <span className="hidden sm:inline">✨ Total Savings ({hasBundleBonus ? "Tier Savings + 5% Bundle" : "Volume Tier Savings"}):</span>
+                      </span>
+                      <span className="font-black text-emerald-800 text-xs sm:text-sm flex-shrink-0">
+                        −₹{(totalItemDiscount + (bundleBonusAmount || 0)).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* GST */}
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                    <span>Estimated 18% GST (Input Tax Credit Eligible):</span>
+                    <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {/* Final Quotation Total */}
+                  <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-900 border-t-2 border-slate-900 pt-2">
+                    <span>Final Estimated Quotation (Incl. GST):</span>
+                    <span className="text-base sm:text-lg font-black text-slate-900">₹{totalWithGST.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {/* Barcode & Authentic Factory Note */}
+                  <div className="pt-3 mt-1 border-t border-dashed border-slate-200 flex items-center justify-between gap-3 text-slate-400">
+                    <div className="space-y-1">
+                      {/* Barcode graphic lines */}
+                      <div className="flex items-center gap-[2px] h-5 opacity-70">
+                        <span className="w-[2px] h-full bg-slate-800" />
+                        <span className="w-[1px] h-full bg-slate-800" />
+                        <span className="w-[3px] h-full bg-slate-800" />
+                        <span className="w-[1px] h-full bg-slate-800" />
+                        <span className="w-[2px] h-full bg-slate-800" />
+                        <span className="w-[4px] h-full bg-slate-800" />
+                        <span className="w-[1px] h-full bg-slate-800" />
+                        <span className="w-[2px] h-full bg-slate-800" />
+                        <span className="w-[3px] h-full bg-slate-800" />
+                        <span className="w-[1px] h-full bg-slate-800" />
+                        <span className="w-[2px] h-full bg-slate-800" />
+                        <span className="w-[4px] h-full bg-slate-800" />
+                        <span className="w-[2px] h-full bg-slate-800" />
+                        <span className="w-[1px] h-full bg-slate-800" />
+                        <span className="w-[3px] h-full bg-slate-800" />
+                      </div>
+                      <span className="text-[8.5px] font-mono font-bold tracking-wider text-slate-400 block">
+                        GF-B2B-DIRECT-EST
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                        Official Factory Quotation
+                      </span>
+                      <span className="text-[9px] text-slate-400 block mt-0.5">
+                        18% GST Input Credit Provided
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Jagged Sawtooth Tear Edge at Bottom of Receipt */}
+                <div className="w-full overflow-hidden leading-none select-none pointer-events-none -mt-0.5">
+                  <svg
+                    className="w-full h-2.5 text-slate-100 fill-current"
+                    viewBox="0 0 1200 10"
+                    preserveAspectRatio="none"
                   >
-                    Edit Quantities →
-                  </button>
+                    <path d="M0,0 L15,10 L30,0 L45,10 L60,0 L75,10 L90,0 L105,10 L120,0 L135,10 L150,0 L165,10 L180,0 L195,10 L210,0 L225,10 L240,0 L255,10 L270,0 L285,10 L300,0 L315,10 L330,0 L345,10 L360,0 L375,10 L390,0 L405,10 L420,0 L435,10 L450,0 L465,10 L480,0 L495,10 L510,0 L525,10 L540,0 L555,10 L570,0 L585,10 L600,0 L615,10 L630,0 L645,10 L660,0 L675,10 L690,0 L705,10 L720,0 L735,10 L750,0 L765,10 L780,0 L795,10 L810,0 L825,10 L840,0 L855,10 L870,0 L885,10 L900,0 L915,10 L930,0 L945,10 L960,0 L975,10 L990,0 L1005,10 L1020,0 L1035,10 L1050,0 L1065,10 L1080,0 L1095,10 L1110,0 L1125,10 L1140,0 L1155,10 L1170,0 L1185,10 L1200,0 Z" />
+                  </svg>
                 </div>
               </div>
             </div>
@@ -561,7 +651,7 @@ export default function QuotePage() {
         <div className="lg:col-span-6 space-y-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold">2</span>
+              <span className="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">2</span>
               <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Details</h3>
             </div>
             {isAuthenticated && user && (
@@ -575,7 +665,7 @@ export default function QuotePage() {
           {(!isAuthenticated && !user) && (
             <div className="p-4 bg-emerald-50/70 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#1b5e3f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                   <Lock className="w-4 h-4" />
                 </div>
                 <div>
@@ -589,7 +679,7 @@ export default function QuotePage() {
               </div>
               <Link
                 href="/login?redirect=/quote"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1b5e3f] hover:bg-[#144830] text-white shadow-xs transition-all whitespace-nowrap cursor-pointer flex-shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-xs transition-all whitespace-nowrap cursor-pointer flex-shrink-0 active:scale-95"
               >
                 <span>Login to Continue</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -694,7 +784,7 @@ export default function QuotePage() {
               {!isAuthenticated && !user ? (
                 <Link
                   href="/login?redirect=/quote"
-                  className="w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md bg-[#1b5e3f] hover:bg-[#144830] text-white active:scale-[0.99] cursor-pointer"
+                  className="w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md bg-brand-600 hover:bg-brand-500 text-white active:scale-[0.99] cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>Please Login First to Submit Quote</span>
@@ -704,11 +794,10 @@ export default function QuotePage() {
                 <button
                   type="submit"
                   disabled={state.busy || items.length === 0}
-                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
-                    state.busy
+                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${state.busy
                       ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
                       : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {state.busy ? (
                     <>
@@ -838,10 +927,10 @@ export default function QuotePage() {
                           </span>
                         )}
                         <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded border transition-colors ${item.tierNumber === 3
-                            ? "text-emerald-900 bg-emerald-100 border-emerald-300"
-                            : item.tierNumber === 2
-                              ? "text-teal-900 bg-teal-50 border-teal-200"
-                              : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                          ? "text-emerald-900 bg-emerald-100 border-emerald-300"
+                          : item.tierNumber === 2
+                            ? "text-teal-900 bg-teal-50 border-teal-200"
+                            : "text-emerald-700 bg-emerald-50 border-emerald-200"
                           }`}>
                           {item.discountPct}% OFF • Tier {item.tierNumber}
                         </span>
