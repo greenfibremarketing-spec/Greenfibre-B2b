@@ -330,27 +330,27 @@ export function AddToQuote({ p }) {
 
   if (basketItem) {
     return (
-      <div className="w-full h-7.5 sm:h-8 flex items-center justify-between bg-brand-50 border border-brand-200 rounded-lg p-0.5 shadow-2xs">
+      <div className="w-full h-9 sm:h-9.5 flex items-center justify-between bg-brand-50 border border-brand-200 rounded-md p-1 shadow-2xs">
         <button
           type="button"
           onClick={handleDecrease}
-          className="w-6.5 h-6.5 rounded-md flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
+          className="w-7 h-7 rounded-[4px] flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
           title="Decrease quantity"
           aria-label="Decrease quantity"
         >
-          <Minus className="w-3 h-3" />
+          <Minus className="w-3.5 h-3.5" />
         </button>
-        <span className="text-[11px] font-bold text-brand-900 px-1 truncate select-none">
+        <span className="text-xs font-bold text-brand-900 px-1 truncate select-none">
           {basketItem.qty} in Basket
         </span>
         <button
           type="button"
           onClick={handleIncrease}
-          className="w-6.5 h-6.5 rounded-md flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
+          className="w-7 h-7 rounded-[4px] flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
           title="Increase quantity"
           aria-label="Increase quantity"
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
     );
@@ -361,20 +361,20 @@ export function AddToQuote({ p }) {
       type="button"
       onClick={handleAdd}
       title={`Add MOQ (${minQty}) to wholesale basket`}
-      className={`w-full h-7.5 sm:h-8 px-2.5 text-xs font-bold rounded-lg transition-all duration-200 flex items-center justify-center gap-1.5 shadow-2xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${
+      className={`w-full h-9 sm:h-9.5 px-3 text-xs sm:text-[13px] font-bold rounded-md transition-all duration-200 flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${
         added
           ? "bg-emerald-600 text-white shadow-emerald-600/30"
-          : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-2xs"
+          : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-sm"
       }`}
     >
       {added ? (
         <>
-          <Check className="w-3.5 h-3.5 stroke-[2.5] flex-shrink-0" />
-          <span>Added!</span>
+          <Check className="w-4 h-4 stroke-[2.5] flex-shrink-0" />
+          <span>Added to Basket!</span>
         </>
       ) : (
         <>
-          <ShoppingBag className="w-3.5 h-3.5 flex-shrink-0" />
+          <ShoppingBag className="w-4 h-4 flex-shrink-0" />
           <span>Add to Basket</span>
         </>
       )}
