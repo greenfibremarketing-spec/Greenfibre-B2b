@@ -55,6 +55,10 @@ export default function HeroSwiper() {
         <Swiper
           modules={[Autoplay, Pagination]}
           speed={800}
+          slidesPerView={1}
+          spaceBetween={0}
+          observer={true}
+          observeParents={true}
           autoplay={{
             delay: 4500,
             disableOnInteraction: false,
