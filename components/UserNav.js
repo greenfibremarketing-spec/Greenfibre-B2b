@@ -42,24 +42,23 @@ export default function UserNav() {
     };
   }, []);
 
-  // When user is not logged in: show Sign In & Register B2B
+  // When user is not logged in: show Sign In & Register B2B on desktop only
   if (!isAuthenticated || !user) {
     return (
-      <div className="flex items-center gap-1.5 sm:gap-2">
+      <div className="hidden sm:flex items-center gap-1.5 sm:gap-2">
         <Link
           href="/login"
-          className="hidden sm:inline-flex items-center text-xs font-bold text-slate-700 hover:text-brand-800 hover:bg-slate-100 px-3 h-10 rounded-xl transition-colors border border-transparent hover:border-slate-200"
+          className="inline-flex items-center text-xs font-bold text-slate-700 hover:text-brand-800 hover:bg-slate-100 px-3 h-10 rounded-xl transition-colors border border-transparent hover:border-slate-200"
         >
           Sign In
         </Link>
-        {/* Mobile: icon button w-10 h-10; Desktop: full text button h-10 */}
         <Link
           href="/signup"
-          className="w-10 h-10 sm:w-auto sm:px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 hover:border-slate-300 rounded-xl transition-all shadow-2xs active:scale-95 flex-shrink-0"
+          className="px-3.5 inline-flex items-center justify-center gap-1.5 text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 hover:border-slate-300 rounded-xl transition-all shadow-2xs active:scale-95 flex-shrink-0 h-10"
           aria-label="Register B2B Account"
         >
           <User className="w-4.5 h-4.5 text-slate-600 flex-shrink-0" />
-          <span className="hidden sm:inline whitespace-nowrap">Register B2B</span>
+          <span className="whitespace-nowrap">Register B2B</span>
         </Link>
       </div>
     );
@@ -84,7 +83,7 @@ export default function UserNav() {
     .toUpperCase() || "GF";
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="hidden sm:block relative" ref={dropdownRef}>
       {/* Logged-in User Pill Button */}
       <button
         type="button"
