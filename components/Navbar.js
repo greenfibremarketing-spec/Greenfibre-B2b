@@ -64,10 +64,10 @@ function NavbarInner() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 h-13 sm:h-14 flex items-center justify-between gap-2">
+        <div className="max-w-[1440px] mx-auto px-3 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
 
           {/* LEFT: Logo + Nav */}
-          <div className="flex items-center gap-2 sm:gap-6 xl:gap-8 flex-shrink-0">
+          <div className="flex items-center gap-3 sm:gap-6 xl:gap-8 flex-shrink-0">
             <Link
               href="/"
               className="flex items-center group select-none flex-shrink-0"
@@ -76,7 +76,7 @@ function NavbarInner() {
               <img
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
-                className="h-7 sm:h-10 w-auto max-w-[160px] sm:max-w-[200px] object-contain group-hover:scale-105 transition-transform flex-shrink-0 py-0.5"
+                className="h-8.5 sm:h-10 w-auto max-w-[155px] sm:max-w-[200px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
               />
             </Link>
 
@@ -128,27 +128,37 @@ function NavbarInner() {
             </nav>
           </div>
 
-          {/* RIGHT: Actions */}
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+          {/* RIGHT: Actions - Amazon-style unified alignment */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
             <NavbarSearch />
             <UserNav />
+
+            {/* Quote Basket - Amazon-style shopping bag with floating count badge on mobile */}
             <Link
               href="/quote"
-              className="flex relative btn-primary items-center gap-1.5 shadow-xs hover:shadow-md text-xs sm:text-sm py-1.5 px-2 sm:px-3.5 rounded-lg flex-shrink-0 transition-all active:scale-95"
+              className="relative h-9 w-9 md:w-auto md:px-3.5 flex items-center justify-center gap-2 rounded-lg border border-slate-200/90 md:border-brand-500 bg-slate-50/80 md:bg-brand-600 hover:bg-slate-100 md:hover:bg-brand-700 text-slate-700 md:text-white transition-all shadow-2xs cursor-pointer active:scale-95 flex-shrink-0"
               aria-label="View Wholesale Quote Basket"
             >
-              <ShoppingBag className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden md:inline whitespace-nowrap">Quote Basket</span>
-              <Count />
+              <div className="relative flex items-center justify-center">
+                <ShoppingBag className="w-4.5 h-4.5 text-slate-700 md:text-white flex-shrink-0" />
+                <span className="absolute -top-2 -right-2.5 flex items-center justify-center">
+                  <Count className="bg-brand-600 text-white md:bg-white md:text-brand-800 shadow-xs" />
+                </span>
+              </div>
+              <span className="hidden md:inline text-xs font-bold whitespace-nowrap pl-0.5">
+                Quote Basket
+              </span>
             </Link>
+
+            {/* Mobile Hamburger Menu */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90 bg-slate-50/80 transition-colors cursor-pointer shadow-2xs flex-shrink-0"
               aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4.5 h-4.5" /> : <Menu className="w-4.5 h-4.5" />}
             </button>
           </div>
         </div>

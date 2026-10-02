@@ -279,10 +279,14 @@ export function QuoteProvider({ children }) {
   );
 }
 
-export function Count() {
+export function Count({ className = "" }) {
   const { count } = useQuote() || { count: 0 };
   return (
-    <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold bg-white text-brand-800 rounded-full transition-transform duration-200">
+    <span
+      className={`inline-flex items-center justify-center min-w-[17px] h-[17px] px-1 text-[10px] font-extrabold rounded-full transition-transform duration-200 leading-none ${
+        className || "bg-brand-600 text-white"
+      }`}
+    >
       {count}
     </span>
   );

@@ -117,7 +117,7 @@ export default function NavbarSearch() {
           setIsOpen(!isOpen);
           setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        className="md:hidden p-2 text-slate-600 hover:text-brand-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+        className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200/90 bg-slate-50/80 hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-colors cursor-pointer shadow-2xs flex-shrink-0"
         aria-label="Search catalog"
       >
         <Search className="w-4 h-4" />

@@ -48,17 +48,17 @@ export default function UserNav() {
       <div className="flex items-center gap-1.5 sm:gap-2">
         <Link
           href="/login"
-          className="hidden sm:inline-flex items-center text-xs font-bold text-slate-700 hover:text-brand-800 hover:bg-slate-100 px-3 py-2 rounded-lg transition-colors"
+          className="hidden sm:inline-flex items-center text-xs font-bold text-slate-700 hover:text-brand-800 hover:bg-slate-100 px-3 h-9 rounded-lg transition-colors border border-transparent hover:border-slate-200"
         >
           Sign In
         </Link>
-        {/* Mobile: icon-only; Desktop: full text */}
+        {/* Mobile: icon button h-9 w-9; Desktop: full text button h-9 */}
         <Link
           href="/signup"
-          className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 hover:bg-brand-50 text-brand-900 border border-slate-200 hover:border-brand-300 px-2 sm:px-3 py-2 rounded-lg transition-all shadow-2xs"
+          className="w-9 h-9 sm:w-auto sm:px-3 inline-flex items-center justify-center gap-1.5 text-xs font-bold bg-slate-50/80 hover:bg-slate-100 text-slate-700 border border-slate-200/90 hover:border-slate-300 rounded-lg transition-all shadow-2xs flex-shrink-0"
           aria-label="Register B2B Account"
         >
-          <User className="w-4 h-4 flex-shrink-0" />
+          <User className="w-4 h-4 text-slate-700 flex-shrink-0" />
           <span className="hidden sm:inline whitespace-nowrap">Register B2B</span>
         </Link>
       </div>
@@ -89,16 +89,16 @@ export default function UserNav() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border transition-all cursor-pointer shadow-xs group ${
+        className={`h-9 flex items-center gap-1.5 px-1.5 sm:px-2.5 rounded-lg border transition-all cursor-pointer shadow-2xs group flex-shrink-0 ${
           isOpen
             ? "border-brand-600 bg-white ring-2 ring-brand-500/15"
-            : "border-slate-200 hover:border-brand-400 bg-slate-50 hover:bg-white"
+            : "border-slate-200/90 hover:border-slate-300 bg-slate-50/80 hover:bg-slate-100"
         }`}
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
         {/* Avatar with Initials */}
-        <div className="w-7 h-7 rounded-lg bg-brand-700 text-white font-extrabold flex items-center justify-center text-xs shadow-xs group-hover:scale-105 transition-transform flex-shrink-0">
+        <div className="w-6 h-6 rounded-md bg-brand-700 text-white font-extrabold flex items-center justify-center text-[11px] shadow-2xs flex-shrink-0">
           {initials}
         </div>
 
