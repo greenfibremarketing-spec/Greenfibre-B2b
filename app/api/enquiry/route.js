@@ -48,9 +48,10 @@ export async function POST(req) {
     const p = await getProduct(i.slug);
     if (!p) continue;
     const qty = Math.floor(+i.qty);
-    if (!(qty >= (p.moq || 1))) {
+    const minRequired = (i.isPairItem || i.isPair || i.bundleDiscountApplied || i.moq === 1) ? 1 : (p.moq || 1);
+    if (!(qty >= minRequired)) {
       return NextResponse.json(
-        { error: `${p.name}: Minimum wholesale order quantity is ${p.moq} ${p.unit}.` },
+        { error: `${p.name}: Minimum wholesale order quantity is ${minRequired} ${p.unit}.` },
         { status: 422 }
       );
     }

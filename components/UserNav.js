@@ -11,7 +11,7 @@ import {
   ChevronDown,
   FileText,
   ShoppingBag,
-  Sparkles,
+  LayoutGrid,
   Gift,
   CheckCircle2,
   Clock,
@@ -171,7 +171,7 @@ export default function UserNav() {
               className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 hover:text-brand-800 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-700" />
+                <LayoutGrid className="w-4 h-4 text-brand-700" />
                 <span>Home Dashboard</span>
               </div>
             </Link>

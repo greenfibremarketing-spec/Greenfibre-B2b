@@ -18,7 +18,6 @@ import {
   ArrowRight,
   ShieldCheck,
   Sprout,
-  Sparkles,
   ChevronDown,
   Gift,
   Hotel,
