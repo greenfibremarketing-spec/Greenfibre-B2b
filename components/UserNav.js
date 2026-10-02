@@ -52,11 +52,14 @@ export default function UserNav() {
         >
           Sign In
         </Link>
+        {/* Mobile: icon-only; Desktop: full text */}
         <Link
           href="/signup"
-          className="inline-flex items-center text-xs font-bold bg-slate-100 hover:bg-brand-50 text-brand-900 border border-slate-200 hover:border-brand-300 px-3 py-2 rounded-lg transition-all shadow-2xs"
+          className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-100 hover:bg-brand-50 text-brand-900 border border-slate-200 hover:border-brand-300 px-2 sm:px-3 py-2 rounded-lg transition-all shadow-2xs"
+          aria-label="Register B2B Account"
         >
-          Register B2B
+          <User className="w-4 h-4 flex-shrink-0" />
+          <span className="hidden sm:inline whitespace-nowrap">Register B2B</span>
         </Link>
       </div>
     );
@@ -99,8 +102,8 @@ export default function UserNav() {
           {initials}
         </div>
 
-        {/* Display User Name & Company directly on Nav */}
-        <div className="flex flex-col text-left min-w-0 max-w-[120px] sm:max-w-[160px]">
+        {/* Display User Name & Company — hidden on mobile, visible sm+ */}
+        <div className="hidden sm:flex flex-col text-left min-w-0 max-w-[120px] sm:max-w-[160px]">
           <span className="text-xs font-bold text-slate-900 truncate leading-tight flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
             <span className="truncate">{displayName}</span>

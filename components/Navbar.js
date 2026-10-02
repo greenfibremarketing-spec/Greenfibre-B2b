@@ -129,12 +129,12 @@ function NavbarInner() {
           </div>
 
           {/* RIGHT: Actions */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
             <NavbarSearch />
             <UserNav />
             <Link
               href="/quote"
-              className="relative btn-primary flex items-center gap-1.5 shadow-xs hover:shadow-md text-xs sm:text-sm py-1.5 px-2.5 sm:px-3.5 rounded-lg flex-shrink-0 transition-all active:scale-95"
+              className="hidden sm:flex relative btn-primary items-center gap-1.5 shadow-xs hover:shadow-md text-xs sm:text-sm py-1.5 px-2.5 sm:px-3.5 rounded-lg flex-shrink-0 transition-all active:scale-95"
               aria-label="View Wholesale Quote Basket"
             >
               <ShoppingBag className="w-4 h-4 flex-shrink-0" />

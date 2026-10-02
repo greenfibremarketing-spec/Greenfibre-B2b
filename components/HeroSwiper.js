@@ -14,13 +14,13 @@ const heroSlide = {
 
 export default function HeroSwiper() {
   return (
-    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none h-[48vh] sm:h-[60vh] md:h-[75vh] lg:h-[88vh] max-h-[88vh]">
+    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none h-[45vh] sm:h-[60vh] md:h-[75vh] lg:h-[88vh] max-h-[88vh]">
       <Link
         href={heroSlide.link}
         className="relative w-full h-full block cursor-pointer overflow-hidden group/slide"
         aria-label={heroSlide.title}
       >
-        {/* Full Cover Static Banner: 100% width, 100% height, object-cover */}
+        {/* Full Cover Static Banner */}
         <img
           src={heroSlide.image}
           alt={heroSlide.title}
@@ -30,7 +30,7 @@ export default function HeroSwiper() {
               e.currentTarget.src = heroSlide.localFallback;
             }
           }}
-          className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover/slide:scale-[1.01]"
+          className="w-full h-full object-cover object-left sm:object-center transition-transform duration-700 ease-out group-hover/slide:scale-[1.01]"
         />
       </Link>
     </div>
