@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Check,
   Sprout,
-  Sparkles,
   Flame,
   ChevronLeft,
   ChevronRight,
@@ -122,12 +121,12 @@ export const B2B_OCCASIONS = [
     ],
     customizations: [
       {
-        id: "laser_logo",
-        name: "Custom Laser Logo Engraving",
-        tag: "Laser Etched",
-        badge: "Most Popular",
-        desc: "Permanent high-precision laser etching of your brand logo on the front surface.",
-        icon: Sparkles
+        id: "corp_gift_box",
+        name: "Bespoke Recyclable Gift Packaging",
+        tag: "Custom Box",
+        badge: "Eco Kraft",
+        desc: "Recycled kraft presentation gift box with custom branded outer sleeve & ribbon.",
+        icon: Gift
       },
       {
         id: "pantone_colorway",
@@ -138,12 +137,12 @@ export const B2B_OCCASIONS = [
         icon: Palette
       },
       {
-        id: "corp_gift_box",
-        name: "Bespoke Recyclable Gift Packaging",
-        tag: "Custom Box",
-        badge: "Eco Kraft",
-        desc: "Recycled kraft presentation gift box with custom branded outer sleeve & ribbon.",
-        icon: Box
+        id: "custom_sleeve",
+        name: "Custom Box Sleeve & Belly Band",
+        tag: "Branded Sleeve",
+        badge: "Full Color",
+        desc: "High-resolution custom corporate belly band and gift sleeve wrap.",
+        icon: Layers
       },
       {
         id: "insert_card",
@@ -235,7 +234,7 @@ export const B2B_OCCASIONS = [
         tag: "Gold Foil",
         badge: "Gold Foil",
         desc: "Luxury gold metallic stamp commemorating your company's anniversary years.",
-        icon: Sparkles
+        icon: Award
       },
       {
         id: "anniversary_box",
@@ -343,7 +342,7 @@ export const B2B_OCCASIONS = [
         tag: "Laser Etched",
         badge: "Bridal Monogram",
         desc: "Both names and wedding date laser-engraved on each canister lid.",
-        icon: Sparkles
+        icon: BadgeCheck
       },
       {
         id: "blush_gift_box",
@@ -559,7 +558,7 @@ export const B2B_OCCASIONS = [
         tag: "Laser Etched",
         badge: "Logo Print",
         desc: "Laser-engraved company logo and tagline on the canister lid.",
-        icon: Sparkles
+        icon: BadgeCheck
       },
       {
         id: "welcome_kit_box",
@@ -744,11 +743,11 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const [modalStep, setModalStep] = useState(1); // 1 = customize, 2 = suggested
   const [activeTab, setActiveTab] = useState("set_contents");
 
-  // Pair additions & custom quantity state for Step 2 modal
+  // Pair additions & custom quantity state for Step 1 bundle modal
   const [pairQtys, setPairQtys] = useState({});
   const [pairAdded, setPairAdded] = useState({});
 
-  const getPairQty = (slug) => pairQtys[slug] ?? 1;
+  const getPairQty = (slug) => pairQtys[slug] ?? qty;
 
   const handlePairQtyChange = (slug, newQty) => {
     const min = 1;
@@ -764,13 +763,15 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     if (!add) return;
     const relQty = getPairQty(rel.slug);
     const originalPrice =
-      rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
-    const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.95) : 0;
+      rel.price || rel.wholesalePrice || rel.originalBasePrice || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
+    const discountedPrice = originalPrice > 0 ? Math.round(originalPrice * 0.90) : 0;
 
     const pairPayload = {
       ...rel,
+      wholesalePrice: originalPrice,
       price: discountedPrice > 0 ? discountedPrice : originalPrice,
       originalBasePrice: originalPrice,
+      retailPrice: originalPrice,
       activeTierTitle: "Bundle 5% Off Pairing",
       bundleDiscountApplied: true
     };
@@ -1526,7 +1527,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           {/* 5. KEY PRODUCT FEATURES & MATERIAL BENEFITS BOX */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs space-y-2.5">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-brand-700" />
+              <Leaf className="w-3.5 h-3.5 text-brand-700" />
               <span>Key Product Features &amp; Material Benefits</span>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-700">
@@ -2029,17 +2030,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               const hasAddons = relatedProducts && relatedProducts.length > 0;
               const anyItemAdded = Object.values(pairAdded).some(Boolean);
               const primaryIsAdded = primaryAddon ? Boolean(pairAdded[primaryAddon.slug]) : false;
-
-              // Price math
-              const addonOrigPrice = primaryAddon
-                ? (primaryAddon.price || primaryAddon.discountedPrice || primaryAddon.originalPrice || primaryAddon.retailPrice || 0)
-                : 0;
-              const addonDiscPrice = addonOrigPrice > 0 ? Math.round(addonOrigPrice * 0.95) : 0;
-              const addonSavings = addonOrigPrice > 0 ? (addonOrigPrice - addonDiscPrice) : 0;
-
-              // Extra 5% bundle discount calculation
-              const extra5PctDiscountAmount = Math.round(grossWholesaleSubtotal * 0.05) + (primaryIsAdded ? addonSavings : addonSavings);
-              const totalDisplaySubtotal = primaryIsAdded ? (estimatedSubtotal + addonDiscPrice) : estimatedSubtotal;
+              const primaryPairQty = primaryAddon ? getPairQty(primaryAddon.slug) : qty;
 
               return (
                 <div className="p-5 sm:p-7 space-y-4 bg-white overflow-y-auto flex-1">
@@ -2095,18 +2086,19 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
                   </div>
 
-                  {/* Add-on Product Card(s) */}
+                  {/* Add-on Product Card(s) with Quantity Stepper strictly for pair item */}
                   {hasAddons ? (
                     <div className="space-y-2.5 pt-1">
                       {relatedProducts.slice(0, 2).map((rel) => {
                         const isAdded = Boolean(pairAdded[rel.slug]);
-                        const origP = rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
-                        const discP = origP > 0 ? Math.round(origP * 0.95) : 0;
+                        const relQty = getPairQty(rel.slug);
+                        const origP = rel.wholesalePrice || rel.originalBasePrice || rel.price || rel.discountedPrice || rel.originalPrice || rel.retailPrice || 0;
+                        const discP = origP > 0 ? Math.round(origP * 0.90) : 0;
 
                         return (
                           <div
                             key={rel.slug}
-                            className={`rounded-2xl border p-3 sm:p-3.5 flex items-center justify-between gap-3 transition-all ${
+                            className={`rounded-2xl border p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
                               isAdded
                                 ? "border-emerald-500 bg-emerald-50/20 shadow-xs"
                                 : "border-slate-200/90 bg-[#fafbfc] hover:border-slate-300"
@@ -2136,65 +2128,84 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                       ₹{origP.toLocaleString("en-IN")}
                                     </span>
                                   )}
+                                  <span className="text-[11px] text-slate-400 font-normal">
+                                    /{rel.unit || "pc"}
+                                  </span>
                                 </div>
                                 <span className="inline-block mt-1 text-[10px] font-medium text-[#8c5e28] border border-[#dfc3a1] bg-[#fefbf7] px-2 py-0.5 rounded-full">
-                                  +5% more off on all items
+                                  +5% more off on combined order
                                 </span>
                               </div>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => handleAddPairToQuote(rel)}
-                              className={`w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-all flex-shrink-0 ${
-                                isAdded
-                                  ? "bg-[#1b5e3f] text-white shadow-xs"
-                                  : "border border-[#1b5e3f] text-[#1b5e3f] hover:bg-[#1b5e3f] hover:text-white"
-                              }`}
-                              aria-label={isAdded ? "Added to order" : `Add ${rel.name}`}
-                            >
-                              {isAdded ? (
-                                <Check className="w-4 h-4 stroke-[3]" />
-                              ) : (
-                                <Plus className="w-4 h-4 stroke-[2.5]" />
-                              )}
-                            </button>
+                            <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex-shrink-0">
+                              {/* Quantity Stepper for pair item */}
+                              <div className="inline-flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePairQtyChange(rel.slug, Math.max(1, relQty - 1));
+                                  }}
+                                  className="w-6 h-6 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                  aria-label="Decrease pair quantity"
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
+                                  value={relQty}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    handlePairQtyChange(rel.slug, e.target.value);
+                                  }}
+                                  className="w-9 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
+                                  aria-label={`Quantity for ${rel.name}`}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePairQtyChange(rel.slug, relQty + 1);
+                                  }}
+                                  className="w-6 h-6 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                  aria-label="Increase pair quantity"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+
+                              {/* Add / Added Button */}
+                              <button
+                                type="button"
+                                onClick={() => handleAddPairToQuote(rel)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                                  isAdded
+                                    ? "bg-[#1b5e3f] text-white"
+                                    : "border border-[#1b5e3f] text-[#1b5e3f] hover:bg-[#1b5e3f] hover:text-white"
+                                }`}
+                                aria-label={isAdded ? "Added to order" : `Add ${rel.name}`}
+                              >
+                                {isAdded ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    <span>Added ({relQty})</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    <span>Add ({relQty})</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
                     </div>
                   ) : null}
-
-                  {/* Pricing Breakdown Rows */}
-                  <div className="space-y-2 pt-2 text-xs">
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Your items ({activeTierDiscountPct}% off each)</span>
-                      <span className="font-medium text-slate-900">
-                        ₹{estimatedSubtotal.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-
-                    {primaryAddon && (
-                      <div className="flex items-center justify-between text-slate-600">
-                        <span>{primaryAddon.name}</span>
-                        <span className="font-medium text-slate-900">
-                          ₹{addonOrigPrice.toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between text-[#1b5e3f] font-semibold">
-                      <span>Extra 5% bundle discount</span>
-                      <span>-₹{extra5PctDiscountAmount.toLocaleString("en-IN")}</span>
-                    </div>
-
-                    <div className="border-t border-slate-100 pt-2 flex items-baseline justify-between">
-                      <span className="font-bold text-slate-900 text-sm">Subtotal</span>
-                      <span className="text-2xl sm:text-[26px] font-extrabold text-[#0d3b2e] tracking-tight">
-                        ₹{totalDisplaySubtotal.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
 
                   {/* Bottom Action CTAs */}
                   <div className="space-y-2 pt-2">
@@ -2209,7 +2220,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       className="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-[#1b5e3f] hover:bg-[#154c32] shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2"
                     >
                       <span>
-                        Add {primaryAddon ? primaryAddon.name.toLowerCase() : "companion"} &amp; get {activeTierDiscountPct + 5}% off
+                        Add {primaryPairQty > 1 ? `${primaryPairQty}× ` : ""}{primaryAddon ? primaryAddon.name.toLowerCase() : "companion"} &amp; get {activeTierDiscountPct + 5}% off
                       </span>
                     </button>
                     <button
@@ -2340,7 +2351,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           onClick={() => handleSetExactQty(50)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
-                          <Sparkles className="w-3 h-3 text-brand-600" />
+                          <Zap className="w-3 h-3 text-brand-600" />
                           <span>Upgrade to 50 sets</span>
                         </button>
                       </div>
@@ -2573,7 +2584,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-emerald-300 shadow-2xs">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-brand-700" />
+                          <BadgeCheck className="w-3.5 h-3.5 text-brand-700" />
                           <span>Name / Text to Engrave on Product</span>
                         </label>
                         <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -2608,7 +2619,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           onClick={() => handleSetExactQty(50)}
                           className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
-                          <Sparkles className="w-3 h-3 text-brand-600" />
+                          <Zap className="w-3 h-3 text-brand-600" />
                           <span>Unlock (50 sets)</span>
                         </button>
                       </div>

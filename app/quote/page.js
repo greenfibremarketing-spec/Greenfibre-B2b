@@ -4,45 +4,57 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useQuote } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
-import { CheckCircle2, ShoppingBag, PhoneCall, AlertCircle, Lock, ShieldCheck, Building, User, Mail, Phone, MapPin, FileText, Sparkles, Check } from "lucide-react";
+import {
+  CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
+  BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal
+} from "lucide-react";
 
 export default function QuotePage() {
-  const { items, setQty, remove, clear, count, estimatedTotal } = useQuote() || {
-    items: [],
-    count: 0,
-    estimatedTotal: 0
-  };
+  const {
+    items,
+    setQty,
+    remove,
+    clear,
+    count,
+    hasBundleBonus,
+    bundleBonusAmount,
+    netSubtotalBeforeBundle,
+    estimatedTotal,
+    ITEM_DISCOUNT_PCT = 10,
+    BUNDLE_BONUS_PCT  = 5,
+  } = useQuote() || { items: [], count: 0, estimatedTotal: 0, hasBundleBonus: false, netSubtotalBeforeBundle: 0, bundleBonusAmount: 0 };
 
   const { user, isAuthenticated } = useAuth() || {};
 
+  const [isAdjustOpen, setIsAdjustOpen] = useState(false);
+
   const [formData, setFormData] = useState({
-    name: "",
-    company: "",
-    email: "",
-    phone: "",
-    buyerType: "Corporate Gifting",
-    city: "",
-    pin: "",
-    date: "",
-    gstin: "",
-    notes: ""
+    name: "", company: "", email: "", phone: "",
+    buyerType: "Corporate Gifting", city: "", pin: "",
+    date: "", gstin: "", notes: ""
   });
 
   useEffect(() => {
     if (user) {
       setFormData((prev) => ({
         ...prev,
-        name: prev.name || user.fullName || user.full_name || "",
-        company: prev.company || user.companyName || "",
-        email: prev.email || user.email || "",
-        phone: prev.phone || user.phone || "",
-        buyerType: prev.buyerType || user.businessType || "Corporate Gifting",
-        gstin: prev.gstin || user.gstin || "",
-        city: prev.city || user.billingAddress?.city || "",
-        pin: prev.pin || user.billingAddress?.pincode || ""
+        name:      prev.name      || user.fullName      || user.full_name || "",
+        company:   prev.company   || user.companyName   || "",
+        email:     prev.email     || user.email         || "",
+        phone:     prev.phone     || user.phone         || "",
+        buyerType: prev.buyerType || user.businessType  || "Corporate Gifting",
+        gstin:     prev.gstin     || user.gstin         || "",
+        city:      prev.city      || user.billingAddress?.city    || "",
+        pin:       prev.pin       || user.billingAddress?.pincode || "",
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (items.length === 0 && isAdjustOpen) {
+      setIsAdjustOpen(false);
+    }
+  }, [items.length, isAdjustOpen]);
 
   const [state, setState] = useState({ busy: false, error: null, ref: null });
 
@@ -50,7 +62,6 @@ export default function QuotePage() {
     e.preventDefault();
     if (state.busy) return;
     setState({ busy: true, error: null, ref: null });
-
     try {
       const response = await fetch("/api/enquiry", {
         method: "POST",
@@ -59,25 +70,14 @@ export default function QuotePage() {
           ...formData,
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
-          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations }) => ({
-            slug,
-            colour,
-            qty,
-            senderName,
-            receiverName,
-            giftMessage,
-            engravingName,
-            customProductName,
-            selectedCustomizations
+          items: items.map(({ slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations, isPairItem, isPair, bundleDiscountApplied }) => ({
+            slug, colour, qty, senderName, receiverName, giftMessage, engravingName, customProductName, selectedCustomizations,
+            isPairItem: Boolean(isPairItem || isPair || bundleDiscountApplied)
           }))
         })
       });
-
       const resJson = await response.json();
-      if (!response.ok) {
-        throw new Error(resJson.error || "Failed to submit quote enquiry.");
-      }
-
+      if (!response.ok) throw new Error(resJson.error || "Failed to submit quote enquiry.");
       clear();
       setState({ busy: false, error: null, ref: resJson.reference });
     } catch (err) {
@@ -85,599 +85,522 @@ export default function QuotePage() {
     }
   }
 
-  // Success Confirmation Screen
+  // ── Success screen ───────────────────────────────────────────────────────
   if (state.ref) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         <div className="bg-white border border-slate-200 rounded-2xl p-8 sm:p-12 shadow-sm text-center space-y-5">
-          <div className="w-14 h-14 rounded-full bg-brand-100 text-brand-800 flex items-center justify-center mx-auto border border-brand-200">
-            <CheckCircle2 className="w-8 h-8 text-brand-700" />
+          <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto border border-emerald-200">
+            <CheckCircle2 className="w-8 h-8 text-emerald-700" />
           </div>
-
           <div className="space-y-1.5">
-            <span className="badge-green">
+            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1 rounded-full">
               Quote Request Received
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              We&apos;re On It!
-            </h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">We're On It!</h2>
             <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-              Thank you for your enquiry. We&apos;ve routed your request to our B2B account team in Gurugram.
+              Our B2B account team will respond with an official itemized GST quotation within 4 business hours.
             </p>
           </div>
-
-          {/* Reference ID Pill */}
-          <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-800 px-5 py-2 rounded-lg font-mono text-xs sm:text-sm font-semibold border border-slate-200">
-            <span>Reference ID:</span>
-            <span className="text-brand-800 font-bold">{state.ref}</span>
+          <div className="inline-flex items-center gap-2 bg-slate-100 px-5 py-2 rounded-lg font-mono text-xs font-semibold border border-slate-200">
+            <span className="text-slate-600">Reference ID:</span>
+            <span className="text-emerald-800 font-bold">{state.ref}</span>
           </div>
-
-          {/* Timeline */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 text-left space-y-2.5 text-xs text-slate-700">
-            <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-              What to expect next:
-            </h4>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <span className="text-brand-700 font-bold">•</span>
-                <span>An account manager will review your quantities and logo specs.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-brand-700 font-bold">•</span>
-                <span>You will receive an official itemized GST quotation and 3D digital branding proof via email within <strong>4 business hours</strong>.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-brand-700 font-bold">•</span>
-                <span>If you requested physical samples, we’ll dispatch them within 24–48 hours from Sonipat.</span>
-              </li>
-            </ul>
-          </div>
-
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-1">
-            <Link href="/products" className="btn-primary">
-              Continue Browsing Products
-            </Link>
-            <Link href="/" className="btn-secondary">
-              Back to Home
-            </Link>
+            <Link href="/products" className="btn-primary">Continue Browsing</Link>
+            <Link href="/" className="btn-secondary">Back to Home</Link>
           </div>
         </div>
       </div>
     );
   }
 
+  // ── Per-item display values ────────────────────────────────────────────────
+  const lineItems = items.map((item) => {
+    const isPair       = Boolean(item.isPairItem || item.isPair || item.bundleDiscountApplied || item.activeTierTitle?.includes("Bundle") || item.moq === 1);
+    const minQty       = isPair ? 1 : (item.moq || 10);
+    const mrp          = item.wholesalePrice || item.originalBasePrice || 0;
+    const lineGross    = mrp * item.qty;
+    const lineDiscount = Math.round(lineGross * (ITEM_DISCOUNT_PCT / 100));
+    const lineNet      = lineGross - lineDiscount;
+    return { ...item, isPair, minQty, mrp, lineGross, lineDiscount, lineNet };
+  });
+
+  const totalGross        = lineItems.reduce((s, it) => s + it.lineGross,    0);
+  const totalItemDiscount = lineItems.reduce((s, it) => s + it.lineDiscount, 0);
+  const totalUnitsCount   = lineItems.reduce((s, it) => s + (it.qty || 0),   0);
+  const estimatedGST      = Math.round(estimatedTotal * 0.18);
+  const totalWithGST      = estimatedTotal + estimatedGST;
+
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
-      {/* Header */}
-      <div className="space-y-1.5">
-        <div className="badge-green">
-          Direct Manufacturing Desk
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Quote Basket &amp; RFQ Builder
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-          Review your selected products, adjust quantities, and submit your requirements. We’ll email you an itemized GST quotation and digital 3D logo proof within 4 hours.
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+        <p className="text-sm font-medium text-slate-600">
+          Review your order, add your details, and receive a formal GST quotation.
         </p>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          Response within 4 business hours
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Basket Items */}
-        <div className="lg:col-span-5 space-y-5">
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Selected Products ({count})
-              </h3>
-              {items.length > 0 && (
+        {/* ── Left: Worksheet & Summary (Sticky / Fixed in view on desktop) ───────────────── */}
+        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-24 self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto pr-0.5">
+          {/* Section header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold">1</span>
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Products</h3>
+              <span className="text-xs font-bold text-slate-400">({count})</span>
+            </div>
+
+            {items.length > 0 && (
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Adjust Quantities button on left of Clear all */}
+                <button
+                  type="button"
+                  onClick={() => setIsAdjustOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1b5e3f] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                >
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Adjust Quantities</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={clear}
-                  className="text-xs font-semibold text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
+                  className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1 py-1"
                 >
                   Clear all
                 </button>
-              )}
-            </div>
-
-            {items.length === 0 ? (
-              <div className="py-10 text-center space-y-3 flex flex-col items-center">
-                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
-                  <ShoppingBag className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-bold text-slate-900">Your quote basket is empty</h4>
-                <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                  Browse our wholesale catalog to add coffee mugs, tumblers, dining bowls, or gift sets.
-                </p>
-                <div className="pt-1">
-                  <Link href="/products" className="btn-primary text-xs py-2 px-4">
-                    Browse Product Catalog
-                  </Link>
-                </div>
               </div>
-            ) : (
-              (() => {
-                const computedItems = items.map((item) => {
-                  const isAddon = Boolean(item.bundleDiscountApplied || item.activeTierTitle?.toLowerCase().includes("bundle"));
-                  // For main products: use wholesalePrice (from payload). For add-ons: their price field IS the 5%-discounted price.
-                  const addonDiscountPct = 5;
-                  const tierNum = isAddon ? 0 : (item.qty >= 100 ? 3 : item.qty >= 50 ? 2 : 1);
-                  const discountPct = isAddon ? addonDiscountPct : (tierNum === 3 ? 15 : tierNum === 2 ? 12 : 10);
-
-                  // Wholesale unit price = the base price BEFORE discount
-                  // For main products, prefer wholesalePrice set in payload, fallback to originalBasePrice, then back-calculate
-                  const wholesaleUnitP = isAddon
-                    ? (item.originalBasePrice || (item.price > 0 ? Math.round(item.price / (1 - addonDiscountPct / 100)) : 0))
-                    : (item.wholesalePrice || item.originalBasePrice || item.retailPrice || (item.price > 0 ? Math.round(item.price / (1 - discountPct / 100)) : 550));
-
-                  // Gross wholesale total (before discount)
-                  const lineGross = wholesaleUnitP * item.qty;
-                  // Discount amount on total
-                  const lineDiscount = Math.round(lineGross * discountPct / 100);
-                  // Final you-pay total
-                  const lineTotal = lineGross - lineDiscount;
-                  // Effective per-unit after discount
-                  const unitPrice = item.qty > 0 ? Math.round(lineTotal / item.qty) : 0;
-
-                  return {
-                    ...item,
-                    isAddon,
-                    tierNum,
-                    discountPct,
-                    wholesaleUnitP,
-                    lineGross,
-                    lineDiscount,
-                    lineTotal,
-                    unitPrice
-                  };
-                });
-
-                // Separate main products and add-ons for summary
-                const mainItems = computedItems.filter((it) => !it.isAddon);
-                const addonItems = computedItems.filter((it) => it.isAddon);
-                const mainGross = mainItems.reduce((acc, it) => acc + it.lineGross, 0);
-                const mainDiscount = mainItems.reduce((acc, it) => acc + it.lineDiscount, 0);
-                const mainNet = mainItems.reduce((acc, it) => acc + it.lineTotal, 0);
-                const addonGross = addonItems.reduce((acc, it) => acc + it.lineGross, 0);
-                const addonDiscount = addonItems.reduce((acc, it) => acc + it.lineDiscount, 0);
-                const addonNet = addonItems.reduce((acc, it) => acc + it.lineTotal, 0);
-                const totalNetSubtotal = mainNet + addonNet;
-                const totalSavingsAmount = mainDiscount + addonDiscount;
-
-                return (
-                  <div className="divide-y divide-slate-100 mt-1">
-                    {computedItems.map((item) => (
-                      <div key={item.key} className="py-3.5 flex gap-3.5 items-center">
-                        {/* Thumbnail */}
-                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
-                          {item.image ? (
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center font-bold text-xs text-slate-400">
-                              GF
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
-                            {item.name}
-                          </h4>
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-500 flex-wrap">
-                            {item.isAddon ? (
-                              <span className="font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
-                                Add-On · 5% OFF
-                              </span>
-                            ) : (
-                              <span className="font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                                {item.activeTierTitle || `Tier ${item.tierNum}`} · {item.discountPct}% OFF
-                              </span>
-                            )}
-                            <span>SKU: {item.sku || "GF-B2B"}</span>
-                          </div>
-
-                          {Array.isArray(item.selectedCustomizations) && item.selectedCustomizations.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-1">
-                              {item.selectedCustomizations.map((c, ci) => (
-                                <span
-                                  key={ci}
-                                  className="text-[10px] bg-brand-50 text-brand-900 border border-brand-200 px-1.5 py-0.2 rounded font-medium"
-                                >
-                                  ✓ {c}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {(item.senderName || item.receiverName || item.giftMessage || item.engravingName || item.customProductName) && (
-                            <div className="mt-1.5 p-2 rounded-xl bg-emerald-50/70 border border-emerald-200 text-[10.5px] space-y-1">
-                              {(item.senderName || item.receiverName || item.giftMessage) && (
-                                <div className="space-y-0.5">
-                                  <div className="font-bold text-emerald-900 flex items-center gap-1">
-                                    <Sparkles className="w-3 h-3 text-emerald-600" />
-                                    <span>Kit Card Message:</span>
-                                  </div>
-                                  {item.senderName && (
-                                    <div className="text-slate-700">
-                                      <span className="font-semibold text-slate-900">From:</span> {item.senderName}
-                                    </div>
-                                  )}
-                                  {item.receiverName && (
-                                    <div className="text-slate-700">
-                                      <span className="font-semibold text-slate-900">To:</span> {item.receiverName}
-                                    </div>
-                                  )}
-                                  {item.giftMessage && (
-                                    <div className="italic text-slate-600 line-clamp-2">
-                                      &ldquo;{item.giftMessage}&rdquo;
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-
-                              {item.engravingName && (
-                                <div className="text-slate-700 pt-0.5 border-t border-emerald-200/60">
-                                  <span className="font-semibold text-slate-900">Laser Engraving:</span> {item.engravingName}
-                                </div>
-                              )}
-
-                              {item.customProductName && (
-                                <div className="text-slate-700 pt-0.5 border-t border-emerald-200/60">
-                                  <span className="font-semibold text-slate-900">Custom Box Sleeve Title:</span> {item.customProductName}
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Clear 3-line pricing breakdown per item */}
-                          <div className="mt-1.5 space-y-0.5 text-[11px]">
-                            <div className="flex items-center gap-2 text-slate-500">
-                              <span>{item.qty} × ₹{item.wholesaleUnitP}</span>
-                              <span className="font-semibold text-slate-700">= ₹{item.lineGross.toLocaleString("en-IN")}</span>
-                            </div>
-                            {item.lineDiscount > 0 && (
-                              <div className="flex items-center gap-2 text-emerald-700 font-bold">
-                                <span>{item.discountPct}% {item.isAddon ? "Add-on" : "Bulk"} Discount</span>
-                                <span>− ₹{item.lineDiscount.toLocaleString("en-IN")}</span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 font-bold text-slate-900">
-                              <span>You Pay:</span>
-                              <span>₹{item.lineTotal.toLocaleString("en-IN")}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Quantity Stepper & Remove */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              pattern="[0-9]*"
-                              value={item.qty}
-                              onChange={(e) => {
-                                const cleaned = e.target.value.replace(/\D/g, "");
-                                setQty(item.key, cleaned ? parseInt(cleaned, 10) : (item.moq || 1));
-                              }}
-                              className="w-14 text-center text-xs font-bold py-1 px-1 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none select-all"
-                              aria-label={`Quantity for ${item.name}`}
-                            />
-                            <span className="text-[10px] text-slate-500">{item.unit || "set"}</span>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => remove(item.key)}
-                            className="w-6 h-6 rounded text-slate-400 hover:text-red-600 flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
-                            title="Remove item"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Subtotal & Detailed Discount Breakdown */}
-                    <div className="pt-4 border-t border-slate-200 space-y-2.5">
-                      <div className="space-y-1.5 text-xs">
-                        {/* Main Products */}
-                        {mainGross > 0 && (
-                          <div className="flex items-center justify-between text-slate-700">
-                            <span>Main Products (Wholesale Total):</span>
-                            <span className="font-semibold">₹{mainGross.toLocaleString("en-IN")}</span>
-                          </div>
-                        )}
-                        {mainDiscount > 0 && (
-                          <div className="flex items-center justify-between text-emerald-800">
-                            <span className="flex items-center gap-1">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                              <span>Volume Tier Discounts (10%–15% on total):</span>
-                            </span>
-                            <span className="font-bold">−₹{mainDiscount.toLocaleString("en-IN")}</span>
-                          </div>
-                        )}
-
-                        {/* Add-ons */}
-                        {addonGross > 0 && (
-                          <div className="flex items-center justify-between text-slate-700">
-                            <span>Add-On Items (Wholesale Total):</span>
-                            <span className="font-semibold">₹{addonGross.toLocaleString("en-IN")}</span>
-                          </div>
-                        )}
-                        {addonDiscount > 0 && (
-                          <div className="flex items-center justify-between text-emerald-800">
-                            <span className="flex items-center gap-1">
-                              <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
-                              <span>Add-On Bundle Discounts (5% on add-on total):</span>
-                            </span>
-                            <span className="font-bold">−₹{addonDiscount.toLocaleString("en-IN")}</span>
-                          </div>
-                        )}
-
-                        {/* Total Savings */}
-                        {totalSavingsAmount > 0 && (
-                          <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between text-emerald-950 font-bold">
-                            <span>Total Savings Unlocked:</span>
-                            <span className="text-emerald-800 font-extrabold">
-                              −₹{totalSavingsAmount.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* You Pay */}
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-200 text-slate-900">
-                          <span className="text-xs sm:text-sm font-bold">Total You Pay:</span>
-                          <span className="text-lg sm:text-xl font-black text-slate-900">
-                            ₹{totalNetSubtotal.toLocaleString("en-IN")}
-                          </span>
-                        </div>
-                      </div>
-
-                      <p className="text-[10px] text-slate-500 leading-relaxed">
-                        * B2B wholesale pricing. Tier discounts (10–15%) applied on main product totals; add-ons get 5% off their own totals separately. Final official quotation will include GST (18%) credit and Pan-India dispatch logistics.
-                      </p>
-                    </div>
-                  </div>
-                );
-              })()
             )}
           </div>
 
-          {/* Quick Help Box */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between gap-3">
-            <div>
-              <h4 className="text-xs font-bold text-slate-900">Need a fast custom proposal today?</h4>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Speak directly with our Gurugram B2B desk.
-              </p>
+          {items.length === 0 ? (
+            <div className="py-12 text-center space-y-3 flex flex-col items-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+              <h4 className="text-sm font-bold text-slate-900">Your quote basket is empty</h4>
+              <p className="text-xs text-slate-500 max-w-xs mx-auto">Browse our wholesale catalog to add eco drinkware, tableware, and hampers.</p>
+              <div className="pt-2">
+                <Link href="/products" className="btn-primary text-xs py-2 px-4">Browse Product Catalog</Link>
+              </div>
             </div>
-            <div className="text-xs font-bold text-brand-700 whitespace-nowrap flex items-center gap-1.5">
-              <PhoneCall className="w-3.5 h-3.5" />
-              <span>+91 124 489 3200</span>
+          ) : (
+            <div className="space-y-4">
+              {/* ── B2B Quotation Worksheet ── */}
+              <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
+                <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">B2B Quotation Worksheet</span>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                    Direct Factory Wholesale
+                  </span>
+                </div>
+
+                <div className="px-5 py-4">
+                  {/* Per-product rows */}
+                  {lineItems.map((item, idx) => (
+                    <div key={item.key} className="py-2.5 border-b border-slate-100 last:border-b-0">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="text-slate-400 font-mono text-[10px] w-5 flex-shrink-0">{String(idx + 1).padStart(2, "0")}</span>
+                          <span className="font-semibold text-slate-800 truncate">{item.name}</span>
+                          {item.isPair && (
+                            <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-300 font-bold flex-shrink-0 flex items-center gap-1">
+                              <span>🔗</span> Pair
+                            </span>
+                          )}
+                          {item.colour && item.colour !== "Standard" && (
+                            <span className="text-[10px] px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded border border-slate-200 font-medium truncate flex-shrink-0">
+                              {item.colour}
+                            </span>
+                          )}
+                          <span className="text-slate-400 flex-shrink-0">× {item.qty}</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="text-slate-400 line-through text-[11px]">₹{item.lineGross.toLocaleString("en-IN")}</span>
+                          <span className="text-emerald-700 font-bold text-[11px]">−₹{item.lineDiscount.toLocaleString("en-IN")} ({ITEM_DISCOUNT_PCT}%)</span>
+                          <span className="font-extrabold text-slate-900 w-20 text-right">₹{item.lineNet.toLocaleString("en-IN")}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Subtotals */}
+                  <div className="pt-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-slate-600">
+                      <span>Catalog Gross ({totalUnitsCount} units):</span>
+                      <span className="font-semibold text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-1.5 text-slate-700">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                        Volume Discount (10% on each product):
+                      </span>
+                      <span className="font-semibold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-600 border-t border-dashed border-slate-200 pt-2">
+                      <span>Subtotal after 10% discount:</span>
+                      <span className="font-bold text-slate-800">₹{(netSubtotalBeforeBundle || 0).toLocaleString("en-IN")}</span>
+                    </div>
+
+                    {hasBundleBonus && (
+                      <div className="flex items-center justify-between text-xs rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5">
+                        <span className="flex items-center gap-1.5 text-emerald-900 font-semibold">
+                          <BadgePercent className="w-3.5 h-3.5 text-emerald-600" />
+                          Bundle Pairing Bonus (5% on combined total):
+                        </span>
+                        <span className="font-extrabold text-emerald-900">−₹{(bundleBonusAmount || 0).toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-baseline justify-between pt-2 border-t border-slate-200">
+                      <div>
+                        <span className="text-sm font-extrabold text-slate-900">Net Taxable Subtotal:</span>
+                        <span className="block text-[10px] text-slate-400 font-normal">Excl. GST — Direct factory rate</span>
+                      </div>
+                      <span className="text-xl sm:text-2xl font-black text-[#0f3428] tracking-tight">
+                        ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+
+                    {(totalItemDiscount + (bundleBonusAmount || 0)) > 0 && (
+                      <div className="flex items-center justify-between text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                        <span className="font-semibold text-slate-700">
+                          Total Savings ({hasBundleBonus ? "10% + 5% Bundle" : "10%"}):
+                        </span>
+                        <span className="font-extrabold text-emerald-800">
+                          −₹{(totalItemDiscount + (bundleBonusAmount || 0)).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between text-[11.5px] text-slate-500 pt-1">
+                      <span>Estimated 18% GST (Input Tax Credit Eligible):</span>
+                      <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
+                      <span>Final Estimated Quotation (Incl. GST):</span>
+                      <span className="text-base font-black text-slate-900">₹{totalWithGST.toLocaleString("en-IN")}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+                  <p className="text-[10.5px] text-slate-400 leading-relaxed">
+                    * Official Green Fibre Direct Manufacturer Quotation. 18% GST Input Tax Credit provided upon invoicing.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setIsAdjustOpen(true)}
+                    className="text-[11px] font-semibold text-[#1b5e3f] hover:underline flex-shrink-0 cursor-pointer"
+                  >
+                    Edit Quantities →
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Right Column: B2B Quote Submission Form */}
-        <div className="lg:col-span-7">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-7 shadow-sm space-y-5">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Request Official Quotation
-                </h2>
-                {isAuthenticated && user && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-800 bg-brand-50 border border-brand-200 px-2.5 py-0.5 rounded-full">
-                    <ShieldCheck className="w-3 h-3 text-brand-700" />
-                    <span>Logged in as {user.fullName || user.companyName}</span>
-                  </span>
-                )}
+        {/* ── Right: Your Details Form ──────────────────────────────────── */}
+        <div className="lg:col-span-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold">2</span>
+              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Details</h3>
+            </div>
+            {isAuthenticated && user && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                <ShieldCheck className="w-3 h-3 text-emerald-700" />
+                Logged in as {user.fullName || user.companyName}
+              </span>
+            )}
+          </div>
+
+          <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label htmlFor="q-name" className="text-xs font-medium text-slate-600">Your name *</label>
+                <input id="q-name" name="name" required placeholder="Rahul Sharma" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
               </div>
-              <p className="text-xs text-slate-500">
-                Fill in your details below. We guarantee a response within 4 business hours.
-              </p>
+              <div className="space-y-1">
+                <label htmlFor="q-company" className="text-xs font-medium text-slate-600">Company *</label>
+                <input id="q-company" name="company" required placeholder="Freshworks India" value={formData.company}
+                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} noValidate className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1">
-                  <label htmlFor="name" className="text-xs font-semibold text-slate-700">
-                    Your Name *
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    required
-                    placeholder="e.g. Rahul Sharma"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label htmlFor="company" className="text-xs font-semibold text-slate-700">
-                    Company / Organization *
-                  </label>
-                  <input
-                    id="company"
-                    name="company"
-                    required
-                    placeholder="e.g. Freshworks India"
-                    value={formData.company}
-                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1">
-                  <label htmlFor="email" className="text-xs font-semibold text-slate-700">
-                    Work Email *
-                  </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder="rahul@freshworks.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label htmlFor="phone" className="text-xs font-semibold text-slate-700">
-                    Phone / WhatsApp *
-                  </label>
-                  <input
-                    id="phone"
-                    name="phone"
-                    required
-                    placeholder="+91 98765 43210"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                  />
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label htmlFor="buyerType" className="text-xs font-semibold text-slate-700">
-                  Order Category / Purpose
-                </label>
-                <select
-                  id="buyerType"
-                  name="buyerType"
-                  value={formData.buyerType}
-                  onChange={(e) => setFormData({ ...formData, buyerType: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none cursor-pointer"
-                >
-                  <option value="Corporate Gifting & HR">Corporate Gifting &amp; New Joinee Welcome Kits</option>
-                  <option value="Hotel & Hospitality">Cafeteria, Hotel &amp; Restaurant Tableware</option>
-                  <option value="Retail Distributor / Reseller">Retail Store / Brand Reseller</option>
-                  <option value="Eco Living Brand">Event, Summit or Conference Merchandise</option>
-                  <option value="Other Enterprise">Sample Kit Request &amp; Custom Procurement</option>
-                </select>
+                <label htmlFor="q-email" className="text-xs font-medium text-slate-600">Work email *</label>
+                <input id="q-email" name="email" type="email" required placeholder="rahul@freshworks.com" value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1">
-                  <label htmlFor="city" className="text-xs font-semibold text-slate-700">
-                    Delivery City *
-                  </label>
-                  <input
-                    id="city"
-                    name="city"
-                    required
-                    placeholder="e.g. Bengaluru"
-                    value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label htmlFor="pin" className="text-xs font-semibold text-slate-700">
-                    PIN Code (6 Digits) *
-                  </label>
-                  <input
-                    id="pin"
-                    name="pin"
-                    pattern="[0-9]{6}"
-                    maxLength={6}
-                    required
-                    placeholder="560001"
-                    value={formData.pin}
-                    onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1">
-                  <label htmlFor="date" className="text-xs font-semibold text-slate-700">
-                    Required By Date
-                  </label>
-                  <input
-                    id="date"
-                    name="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label htmlFor="gstin" className="text-xs font-semibold text-slate-700">
-                    GSTIN (Optional, for 18% Input Credit)
-                  </label>
-                  <input
-                    id="gstin"
-                    name="gstin"
-                    placeholder="07AAAAA0000A1Z5"
-                    value={formData.gstin}
-                    onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                    className="w-full text-xs py-2 px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none uppercase font-mono"
-                  />
-                </div>
-              </div>
-
               <div className="space-y-1">
-                <label htmlFor="notes" className="text-xs font-semibold text-slate-700">
-                  Branding Details &amp; Notes
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  rows={3}
-                  placeholder="Mention if you need laser engraving, custom gift box sleeves, sample kit delivery, or multi-location dispatches..."
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
-                />
+                <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">Phone / WhatsApp *</label>
+                <input id="q-phone" name="phone" required placeholder="+91 98765 43210" value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
               </div>
+            </div>
 
-              {/* Anti-spam honeypot */}
-              <input
-                name="website"
-                tabIndex={-1}
-                autoComplete="off"
-                style={{ position: "absolute", left: -9999, opacity: 0 }}
-                aria-hidden="true"
-              />
+            <div className="space-y-1">
+              <label htmlFor="q-buyerType" className="text-xs font-medium text-slate-600">Order purpose</label>
+              <select id="q-buyerType" name="buyerType" value={formData.buyerType}
+                onChange={(e) => setFormData({ ...formData, buyerType: e.target.value })}
+                className="w-full text-xs py-2.5 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none cursor-pointer">
+                <option value="Corporate Gifting & HR">Corporate gifting and new joinee welcome kits</option>
+                <option value="Hotel & Hospitality">Cafeteria, hotel and restaurant tableware</option>
+                <option value="Retail Distributor / Reseller">Retail store and brand reseller</option>
+                <option value="Eco Living Brand">Event, summit or conference merchandise</option>
+                <option value="Other Enterprise">Sample kit request and custom procurement</option>
+              </select>
+            </div>
 
-              {state.error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600" />
-                  <span>{state.error}</span>
-                </div>
-              )}
-
-              <div className="pt-1">
-                <button
-                  type="submit"
-                  disabled={state.busy || items.length === 0}
-                  className="btn-primary w-full py-3 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  {state.busy ? "Generating Quote…" : "Submit Quote Request →"}
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label htmlFor="q-city" className="text-xs font-medium text-slate-600">Delivery city *</label>
+                <input id="q-city" name="city" required placeholder="Bengaluru" value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
               </div>
+              <div className="space-y-1">
+                <label htmlFor="q-pin" className="text-xs font-medium text-slate-600">PIN code *</label>
+                <input id="q-pin" name="pin" pattern="[0-9]{6}" maxLength={6} required placeholder="560001" value={formData.pin}
+                  onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+              </div>
+            </div>
 
-              <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-slate-400" />
-                <span>Direct manufacturer privacy: We never share your company contact details.</span>
-              </p>
-            </form>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label htmlFor="q-date" className="text-xs font-medium text-slate-600">Required by</label>
+                <input id="q-date" name="date" type="date" value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#1b5e3f] outline-none" />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="q-gstin" className="text-xs font-medium text-slate-600">GSTIN (optional)</label>
+                <input id="q-gstin" name="gstin" placeholder="07AAAAA0000A1Z5" value={formData.gstin}
+                  onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
+                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] outline-none uppercase font-mono" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="q-notes" className="text-xs font-medium text-slate-600">Branding details and notes</label>
+              <textarea id="q-notes" name="notes" rows={3}
+                placeholder="Custom gift box sleeves, sample kit delivery, multi-location dispatch..."
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] outline-none" />
+            </div>
+
+            {/* Anti-spam honeypot */}
+            <input name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999, opacity: 0 }} aria-hidden="true" />
+
+            {state.error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{state.error}</span>
+              </div>
+            )}
+
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={state.busy || items.length === 0}
+                className="btn-primary w-full py-3.5 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow transition-all"
+              >
+                {state.busy ? "Generating Official Quote…" : "Submit Quote Request →"}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 pt-1">
+              <Lock className="w-3.5 h-3.5 text-slate-400" />
+              Direct manufacturer confidentiality: We never share your company contact details.
+            </p>
+          </form>
         </div>
       </div>
+
+      {/* ── Adjust Quantities Modal Popup ──────────────────────────────── */}
+      {isAdjustOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsAdjustOpen(false)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200">
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Adjust Quantities</h3>
+                  <p className="text-xs text-slate-500">Update item counts or remove products from your quote</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAdjustOpen(false)}
+                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body - Items List */}
+            <div className="p-6 overflow-y-auto flex-1 space-y-4 divide-y divide-slate-100">
+              {lineItems.map((item) => (
+                <div key={item.key} className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {/* Left: Image + Info */}
+                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                    {/* Product Image */}
+                    <div className="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-xl">
+                          {item.name ? item.name.charAt(0).toUpperCase() : "P"}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-900 truncate leading-snug">{item.name}</h4>
+                        {item.isPair && (
+                          <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
+                            <span>🔗</span> Paired Item (Min: 1)
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        {item.colour && item.colour !== "Standard" && (
+                          <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            Color: {item.colour}
+                          </span>
+                        )}
+                        <span className="text-xs text-slate-500">
+                          MRP ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
+                        </span>
+                        {!item.isPair && (
+                          <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                            MOQ: {item.minQty}
+                          </span>
+                        )}
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          10% OFF
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Quantity Stepper & Net Price & Delete */}
+                  <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-xs font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
+                      <p className="text-[10px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
+                    </div>
+
+                    {/* Stepper */}
+                    <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1 shadow-2xs">
+                      <button
+                        type="button"
+                        onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || 1) - 1))}
+                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={item.qty}
+                        onChange={(e) => {
+                          const c = e.target.value.replace(/\D/g, "");
+                          setQty(item.key, c ? parseInt(c, 10) : item.minQty);
+                        }}
+                        className="w-12 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
+                        aria-label={`Quantity for ${item.name}`}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => setQty(item.key, (item.qty || 1) + 1)}
+                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Delete button */}
+                    <button
+                      type="button"
+                      onClick={() => remove(item.key)}
+                      className="w-8 h-8 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
+                      title="Remove product"
+                      aria-label="Remove item"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-500 font-medium">
+                  Total Units: <span className="font-bold text-slate-800">{totalUnitsCount}</span>
+                </p>
+                <p className="text-xs font-bold text-emerald-800">
+                  Net Taxable: ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAdjustOpen(false)}
+                className="btn-primary py-2 px-6 text-xs font-bold shadow-xs cursor-pointer"
+              >
+                Save &amp; Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

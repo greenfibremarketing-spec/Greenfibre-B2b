@@ -3,7 +3,7 @@ import Link from "next/link";
 import Card from "@/components/Card";
 import ProductDetailView from "@/components/ProductDetailView";
 import { getProduct, getProducts } from "@/lib/products";
-import { ChevronRight, ArrowRight, Sparkles } from "lucide-react";
+import { ChevronRight, ArrowRight, Layers } from "lucide-react";
 
 export async function generateStaticParams() {
   const ps = await getProducts();
@@ -151,7 +151,7 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
           <div className="flex items-center justify-between">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700 block mb-0.5 flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                <Layers className="w-3.5 h-3.5 text-brand-600" />
                 <span>Complementary Items</span>
               </span>
               <h2 className="text-xl font-bold text-slate-900 tracking-tight">

@@ -8,6 +8,22 @@ const QuoteContext = createContext(null);
 
 export const useQuote = () => useContext(QuoteContext);
 
+// ── Pricing constants (single source of truth) ────────────────────────────────
+// Every product always gets 10% off its own line total.
+// Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are paired.
+const ITEM_DISCOUNT_PCT = 10;
+const BUNDLE_BONUS_PCT  = 5;
+
+// Safely resolve the original MRP — NEVER from an already-discounted price
+function resolveMRP(product) {
+  if (product.wholesalePrice    > 0) return product.wholesalePrice;
+  if (product.originalBasePrice > 0) return product.originalBasePrice;
+  if (product.retailPrice       > 0) return product.retailPrice;
+  if (product.price             > 0)
+    return Math.round(product.price / (1 - ITEM_DISCOUNT_PCT / 100));
+  return 500;
+}
+
 export function QuoteProvider({ children }) {
   const [items, setItems] = useState([]);
   const [toast, setToast] = useState(null);
@@ -16,9 +32,7 @@ export function QuoteProvider({ children }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("gf_quote_v2");
-      if (saved) {
-        setItems(JSON.parse(saved));
-      }
+      if (saved) setItems(JSON.parse(saved));
     } catch (e) {
       console.error("Failed to load quote basket", e);
     }
@@ -26,9 +40,7 @@ export function QuoteProvider({ children }) {
 
   const showToast = (message) => {
     setToast(message);
-    setTimeout(() => {
-      setToast(null);
-    }, 3200);
+    setTimeout(() => setToast(null), 3200);
   };
 
   const saveItems = (newItems) => {
@@ -40,139 +52,143 @@ export function QuoteProvider({ children }) {
     }
   };
 
+  // ── add ───────────────────────────────────────────────────────────────────
   const add = (product, colour, qty) => {
     const key = `${product.slug}-${colour || "standard"}`;
-    const isBundle = Boolean(product.bundleDiscountApplied || product.activeTierTitle?.toLowerCase().includes("bundle"));
-    const tierNum = isBundle ? 0 : (qty >= 100 ? 3 : qty >= 50 ? 2 : 1);
-    const discountPct = isBundle ? 5 : (tierNum === 3 ? 15 : tierNum === 2 ? 12 : 10);
-    const baseMRP = product.originalBasePrice || product.retailPrice || (product.price > 0 ? Math.round(product.price / (1 - discountPct / 100)) : 500);
-    const unitPrice = product.price && product.price > 0 ? product.price : Math.round(baseMRP * (1 - discountPct / 100));
+
+    // Lock the MRP on first add — this value never changes regardless of qty updates
+    const mrp       = resolveMRP(product);
+    const unitPrice = Math.round(mrp * (1 - ITEM_DISCOUNT_PCT / 100));
 
     const existing = items.find((x) => x.key === key);
     let updated;
+
     if (existing) {
-      const newQty = existing.qty + qty;
-      const newTierNum = isBundle ? 0 : (newQty >= 100 ? 3 : newQty >= 50 ? 2 : 1);
-      const newDiscountPct = isBundle ? 5 : (newTierNum === 3 ? 15 : newTierNum === 2 ? 12 : 10);
-      const newUnitPrice = isBundle ? (existing.price || unitPrice) : Math.round(baseMRP * (1 - newDiscountPct / 100));
-      const tierTitle = isBundle ? "Bundle 5% Off Pairing" : `Tier ${newTierNum} (${newDiscountPct}% OFF)`;
+      const lockedMRP    = existing.wholesalePrice || existing.originalBasePrice || mrp;
+      const lockedUnitPx = Math.round(lockedMRP * (1 - ITEM_DISCOUNT_PCT / 100));
 
       updated = items.map((x) =>
         x.key === key
           ? {
               ...x,
-              qty: newQty,
-              price: newUnitPrice,
-              originalBasePrice: baseMRP,
-              retailPrice: baseMRP,
-              discountPct: newDiscountPct,
-              activeTierNumber: newTierNum,
-              activeTierTitle: tierTitle,
-              bundleDiscountApplied: isBundle,
-              customBranding: product.customBranding ?? x.customBranding,
-              selectedCustomizations:
-                product.selectedCustomizations ?? x.selectedCustomizations,
-              customizationCount:
-                product.customizationCount ?? x.customizationCount,
-              maxAllowedCustomizations:
-                product.maxAllowedCustomizations ?? x.maxAllowedCustomizations,
-              brandingNotes: product.brandingNotes ?? x.brandingNotes,
-              packagingOption: product.packagingOption ?? x.packagingOption,
-              senderName: product.senderName ?? x.senderName,
-              receiverName: product.receiverName ?? x.receiverName,
-              giftMessage: product.giftMessage ?? x.giftMessage,
-              engravingName: product.engravingName ?? x.engravingName,
-              customProductName: product.customProductName ?? x.customProductName
+              qty:              x.qty + qty,
+              price:            lockedUnitPx,
+              wholesalePrice:   lockedMRP,
+              originalBasePrice: lockedMRP,
+              retailPrice:      lockedMRP,
+              discountPct:      ITEM_DISCOUNT_PCT,
+              customBranding:           product.customBranding          ?? x.customBranding,
+              selectedCustomizations:   product.selectedCustomizations  ?? x.selectedCustomizations,
+              customizationCount:       product.customizationCount      ?? x.customizationCount,
+              maxAllowedCustomizations: product.maxAllowedCustomizations ?? x.maxAllowedCustomizations,
+              brandingNotes:            product.brandingNotes           ?? x.brandingNotes,
+              packagingOption:          product.packagingOption         ?? x.packagingOption,
+              senderName:               product.senderName              ?? x.senderName,
+              receiverName:             product.receiverName            ?? x.receiverName,
+              giftMessage:              product.giftMessage             ?? x.giftMessage,
+              engravingName:            product.engravingName           ?? x.engravingName,
+              customProductName:        product.customProductName       ?? x.customProductName,
+              isPairItem:               product.isPairItem              ?? x.isPairItem,
+              isPair:                   product.isPair                  ?? x.isPair,
+              moq: (product.isPairItem || x.isPairItem || product.isPair || x.isPair) ? 1 : (product.moq || x.moq || 10),
             }
           : x
       );
     } else {
-      const tierTitle = isBundle ? "Bundle 5% Off Pairing" : (product.activeTierTitle || `Tier ${tierNum} (${discountPct}% OFF)`);
+      const isPair = Boolean(product.isPairItem || product.isPair || product.bundleDiscountApplied || product.activeTierTitle?.includes("Bundle"));
       updated = [
         ...items,
         {
           key,
-          slug: product.slug,
-          sku: product.sku || "GF-B2B",
-          name: product.name,
-          unit: product.unit || "piece",
-          price: unitPrice,
-          wholesalePrice: product.wholesalePrice || product.originalBasePrice || baseMRP,
-          originalBasePrice: baseMRP,
-          retailPrice: baseMRP,
-          discountPct,
-          bundleDiscountApplied: isBundle,
-          moq: product.moq || 10,
-          image: product.image,
-          colour: colour || "Standard",
+          slug:             product.slug,
+          sku:              product.sku  || "GF-B2B",
+          name:             product.name,
+          unit:             product.unit || "piece",
+          price:            unitPrice,
+          wholesalePrice:   mrp,           // LOCKED MRP — never recalculated
+          originalBasePrice: mrp,
+          retailPrice:      mrp,
+          discountPct:      ITEM_DISCOUNT_PCT,
+          moq:              isPair ? 1 : (product.moq || 10),
+          isPairItem:       isPair,
+          isPair:           isPair,
+          image:            product.image,
+          colour:           colour || "Standard",
           qty,
-          customBranding: product.customBranding,
-          selectedCustomizations: product.selectedCustomizations,
-          customizationCount: product.customizationCount,
+          customBranding:           product.customBranding,
+          selectedCustomizations:   product.selectedCustomizations,
+          customizationCount:       product.customizationCount,
           maxAllowedCustomizations: product.maxAllowedCustomizations,
-          brandingNotes: product.brandingNotes,
-          packagingOption: product.packagingOption,
-          senderName: product.senderName || "",
-          receiverName: product.receiverName || "",
-          giftMessage: product.giftMessage || "",
-          engravingName: product.engravingName || "",
-          customProductName: product.customProductName || "",
-          activeTierTitle: tierTitle,
-          activeTierNumber: tierNum
-        }
+          brandingNotes:            product.brandingNotes,
+          packagingOption:          product.packagingOption,
+          senderName:               product.senderName        || "",
+          receiverName:             product.receiverName      || "",
+          giftMessage:              product.giftMessage       || "",
+          engravingName:            product.engravingName     || "",
+          customProductName:        product.customProductName || "",
+        },
       ];
     }
+
     saveItems(updated);
     showToast(`Added ${qty}× ${product.name} to quote basket.`);
   };
 
+  // ── setQty ────────────────────────────────────────────────────────────────
   const setQty = (key, rawQty) => {
-    const parsedQty = Math.max(1, parseInt(rawQty, 10) || 1);
     const updated = items.map((x) => {
       if (x.key !== key) return x;
-      const isBundle = Boolean(x.bundleDiscountApplied || x.activeTierTitle?.toLowerCase().includes("bundle"));
-      const tierNum = isBundle ? 0 : (parsedQty >= 100 ? 3 : parsedQty >= 50 ? 2 : 1);
-      const discountPct = isBundle ? 5 : (tierNum === 3 ? 15 : tierNum === 2 ? 12 : 10);
-      const baseMRP = x.originalBasePrice || x.retailPrice || (x.price > 0 ? Math.round(x.price / (1 - (x.discountPct || 10) / 100)) : 500);
-      const newUnitPrice = isBundle ? (x.price || Math.round(baseMRP * 0.95)) : Math.round(baseMRP * (1 - discountPct / 100));
-      const tierTitle = isBundle ? "Bundle 5% Off Pairing" : (tierNum === 3 ? "Tier 3 Enterprise (15% OFF)" : tierNum === 2 ? "Tier 2 Growth (12% OFF)" : "Tier 1 Starter (10% OFF)");
-
+      const isPair = Boolean(x.isPairItem || x.isPair || x.bundleDiscountApplied || x.moq === 1);
+      const minAllowed = isPair ? 1 : (x.moq || 10);
+      const parsedQty = Math.max(minAllowed, parseInt(rawQty, 10) || minAllowed);
+      // Always recalculate from the LOCKED MRP
+      const lockedMRP  = x.wholesalePrice || x.originalBasePrice || 500;
+      const newUnitPx  = Math.round(lockedMRP * (1 - ITEM_DISCOUNT_PCT / 100));
       return {
         ...x,
-        qty: parsedQty,
-        price: newUnitPrice,
-        originalBasePrice: baseMRP,
-        retailPrice: baseMRP,
-        discountPct,
-        activeTierNumber: tierNum,
-        activeTierTitle: tierTitle
+        qty:          parsedQty,
+        price:        newUnitPx,
+        wholesalePrice: lockedMRP,
+        originalBasePrice: lockedMRP,
+        retailPrice:  lockedMRP,
+        discountPct:  ITEM_DISCOUNT_PCT,
+        moq:          isPair ? 1 : (x.moq || 10),
+        isPairItem:   isPair,
+        isPair:       isPair,
       };
     });
     saveItems(updated);
   };
 
+  // ── remove / clear ────────────────────────────────────────────────────────
   const remove = (key) => {
-    const updated = items.filter((x) => x.key !== key);
-    saveItems(updated);
-    showToast("Gift set removed from basket.");
+    saveItems(items.filter((x) => x.key !== key));
+    showToast("Item removed from basket.");
   };
 
-  const clear = () => {
-    saveItems([]);
-  };
+  const clear = () => saveItems([]);
 
   const updateCustomizations = (key, data) => {
-    const updated = items.map((x) =>
-      x.key === key ? { ...x, ...data } : x
-    );
-    saveItems(updated);
+    saveItems(items.map((x) => (x.key === key ? { ...x, ...data } : x)));
   };
 
-  const totalUnits = items.reduce((acc, item) => acc + (item.qty || 0), 0);
-  const estimatedTotal = items.reduce(
-    (acc, item) => acc + (item.price ? item.price * item.qty : 0),
-    0
-  );
+  // ── Derived cart-level totals ─────────────────────────────────────────────
+  const totalUnits = items.reduce((acc, it) => acc + (it.qty || 0), 0);
+
+  // Bundle bonus: 5% extra off when 2+ distinct products are paired in basket
+  const hasBundleBonus = items.length >= 2;
+
+  // Each item net after 10% off (always from locked MRP)
+  const netSubtotalBeforeBundle = items.reduce((acc, it) => {
+    const mrp = it.wholesalePrice || it.originalBasePrice || 0;
+    return acc + Math.round(mrp * (1 - ITEM_DISCOUNT_PCT / 100)) * (it.qty || 0);
+  }, 0);
+
+  const bundleBonusAmount = hasBundleBonus
+    ? Math.round(netSubtotalBeforeBundle * (BUNDLE_BONUS_PCT / 100))
+    : 0;
+
+  const estimatedTotal = netSubtotalBeforeBundle - bundleBonusAmount;
 
   return (
     <QuoteContext.Provider
@@ -185,10 +201,15 @@ export function QuoteProvider({ children }) {
         updateCustomizations,
         count: items.length,
         totalUnits,
+        hasBundleBonus,
+        bundleBonusAmount,
+        netSubtotalBeforeBundle,
         estimatedTotal,
+        ITEM_DISCOUNT_PCT,
+        BUNDLE_BONUS_PCT,
         drawerOpen,
         setDrawerOpen,
-        showToast
+        showToast,
       }}
     >
       {children}
@@ -227,28 +248,21 @@ export function AddToQuote({ p }) {
   const [qty, setQty] = useState(p.moq || 50);
   const [added, setAdded] = useState(false);
 
-  const step = 10;
+  const step   = 10;
   const minQty = p.moq || 1;
 
-  const handleDecrease = () => {
-    setQty((prev) => Math.max(minQty, prev - step));
-  };
-
-  const handleIncrease = () => {
-    setQty((prev) => prev + step);
-  };
+  const handleDecrease = () => setQty((prev) => Math.max(minQty, prev - step));
+  const handleIncrease = () => setQty((prev) => prev + step);
 
   const handleAdd = () => {
     if (!add) return;
-    const finalQty = Math.max(qty, minQty);
-    add(p, colour, finalQty);
+    add(p, colour, Math.max(qty, minQty));
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
 
   return (
     <div className="space-y-2.5 w-full pt-1.5">
-      {/* If multiple colours exist, show sleek finish dropdown */}
       {p.colours && p.colours.length > 1 && (
         <div className="relative">
           <select
@@ -267,9 +281,7 @@ export function AddToQuote({ p }) {
         </div>
       )}
 
-      {/* Stepper & Add to Basket Button */}
       <div className="flex items-center gap-2 w-full">
-        {/* Luxury Stepper Pill */}
         <div className="h-10 inline-flex items-center bg-slate-100/90 border border-slate-200 rounded-xl p-0.5 shadow-xs flex-shrink-0">
           <button
             type="button"
@@ -289,7 +301,7 @@ export function AddToQuote({ p }) {
             step={step}
             value={qty}
             onChange={(e) => setQty(Math.max(minQty, parseInt(e.target.value, 10) || minQty))}
-            className="w-9 text-center text-xs font-bold text-slate-900 bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-9 text-center text-xs font-bold text-slate-900 bg-transparent outline-none"
           />
 
           <button
@@ -303,7 +315,6 @@ export function AddToQuote({ p }) {
           </button>
         </div>
 
-        {/* Luxury Action Button: Add to Basket */}
         <button
           type="button"
           onClick={handleAdd}
