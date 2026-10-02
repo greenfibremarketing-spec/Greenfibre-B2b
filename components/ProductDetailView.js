@@ -743,6 +743,11 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState(1); // 1 = customize, 2 = suggested
   const [activeTab, setActiveTab] = useState("set_contents");
+  const [mobileAccordion, setMobileAccordion] = useState("benefits");
+  const toggleMobileAccordion = (key) => {
+    setMobileAccordion((prev) => (prev === key ? null : key));
+  };
+  const primaryAddon = relatedProducts && relatedProducts.length > 0 ? relatedProducts[0] : null;
 
   // Pair additions & custom quantity state for Step 1 bundle modal
   const [pairQtys, setPairQtys] = useState({});
@@ -1014,8 +1019,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
   return (
     <div className="space-y-8">
-      {/* TOP SECTION: Gallery & Gifting Customization */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
+      {/* =========================================================================
+          DESKTOP & TABLET VIEW (md: and above) - UNTOUCHED ORIGINAL LAYOUT
+         ========================================================================= */}
+      <div className="hidden md:block space-y-8">
+        {/* TOP SECTION: Gallery & Gifting Customization */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 items-start">
 
         {/* LEFT COLUMN: Large Gallery & Compliance Trust Bar */}
         <div className="md:col-span-6 lg:col-span-6 space-y-4 w-full max-w-[540px] mx-auto md:mx-0 min-w-0 md:sticky md:top-24">
@@ -1975,6 +1984,479 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             </div>
           )}
         </div>
+      </div>
+      </div>
+
+      {/* =========================================================================
+          MOBILE VIEW (< md) - EXACT HIGH-CONVERTING DESIGN FROM USER SPEC
+         ========================================================================= */}
+      <div className="md:hidden space-y-4 pb-28">
+        {/* 1. Main Stage Image with Gift Set Pill Badge */}
+        <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center">
+          <img
+            src={activeImage}
+            alt={`${product.name} - ${selectedColour}`}
+            className="w-full h-full object-cover object-center"
+            onError={(e) => {
+              e.currentTarget.src = "/images/placeholder.jpg";
+            }}
+          />
+
+          {/* Floating Pill Badge: Gift set */}
+          <div className="absolute top-3.5 left-3.5 z-10 px-3 py-1 rounded-full bg-white/95 text-slate-800 text-xs font-semibold shadow-xs border border-slate-200/80">
+            Gift set
+          </div>
+
+          {/* Navigation Arrows for multi-image */}
+          {images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={handlePrevImage}
+                aria-label="Previous photo"
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-slate-800 shadow-sm border border-slate-200 flex items-center justify-center cursor-pointer z-10"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextImage}
+                aria-label="Next photo"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/95 text-slate-800 shadow-sm border border-slate-200 flex items-center justify-center cursor-pointer z-10"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Dots Indicator */}
+              <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/40 backdrop-blur-xs px-2 py-1 rounded-full z-10">
+                {images.map((_, dotIdx) => (
+                  <button
+                    key={dotIdx}
+                    type="button"
+                    onClick={() => handleSelectImage(dotIdx)}
+                    className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                      dotIdx === activeImageIndex ? "w-3.5 bg-brand-400" : "w-1.5 bg-white/60"
+                    }`}
+                    aria-label={`Jump to photo ${dotIdx + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 2. Four Feature / Compliance Trust Cards */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
+            <Sprout className="w-4 h-4 text-[#1b5e3f] mb-1" />
+            <span className="text-[11px] font-bold text-slate-900 leading-tight">Rice husk</span>
+            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Bio-composite</span>
+          </div>
+          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-[#1b5e3f] mb-1" />
+            <span className="text-[11px] font-bold text-slate-900 leading-tight">Food grade</span>
+            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">TUV certified</span>
+          </div>
+          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
+            <DishwasherIcon className="w-4 h-4 text-[#1b5e3f] mb-1" />
+            <span className="text-[11px] font-bold text-slate-900 leading-tight">Dishwasher</span>
+            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Top rack</span>
+          </div>
+          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
+            <Flame className="w-4 h-4 text-[#1b5e3f] mb-1" />
+            <span className="text-[11px] font-bold text-slate-900 leading-tight">Microwave</span>
+            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Reheat safe</span>
+          </div>
+        </div>
+
+        {/* 3. Occasion / Category Tags */}
+        <div className="flex items-center gap-2 flex-wrap pt-0.5">
+          <span className="text-xs font-bold text-brand-900 bg-brand-50 px-3 py-1 rounded-full border border-brand-200">
+            {typeof product.category === "string" ? product.category : product.category?.name || "Kitchen & Dining"}
+          </span>
+          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            Corporate Gifting
+          </span>
+          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            Client Gifting
+          </span>
+        </div>
+
+        {/* 4. Product Name & Short Description */}
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            {product.name}
+          </h1>
+          <p className="text-xs text-slate-600 leading-relaxed mt-1">
+            {product.shortDescription || product.desc || product.tagline || "Crafted from BioDur biocomposite. Microwave and dishwasher safe."}
+          </p>
+        </div>
+
+        {/* 5. Wholesale Price + Bulk Discount Callout */}
+        <div className="flex items-center gap-2 flex-wrap pt-0.5">
+          <span className="text-2xl font-black text-slate-900">
+            ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice.toLocaleString("en-IN") : activeTierObj.price.toLocaleString("en-IN")}
+          </span>
+          <span className="text-xs text-slate-500">
+            /{unitLabel} · B2B wholesale
+          </span>
+          {wholesaleUnitPrice > 0 && (
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {activeTierDiscountPct}% bulk discount applied
+            </span>
+          )}
+        </div>
+
+        {/* 6. Volume Pricing 3 Tiers Grid */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-700">Volume pricing</span>
+            <span className="text-slate-400 font-medium">3 tiers</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {currentTiers.map((tier) => {
+              const isActive = activeTierObj.id === tier.id;
+              return (
+                <button
+                  key={tier.id}
+                  type="button"
+                  onClick={() => handleSelectTier(tier)}
+                  className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${
+                    isActive
+                      ? "border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500 shadow-2xs"
+                      : "border-slate-200 bg-white hover:border-slate-300"
+                  }`}
+                >
+                  <div className={`text-[11px] font-bold ${isActive ? "text-emerald-800" : "text-slate-500"}`}>
+                    {tier.rangeLabel}
+                  </div>
+                  <div className={`text-sm font-black tracking-tight my-0.5 ${isActive ? "text-slate-900" : "text-slate-700"}`}>
+                    ₹{tier.price.toLocaleString("en-IN")}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${isActive ? "text-emerald-700" : "text-slate-400"}`}>
+                    Save {tier.savingsPct}%
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 7. Order Quantity Stepper & Quick Addons */}
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-800">Order quantity</span>
+            <span className="font-bold text-emerald-800">
+              MOQ {currentMoq} {unitLabelPlural.toLowerCase()}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => handleAdjustQty(-1)}
+                disabled={qty <= (currentMoq || 10)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={qtyInput}
+                onChange={(e) => handleQtyInputChange(e.target.value)}
+                onBlur={handleQtyInputBlur}
+                className="w-12 text-center font-black text-slate-900 text-sm focus:outline-none"
+                aria-label="Order quantity"
+              />
+              <button
+                type="button"
+                onClick={() => handleAdjustQty(1)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                aria-label="Increase quantity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5 flex-1 justify-end">
+              {[10, 50, 100].map((addAmount) => (
+                <button
+                  key={addAmount}
+                  type="button"
+                  onClick={() => handleAdjustQty(addAmount)}
+                  className="px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs cursor-pointer flex-1 text-center"
+                >
+                  +{addAmount}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 8. Price Calculation & Logistics Card */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 space-y-2.5 shadow-xs">
+          <div className="flex items-center justify-between text-xs text-slate-600">
+            <span>{qty} {unitLabelPlural.toLowerCase()} × ₹{wholesaleUnitPrice.toLocaleString("en-IN")}</span>
+            <span className="font-semibold text-slate-900">₹{grossWholesaleSubtotal.toLocaleString("en-IN")}</span>
+          </div>
+
+          {mainDiscountAmount > 0 && (
+            <div className="flex items-center justify-between text-xs font-semibold text-emerald-700">
+              <span>{activeTierDiscountPct}% bulk discount</span>
+              <span>− ₹{mainDiscountAmount.toLocaleString("en-IN")}</span>
+            </div>
+          )}
+
+          <div className="pt-2 border-t border-slate-100 flex items-baseline justify-between">
+            <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">You pay</span>
+            <span className="text-2xl font-black text-slate-900">₹{estimatedSubtotal.toLocaleString("en-IN")}</span>
+          </div>
+
+          <p className="text-[10px] text-slate-500">
+            Excl. 18% GST · GST invoice issued for input tax credit
+          </p>
+
+          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-center">
+            <div>
+              <div className="text-xs font-bold text-slate-900">{activeOccasion.leadTime || "7–10 days"}</div>
+              <div className="text-[10px] text-slate-500">Lead time</div>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900">Pan-India</div>
+              <div className="text-[10px] text-slate-500">Direct logistics</div>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-900">{product.totalStock || product.stockQuantity || "400"} units</div>
+              <div className="text-[10px] text-slate-500">In stock</div>
+            </div>
+          </div>
+        </div>
+
+        {/* 9. Packaging Strip */}
+        <div className="flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-xl text-xs">
+          <span className="font-bold text-brand-900">Eco kraft gift box</span>
+          <span className="text-slate-400 text-[11px]">Included free</span>
+        </div>
+
+        {/* 10. Accordion Information Sections */}
+        <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-100 overflow-hidden shadow-xs">
+          {/* Key benefits */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleMobileAccordion("benefits")}
+              className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
+            >
+              <span className="text-sm font-bold text-slate-900">Key benefits</span>
+              <span className="text-slate-500 font-bold text-lg leading-none">
+                {mobileAccordion === "benefits" ? "×" : "+"}
+              </span>
+            </button>
+            {mobileAccordion === "benefits" && (
+              <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-slate-600">
+                <div className="flex items-start gap-2">
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span><strong>Earth friendly</strong> – made from waste materials, prevents pollution</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span><strong>Climate positive</strong> – crop-waste used locks biogenic carbon</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span><strong>Food contact safe</strong> – TUV tested safe up to 100°C</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span><strong>Durable</strong> – lightweight, impact-resistant alternative to plastic, glass and ceramic</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span><strong>Non-toxic</strong> – free of BPA and formaldehyde</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-slate-400 font-bold">•</span>
+                  <span><strong>{product.size || "2 litre"} capacity</strong> – stackable, nest-friendly design</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Specifications */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleMobileAccordion("specs")}
+              className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
+            >
+              <span className="text-sm font-bold text-slate-900">Specifications</span>
+              <span className="text-slate-500 font-bold text-lg leading-none">
+                {mobileAccordion === "specs" ? "×" : "+"}
+              </span>
+            </button>
+            {mobileAccordion === "specs" && (
+              <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-slate-600">
+                {Object.entries(combinedSpecs).map(([label, val]) => (
+                  <div key={label} className="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span className="text-slate-500">{label}:</span>
+                    <span className="font-semibold text-slate-800 text-right">{String(val)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Corporate gifting */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleMobileAccordion("gifting")}
+              className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
+            >
+              <span className="text-sm font-bold text-slate-900">Corporate gifting</span>
+              <span className="text-slate-500 font-bold text-lg leading-none">
+                {mobileAccordion === "gifting" ? "×" : "+"}
+              </span>
+            </button>
+            {mobileAccordion === "gifting" && (
+              <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-slate-600 leading-relaxed">
+                <p>• Custom laser logo engraving on products for corporate branding.</p>
+                <p>• Custom printed belly bands and personalized message inserts.</p>
+                <p>• Multi-location Pan-India direct drop-shipping for distributed teams.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Quality and care */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleMobileAccordion("care")}
+              className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
+            >
+              <span className="text-sm font-bold text-slate-900">Quality and care</span>
+              <span className="text-slate-500 font-bold text-lg leading-none">
+                {mobileAccordion === "care" ? "×" : "+"}
+              </span>
+            </button>
+            {mobileAccordion === "care" && (
+              <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-slate-600 leading-relaxed">
+                <p>• Dishwasher safe: Top rack recommended for commercial &amp; household use.</p>
+                <p>• Microwave reheat safe: Safe up to 100°C for reheating meals.</p>
+                <p>• 100% BPA, melamine, and formaldehyde free certified by TUV Rheinland.</p>
+              </div>
+            )}
+          </div>
+
+          {/* B2B order terms */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleMobileAccordion("terms")}
+              className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
+            >
+              <span className="text-sm font-bold text-slate-900">B2B order terms</span>
+              <span className="text-slate-500 font-bold text-lg leading-none">
+                {mobileAccordion === "terms" ? "×" : "+"}
+              </span>
+            </button>
+            {mobileAccordion === "terms" && (
+              <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-slate-600 leading-relaxed">
+                <p>• Minimum Order Quantity: Starts at {currentMoq} {unitLabelPlural.toLowerCase()}.</p>
+                <p>• Evaluation kits dispatched within 24–48 hours.</p>
+                <p>• Official B2B GST tax invoice issued for 18% input tax credit.</p>
+                <p>• Pan-India surface and express air logistics with live tracking.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 11. Often Ordered Together (Upsell companion card) */}
+        {primaryAddon && (
+          <div className="space-y-2.5 pt-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900">Often ordered together</h3>
+              <Link href="/products" className="text-xs font-bold text-emerald-700 hover:underline">
+                Catalog
+              </Link>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
+                  {primaryAddon.image ? (
+                    <img
+                      src={primaryAddon.image}
+                      alt={primaryAddon.name}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center text-sm">
+                      {primaryAddon.name?.charAt(0) || "G"}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 truncate">
+                    {primaryAddon.name}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 truncate">
+                    {primaryAddon.shortDescription || "Airtight, made with rice husk"}
+                  </p>
+                  <div className="text-xs font-bold text-slate-900 mt-0.5">
+                    ₹{(primaryAddon.wholesalePrice || primaryAddon.price || 1299).toLocaleString("en-IN")}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleAddPairToQuote(primaryAddon)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex-shrink-0 ${
+                  pairAdded[primaryAddon.slug]
+                    ? "bg-emerald-600 text-white"
+                    : "border border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+                }`}
+              >
+                {pairAdded[primaryAddon.slug] ? "Added ✓" : "Add"}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* MOBILE FIXED BOTTOM ACTION BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-4 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] md:hidden">
+        <div>
+          <div className="text-[10px] text-slate-500 uppercase tracking-wide font-medium">You pay</div>
+          <div className="text-lg font-black text-slate-900">
+            ₹{estimatedSubtotal.toLocaleString("en-IN")}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className={`flex-1 py-3 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
+            added
+              ? "bg-brand-600 text-white"
+              : "bg-[#1b5e3f] hover:bg-[#144830] active:scale-[0.99] text-white"
+          }`}
+        >
+          {added ? (
+            <>
+              <Check className="w-4 h-4 stroke-[3]" />
+              <span>Added {qty} {unitLabelPlural} to basket</span>
+            </>
+          ) : (
+            <span>Add {qty} {unitLabelPlural.toLowerCase()} to basket</span>
+          )}
+        </button>
       </div>
 
       {/* LIGHTBOX MODAL */}

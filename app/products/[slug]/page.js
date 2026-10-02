@@ -101,10 +101,10 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
 
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-medium text-slate-500 flex-wrap">
-        <Link href="/" className="hover:text-slate-900 transition-colors">
+        <Link href="/" className="hidden sm:inline hover:text-slate-900 transition-colors">
           Home
         </Link>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+        <ChevronRight className="hidden sm:inline w-3.5 h-3.5 text-slate-400" />
         <Link href="/products" className="hover:text-slate-900 transition-colors">
           Products
         </Link>
@@ -131,12 +131,18 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
             </Link>
           </>
         ) : (
-          <Link
-            href={`/products?category=${encodeURIComponent(typeof p.category === "string" ? p.category : p.category?.name || "All Products")}`}
-            className="hover:text-slate-900 transition-colors"
-          >
-            {typeof p.category === "string" ? p.category : p.category?.name || "All Products"}
-          </Link>
+          <>
+            <Link href="/products?category=Gifting" className="hover:text-slate-900 transition-colors">
+              Gifting
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            <Link
+              href="/products?category=Gifting"
+              className="hover:text-slate-900 transition-colors"
+            >
+              Corporate Gifting
+            </Link>
+          </>
         )}
         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
         <span className="text-slate-900 font-bold">{p.name}</span>
@@ -145,9 +151,9 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
       {/* Complete Interactive Product View (Synchronized Multi-Image Gallery + Customizer) */}
       <ProductDetailView product={p} context={rawContext} relatedProducts={relatedProducts} />
 
-      {/* Related Products Section */}
+      {/* Related Products Section (Desktop & Tablet only - mobile has inline 'Often ordered together') */}
       {relatedProducts.length > 0 && (
-        <section className="pt-10 border-t border-slate-200 space-y-5">
+        <section className="hidden md:block pt-10 border-t border-slate-200 space-y-5">
           <div className="flex items-center justify-between">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-brand-700 block mb-0.5 flex items-center gap-1">
