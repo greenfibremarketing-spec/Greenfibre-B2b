@@ -64,7 +64,7 @@ function NavbarInner() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-2xs">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-13 sm:h-14 flex items-center justify-between gap-4">
 
           {/* LEFT: Logo + Nav */}
           <div className="flex items-center gap-4 sm:gap-6 xl:gap-8 flex-shrink-0">
@@ -76,7 +76,7 @@ function NavbarInner() {
               <img
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
-                className="h-12 sm:h-14 w-auto max-w-[200px] object-contain group-hover:scale-105 transition-transform flex-shrink-0 py-0.5"
+                className="h-8.5 sm:h-10 w-auto max-w-[200px] object-contain group-hover:scale-105 transition-transform flex-shrink-0 py-0.5"
               />
             </Link>
 
@@ -87,7 +87,7 @@ function NavbarInner() {
               {/* All Products */}
               <Link
                 href="/products"
-                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isAllProductsActive
+                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isAllProductsActive
                     ? "text-brand-900 bg-brand-50/80 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                   }`}
@@ -101,7 +101,7 @@ function NavbarInner() {
               {/* Gifts & Hampers */}
               <Link
                 href="/products?category=Gift+Hampers"
-                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
+                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
                     ? "text-brand-900 bg-brand-50/80 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                   }`}
@@ -115,7 +115,7 @@ function NavbarInner() {
               {/* Our Story */}
               <Link
                 href="/story"
-                className={`whitespace-nowrap px-3 py-2 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isStoryActive
+                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isStoryActive
                     ? "text-brand-900 bg-brand-50/80 font-bold"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                   }`}
@@ -134,7 +134,7 @@ function NavbarInner() {
             <UserNav />
             <Link
               href="/quote"
-              className="btn-primary flex items-center gap-2 shadow-xs hover:shadow-md text-xs sm:text-sm py-2 px-3 sm:px-4 rounded-xl flex-shrink-0 transition-all active:scale-95"
+              className="btn-primary flex items-center gap-2 shadow-xs hover:shadow-md text-xs sm:text-sm py-1.5 px-3 sm:px-3.5 rounded-lg flex-shrink-0 transition-all active:scale-95"
               aria-label="View Wholesale Quote Basket"
             >
               <ShoppingBag className="w-4 h-4 flex-shrink-0" />
