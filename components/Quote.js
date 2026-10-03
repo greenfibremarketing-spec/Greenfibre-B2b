@@ -133,7 +133,7 @@ export function QuoteProvider({ children }) {
           slug: product.slug,
           sku: product.sku || "GF-B2B",
           name: product.name,
-          unit: product.unit || "piece",
+          unit: product.unit || (/\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.name || "") ? "set" : "piece"),
           price: unitPrice,
           wholesalePrice: mrp,           // LOCKED MRP — never recalculated
           originalBasePrice: mrp,

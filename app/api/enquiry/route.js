@@ -3,6 +3,12 @@ import { db } from "@/lib/db";
 import { getProduct } from "@/lib/products";
 import { generateQuotationPdf } from "@/lib/quotationPdf";
 import { sendQuotationEmail } from "@/lib/email";
+import {
+  validateEmail,
+  validateIndianPhone,
+  formatIndianPhone,
+  validatePinCode
+} from "@/lib/validation";
 
 const hits = new Map();
 
@@ -47,12 +53,43 @@ export async function POST(req) {
       notes: s("notes", 5000)
     };
 
-    if (!client.name || !client.company || !/^\S+@\S+\.\S+$/.test(client.email) || !/^\d{6}$/.test(client.pin)) {
+    if (!client.name || client.name.length < 2) {
       return NextResponse.json(
-        { error: "Please provide a valid contact name, company, work email, and 6-digit PIN code." },
+        { error: "Please provide a valid contact name." },
         { status: 422 }
       );
     }
+
+    if (!client.company || client.company.length < 2) {
+      return NextResponse.json(
+        { error: "Please provide your company or organization name." },
+        { status: 422 }
+      );
+    }
+
+    if (!validateEmail(client.email)) {
+      return NextResponse.json(
+        { error: "Please provide a valid work/corporate email address (e.g. rahul@company.com)." },
+        { status: 422 }
+      );
+    }
+
+    if (!validateIndianPhone(client.phone)) {
+      return NextResponse.json(
+        { error: "Please provide a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9 (e.g. +91 98765 43210)." },
+        { status: 422 }
+      );
+    }
+
+    if (!validatePinCode(client.pin)) {
+      return NextResponse.json(
+        { error: "Please provide a valid 6-digit Indian PIN code (e.g. 560001)." },
+        { status: 422 }
+      );
+    }
+
+    // Format phone cleanly
+    client.phone = formatIndianPhone(client.phone);
 
     const rawItems = Array.isArray(b.items) ? b.items.slice(0, 50) : [];
     if (!rawItems.length) {

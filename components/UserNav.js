@@ -88,11 +88,10 @@ export default function UserNav() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-10 flex items-center gap-1.5 px-2 sm:px-3 rounded-xl border transition-all cursor-pointer shadow-2xs group flex-shrink-0 active:scale-95 ${
-          isOpen
+        className={`h-10 flex items-center gap-1.5 px-2 sm:px-3 rounded-xl border transition-all cursor-pointer shadow-2xs group flex-shrink-0 active:scale-95 ${isOpen
             ? "border-brand-600 bg-white ring-2 ring-brand-500/15"
             : "border-slate-200/90 hover:border-slate-300 bg-white hover:bg-slate-50"
-        }`}
+          }`}
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
@@ -113,9 +112,8 @@ export default function UserNav() {
         </div>
 
         <ChevronDown
-          className={`w-3.5 h-3.5 text-slate-400 group-hover:text-brand-700 transition-transform duration-200 flex-shrink-0 ${
-            isOpen ? "rotate-180 text-brand-700 font-bold" : ""
-          }`}
+          className={`w-3.5 h-3.5 text-slate-400 group-hover:text-brand-700 transition-transform duration-200 flex-shrink-0 ${isOpen ? "rotate-180 text-brand-700 font-bold" : ""
+            }`}
         />
       </button>
 

@@ -1,14 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useQuote } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
 import {
   CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
   BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal,
-  Clock, Copy, Check, ArrowRight, Leaf
+  Clock, Copy, Check, ArrowRight, Leaf, ChevronDown
 } from "lucide-react";
+import {
+  validateEmail,
+  validateIndianPhone,
+  formatIndianPhone,
+  filterPhoneInput,
+  validatePinCode
+} from "@/lib/validation";
+
+const ORDER_PURPOSE_OPTIONS = [
+  "Corporate gifting and new joinee welcome kits",
+  "Cafeteria, hotel and restaurant tableware",
+  "Retail store and brand reseller",
+  "Event, summit or conference merchandise",
+  "Sample kit request and custom procurement",
+  "Other / Custom Requirements"
+];
 
 export default function QuotePage() {
   const {
@@ -31,12 +47,31 @@ export default function QuotePage() {
 
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [purposeDropdownOpen, setPurposeDropdownOpen] = useState(false);
+  const purposeRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "", company: "", email: "", phone: "",
-    buyerType: "Corporate Gifting", city: "", pin: "",
+    buyerType: "Corporate gifting and new joinee welcome kits",
+    city: "", pin: "",
     date: "", gstin: "", notes: ""
   });
+
+  const [fieldErrors, setFieldErrors] = useState({
+    name: "", company: "", email: "", phone: "", city: "", pin: ""
+  });
+
+  // Close order purpose dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (purposeRef.current && !purposeRef.current.contains(e.target)) {
+        setPurposeDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -46,7 +81,7 @@ export default function QuotePage() {
         company: prev.company || user.companyName || "",
         email: prev.email || user.email || "",
         phone: prev.phone || user.phone || "",
-        buyerType: prev.buyerType || user.businessType || "Corporate Gifting",
+        buyerType: prev.buyerType || user.businessType || "Corporate gifting and new joinee welcome kits",
         gstin: prev.gstin || user.gstin || "",
         city: prev.city || user.billingAddress?.city || "",
         pin: prev.pin || user.billingAddress?.pincode || "",
@@ -76,11 +111,74 @@ export default function QuotePage() {
   const totalGross = lineItems.reduce((s, it) => s + it.lineGross, 0);
   const totalItemDiscount = lineItems.reduce((s, it) => s + it.lineDiscount, 0);
   const totalUnitsCount = lineItems.reduce((s, it) => s + (it.qty || 0), 0);
+  const totalSavings = totalItemDiscount + (bundleBonusAmount || 0);
+  const savingsPct = totalGross > 0 ? ((totalSavings / totalGross) * 100).toFixed(1) : "0";
   const estimatedGST = Math.round(estimatedTotal * 0.18);
   const totalWithGST = estimatedTotal + estimatedGST;
 
   const [state, setState] = useState({ busy: false, error: null, ref: null });
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  async function handleDownloadPdf() {
+    if (lineItems.length === 0 || isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    try {
+      const response = await fetch("/api/quote/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client: {
+            name: formData.name || user?.fullName || "Valued Enterprise Client",
+            company: formData.company || user?.companyName || "Corporate Buyer",
+            email: formData.email || user?.email || "",
+            phone: formData.phone || user?.phone || "",
+            city: formData.city || "Pan-India",
+            pin: formData.pin || "",
+            buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
+            gstin: formData.gstin || "",
+            notes: formData.notes || ""
+          },
+          items: lineItems,
+          totalGross,
+          totalItemDiscount,
+          netSubtotalBeforeBundle,
+          hasBundleBonus,
+          bundleBonusAmount,
+          estimatedTotal,
+          estimatedGST,
+          totalWithGST
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GreenFibre_Quotation_${Date.now().toString(36).toUpperCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download PDF error:", err);
+      alert("Could not generate PDF download right now. Please submit quote request or try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  }
+
+  function handleRequestQuoteClick() {
+    const formEl = document.getElementById("quote-details-form") || document.querySelector("form");
+    if (formEl) {
+      formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      const firstInput = formEl.querySelector("input:not([type=hidden])");
+      if (firstInput) firstInput.focus();
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -97,6 +195,45 @@ export default function QuotePage() {
       return;
     }
 
+    // Comprehensive client-side validation
+    const errors = {};
+    if (!formData.name?.trim()) {
+      errors.name = "Please enter your full name.";
+    }
+    if (!formData.company?.trim()) {
+      errors.company = "Please enter your company / organization name.";
+    }
+    if (!formData.email?.trim()) {
+      errors.email = "Please enter your work email address.";
+    } else if (!validateEmail(formData.email)) {
+      errors.email = "Please enter a valid work email address (e.g. rahul@company.com).";
+    }
+    if (!formData.phone?.trim()) {
+      errors.phone = "Please enter your phone / WhatsApp number.";
+    } else if (!validateIndianPhone(formData.phone)) {
+      errors.phone = "Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9 (e.g. +91 98765 43210).";
+    }
+    if (!formData.city?.trim()) {
+      errors.city = "Please enter your delivery city.";
+    }
+    if (!formData.pin?.trim()) {
+      errors.pin = "Please enter your 6-digit PIN code.";
+    } else if (!validatePinCode(formData.pin)) {
+      errors.pin = "Please enter a valid 6-digit Indian PIN code (e.g. 560001).";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const firstError = Object.values(errors)[0];
+      setState({
+        busy: false,
+        error: firstError,
+        ref: null
+      });
+      return;
+    }
+
+    setFieldErrors({ name: "", company: "", email: "", phone: "", city: "", pin: "" });
     setState({ busy: true, error: null, ref: null });
     try {
       const response = await fetch("/api/enquiry", {
@@ -104,6 +241,8 @@ export default function QuotePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          phone: formatIndianPhone(formData.phone),
+          buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
           totalGross,
@@ -376,8 +515,8 @@ export default function QuotePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* ── Left: Worksheet & Summary (Sticky / Fixed in view on desktop) ───────────────── */}
-        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-24 self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto pr-0.5">
+        {/* ── Left: Worksheet & Summary (Sticky / Fixed in view) ─────────────────────────── */}
+        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-20 self-start">
           {/* Section header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -422,225 +561,176 @@ export default function QuotePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* ── Authentic Cut Receipt Bill Slip ── */}
-              <div className="relative bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-md overflow-hidden transition-all">
-                {/* Top Bill Header Band */}
-                <div className="px-4 sm:px-6 pt-4 pb-3 border-b border-dashed border-slate-200 bg-white">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-800">
-                          Green Fibre • Quotation Bill Slip
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-slate-400 font-mono">
-                        Direct Factory Wholesale • Pan-India Logistics
-                      </p>
-                    </div>
-
+              {/* ── Quotation Summary Card (Exact Design from Reference) ── */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6 space-y-4 transition-all">
+                {/* Top Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/90 px-2 py-0.5 rounded-md">
-                        Direct Wholesale Rate
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setIsAdjustOpen(true)}
-                        className="text-[11px] font-bold text-brand-700 hover:text-brand-800 hover:underline cursor-pointer"
-                      >
-                        Edit Qty →
-                      </button>
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                      <h3 className="font-extrabold text-slate-900 text-base sm:text-[17px] tracking-tight">
+                        Green Fibre <span className="text-slate-400 font-normal">·</span> Quotation
+                      </h3>
                     </div>
+                    <p className="text-xs text-slate-500">
+                      Direct factory wholesale rate <span className="text-slate-400">·</span> Pan-India logistics
+                    </p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAdjustOpen(true)}
+                    className="inline-flex items-center justify-center px-3 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                  >
+                    Edit qty
+                  </button>
                 </div>
 
-                {/* Bill Items List (Compact Tabular Receipt Rows) */}
-                <div className="px-4 sm:px-6 py-2 divide-y divide-slate-100">
-                  {lineItems.map((item, idx) => (
-                    <div
-                      key={item.key}
-                      className="py-2 sm:py-2.5 flex items-center justify-between gap-3 text-xs hover:bg-slate-50/60 rounded-lg px-1 transition-colors"
-                    >
-                      {/* Left: Index + Name + Badges + Qty & Rate */}
-                      <div className="min-w-0 flex-1 flex items-start gap-2 sm:gap-2.5">
-                        <span className="text-[10.5px] font-mono font-bold text-slate-400 mt-0.5 flex-shrink-0">
-                          {String(idx + 1).padStart(2, "0")}.
-                        </span>
+                {/* Dashed Separator */}
+                <div className="border-t border-dashed border-slate-200" />
+
+                {/* Products List */}
+                <div className="space-y-4">
+                  {lineItems.map((item) => (
+                    <div key={item.key} className="space-y-1">
+                      <div className="flex items-start justify-between gap-3">
+                        {/* Left Column: Name, Pair Badge, Details & Discount */}
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-bold text-slate-900 text-xs sm:text-[13px] leading-tight truncate">
+                            <h4 className="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug">
                               {item.name}
                             </h4>
                             {item.isPair && (
-                              <span className="text-[9px] px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded font-bold flex-shrink-0">
-                                🔗 Pair
-                              </span>
-                            )}
-                            {item.colour && item.colour !== "Standard" && (
-                              <span className="text-[9.5px] px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded font-medium flex-shrink-0 border border-slate-200/80">
-                                {item.colour}
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">
+                                Pair
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap">
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap">
+                            <span>{item.colour && item.colour !== "Standard" ? item.colour : "Standard"}</span>
+                            <span className="text-slate-300">·</span>
                             <span>
-                              Qty: <strong className="text-slate-900 font-bold">{item.qty} {item.unit || "pcs"}</strong>
+                              {item.qty} {
+                                (item.unit === "set" || /\b(set|storage bowl)\b/i.test(item.name || ""))
+                                  ? (item.qty > 1 ? "sets" : "set")
+                                  : item.unit === "piece"
+                                    ? (item.qty > 1 ? "pieces" : "piece")
+                                    : item.unit === "box"
+                                      ? (item.qty > 1 ? "boxes" : "box")
+                                      : item.unit === "pack"
+                                        ? (item.qty > 1 ? "packs" : "pack")
+                                        : (item.unit ? (item.qty > 1 ? `${item.unit}s` : item.unit) : (item.qty > 1 ? "pieces" : "piece"))
+                              } × ₹{item.mrp.toLocaleString("en-IN")}
                             </span>
-                            <span className="text-slate-300">•</span>
-                            <span>@ ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}</span>
                             {item.discountPct > 0 && (
-                              <span className="text-[9.5px] font-extrabold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200/60">
-                                −{item.discountPct}%
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-1">
+                                {item.discountPct}% off
                               </span>
                             )}
                           </div>
                         </div>
-                      </div>
 
-                      {/* Right: Net Price + Strikethrough Gross */}
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-xs sm:text-[13.5px] font-black text-slate-900">
-                          ₹{item.lineNet.toLocaleString("en-IN")}
-                        </div>
-                        <div className="text-[10px] text-slate-400 line-through">
-                          ₹{item.lineGross.toLocaleString("en-IN")}
+                        {/* Right Column: Net Price + Strikethrough Gross */}
+                        <div className="text-right flex-shrink-0">
+                          <div className="text-base sm:text-lg font-black text-slate-900">
+                            ₹{item.lineNet.toLocaleString("en-IN")}
+                          </div>
+                          <div className="text-xs text-slate-400 line-through">
+                            ₹{item.lineGross.toLocaleString("en-IN")}
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Perforation Cut Tear Line with Authentic Side Punch Holes */}
-                <div className="relative py-2 px-4 sm:px-6">
-                  {/* Left notch */}
-                  <div className="absolute -left-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-100 rounded-full border border-slate-300/80 shadow-inner pointer-events-none" />
-                  {/* Right notch */}
-                  <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-100 rounded-full border border-slate-300/80 shadow-inner pointer-events-none" />
-                  {/* Perforated dashed divider */}
-                  <div className="border-t-2 border-dashed border-slate-200/90 mx-2" />
-                </div>
+                {/* Dashed Separator */}
+                <div className="border-t border-dashed border-slate-200" />
 
-                {/* Financial Ledger Summary (Receipt Style) */}
-                <div className="px-4 sm:px-6 pb-4 pt-1 space-y-2.5 bg-white text-xs">
-                  {/* Catalog Gross */}
-                  <div className="flex items-center justify-between text-slate-600">
-                    <span>Catalog Gross ({totalUnitsCount} units):</span>
-                    <span className="font-semibold text-slate-900">₹{totalGross.toLocaleString("en-IN")}</span>
+                {/* Financial Ledger Breakdown */}
+                <div className="space-y-2.5 text-xs sm:text-sm text-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Catalog gross ({totalUnitsCount} units)</span>
+                    <span className="font-medium text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
                   </div>
 
-                  {/* Volume Tier Discount */}
-                  <div className="flex items-center justify-between text-slate-700">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                      <span>Volume Tier Discount:</span>
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 font-medium">Volume tier discount</span>
                     <span className="font-bold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
                   </div>
 
-                  {/* Subtotal after tier discount */}
-                  <div className="flex items-center justify-between text-slate-600 border-t border-dashed border-slate-200 pt-2">
-                    <span>Subtotal after tier discounts:</span>
-                    <span className="font-bold text-slate-900">₹{(netSubtotalBeforeBundle || 0).toLocaleString("en-IN")}</span>
-                  </div>
-
-                  {/* Bundle Bonus */}
-                  {hasBundleBonus && (
-                    <div className="rounded-lg bg-emerald-50 border border-emerald-200/90 px-2.5 py-1.5 flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-1.5 text-emerald-950 font-bold text-xs truncate min-w-0">
-                        <BadgePercent className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
-                        <span className="sm:hidden truncate">Bundle Bonus (5% Off):</span>
-                        <span className="hidden sm:inline">Bundle Pairing Bonus (5% on combined total):</span>
-                      </span>
-                      <span className="font-black text-emerald-900 text-xs sm:text-sm flex-shrink-0">
-                        −₹{(bundleBonusAmount || 0).toLocaleString("en-IN")}
-                      </span>
+                  {hasBundleBonus && bundleBonusAmount > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-700 font-medium">Bundle pairing bonus (5%)</span>
+                      <span className="font-bold text-emerald-700">−₹{bundleBonusAmount.toLocaleString("en-IN")}</span>
                     </div>
                   )}
 
-                  {/* Net Taxable Subtotal */}
-                  <div className="pt-2 border-t border-slate-200 flex items-baseline justify-between">
-                    <div>
-                      <span className="text-xs font-black text-slate-800 uppercase tracking-wide block">Net Taxable Subtotal:</span>
-                      <span className="block text-[10px] text-slate-400 font-medium">Excl. GST — Direct factory rate</span>
-                    </div>
-                    <span className="text-lg sm:text-xl font-black text-[#0f3428] tracking-tight">
-                      ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
-                    </span>
-                  </div>
-
-                  {/* Total Savings Pill */}
-                  {(totalItemDiscount + (bundleBonusAmount || 0)) > 0 && (
-                    <div className="flex items-center justify-between gap-2 text-xs bg-emerald-50/80 border border-emerald-200/80 rounded-lg px-2.5 py-1.5">
-                      <span className="font-bold text-emerald-950 truncate min-w-0">
-                        <span className="sm:hidden truncate">✨ Total Savings:</span>
-                        <span className="hidden sm:inline">✨ Total Savings ({hasBundleBonus ? "Tier Savings + 5% Bundle" : "Volume Tier Savings"}):</span>
-                      </span>
-                      <span className="font-black text-emerald-800 text-xs sm:text-sm flex-shrink-0">
-                        −₹{(totalItemDiscount + (bundleBonusAmount || 0)).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* GST */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
-                    <span>Estimated 18% GST (Input Tax Credit Eligible):</span>
-                    <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
-                  </div>
-
-                  {/* Final Quotation Total */}
-                  <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-900 border-t-2 border-slate-900 pt-2">
-                    <span>Final Estimated Quotation (Incl. GST):</span>
-                    <span className="text-base sm:text-lg font-black text-slate-900">₹{totalWithGST.toLocaleString("en-IN")}</span>
-                  </div>
-
-                  {/* Barcode & Authentic Factory Note */}
-                  <div className="pt-3 mt-1 border-t border-dashed border-slate-200 flex items-center justify-between gap-3 text-slate-400">
-                    <div className="space-y-1">
-                      {/* Barcode graphic lines */}
-                      <div className="flex items-center gap-[2px] h-5 opacity-70">
-                        <span className="w-[2px] h-full bg-slate-800" />
-                        <span className="w-[1px] h-full bg-slate-800" />
-                        <span className="w-[3px] h-full bg-slate-800" />
-                        <span className="w-[1px] h-full bg-slate-800" />
-                        <span className="w-[2px] h-full bg-slate-800" />
-                        <span className="w-[4px] h-full bg-slate-800" />
-                        <span className="w-[1px] h-full bg-slate-800" />
-                        <span className="w-[2px] h-full bg-slate-800" />
-                        <span className="w-[3px] h-full bg-slate-800" />
-                        <span className="w-[1px] h-full bg-slate-800" />
-                        <span className="w-[2px] h-full bg-slate-800" />
-                        <span className="w-[4px] h-full bg-slate-800" />
-                        <span className="w-[2px] h-full bg-slate-800" />
-                        <span className="w-[1px] h-full bg-slate-800" />
-                        <span className="w-[3px] h-full bg-slate-800" />
-                      </div>
-                      <span className="text-[8.5px] font-mono font-bold tracking-wider text-slate-400 block">
-                        GF-B2B-DIRECT-EST
-                      </span>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="inline-flex items-center gap-1 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-700" />
-                        Official Factory Quotation
-                      </span>
-                      <span className="text-[9px] text-slate-400 block mt-0.5">
-                        18% GST Input Credit Provided
-                      </span>
-                    </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="font-bold text-slate-900">Net taxable subtotal</span>
+                    <span className="font-extrabold text-slate-900 text-sm sm:text-base">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
                   </div>
                 </div>
 
-                {/* Jagged Sawtooth Tear Edge at Bottom of Receipt */}
-                <div className="w-full overflow-hidden leading-none select-none pointer-events-none -mt-0.5">
-                  <svg
-                    className="w-full h-2.5 text-slate-100 fill-current"
-                    viewBox="0 0 1200 10"
-                    preserveAspectRatio="none"
+                {/* Total Savings Pill / Card */}
+                {totalSavings > 0 && (
+                  <div className="bg-[#eef8f2] border border-[#cbebd4] rounded-xl px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm">
+                    <span className="font-bold text-[#14532d]">
+                      You save ₹{totalSavings.toLocaleString("en-IN")} ({savingsPct}%)
+                    </span>
+                    <span className="font-semibold text-[#15803d]">
+                      Direct factory rate
+                    </span>
+                  </div>
+                )}
+
+                {/* GST Row */}
+                <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600">
+                  <span>GST 18% (input tax credit eligible)</span>
+                  <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
+                </div>
+
+                {/* Big Solid Green Final Quotation Banner */}
+                <div className="bg-[#16a34a] text-white rounded-xl p-4 sm:p-5 flex items-center justify-between shadow-xs">
+                  <div>
+                    <h4 className="text-base sm:text-lg font-bold text-white leading-tight">
+                      Final quotation
+                    </h4>
+                    <span className="text-xs text-emerald-100 font-normal block mt-0.5">
+                      Incl. GST
+                    </span>
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    ₹{totalWithGST.toLocaleString("en-IN")}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    disabled={isDownloadingPdf}
+                    className="w-full py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                   >
-                    <path d="M0,0 L15,10 L30,0 L45,10 L60,0 L75,10 L90,0 L105,10 L120,0 L135,10 L150,0 L165,10 L180,0 L195,10 L210,0 L225,10 L240,0 L255,10 L270,0 L285,10 L300,0 L315,10 L330,0 L345,10 L360,0 L375,10 L390,0 L405,10 L420,0 L435,10 L450,0 L465,10 L480,0 L495,10 L510,0 L525,10 L540,0 L555,10 L570,0 L585,10 L600,0 L615,10 L630,0 L645,10 L660,0 L675,10 L690,0 L705,10 L720,0 L735,10 L750,0 L765,10 L780,0 L795,10 L810,0 L825,10 L840,0 L855,10 L870,0 L885,10 L900,0 L915,10 L930,0 L945,10 L960,0 L975,10 L990,0 L1005,10 L1020,0 L1035,10 L1050,0 L1065,10 L1080,0 L1095,10 L1110,0 L1125,10 L1140,0 L1155,10 L1170,0 L1185,10 L1200,0 Z" />
-                  </svg>
+                    {isDownloadingPdf ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                        <span>Generating PDF…</span>
+                      </>
+                    ) : (
+                      <span>Download PDF</span>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRequestQuoteClick}
+                    className="w-full py-3 px-4 rounded-xl bg-[#16a34a] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Request this quote</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -687,19 +777,37 @@ export default function QuotePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
+          <form id="quote-details-form" onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label htmlFor="q-name" className="text-xs font-medium text-slate-600">Your name *</label>
                 <input id="q-name" name="name" required placeholder="Rahul Sharma" value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.name
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.name && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.name}</p>
+                )}
               </div>
               <div className="space-y-1">
                 <label htmlFor="q-company" className="text-xs font-medium text-slate-600">Company *</label>
                 <input id="q-company" name="company" required placeholder="Freshworks India" value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, company: e.target.value });
+                    if (fieldErrors.company) setFieldErrors((prev) => ({ ...prev, company: "" }));
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.company
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.company && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.company}</p>
+                )}
               </div>
             </div>
 
@@ -707,42 +815,142 @@ export default function QuotePage() {
               <div className="space-y-1">
                 <label htmlFor="q-email" className="text-xs font-medium text-slate-600">Work email *</label>
                 <input id="q-email" name="email" type="email" required placeholder="rahul@freshworks.com" value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                  }}
+                  onBlur={() => {
+                    if (formData.email && !validateEmail(formData.email)) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        email: "Please enter a valid work email (e.g. rahul@company.com)."
+                      }));
+                    }
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.email
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.email && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.email}</p>
+                )}
               </div>
               <div className="space-y-1">
-                <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">Phone / WhatsApp *</label>
-                <input id="q-phone" name="phone" required placeholder="+91 92173 28777" value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">
+                  Phone / WhatsApp * <span className="text-[10px] text-slate-400 font-normal">(+91 10 digits)</span>
+                </label>
+                <input id="q-phone" name="phone" required type="tel" placeholder="+91 92173 28777" value={formData.phone}
+                  onChange={(e) => {
+                    const filtered = filterPhoneInput(e.target.value);
+                    setFormData({ ...formData, phone: filtered });
+                    if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                  }}
+                  onBlur={() => {
+                    if (formData.phone && !validateIndianPhone(formData.phone)) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        phone: "Enter a valid 10-digit mobile number starting with 6-9 (e.g. +91 98765 43210)."
+                      }));
+                    }
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.phone
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.phone && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.phone}</p>
+                )}
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="q-buyerType" className="text-xs font-medium text-slate-600">Order purpose</label>
-              <select id="q-buyerType" name="buyerType" value={formData.buyerType}
-                onChange={(e) => setFormData({ ...formData, buyerType: e.target.value })}
-                className="w-full text-xs py-2.5 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none cursor-pointer">
-                <option value="Corporate Gifting & HR">Corporate gifting and new joinee welcome kits</option>
-                <option value="Hotel & Hospitality">Cafeteria, hotel and restaurant tableware</option>
-                <option value="Retail Distributor / Reseller">Retail store and brand reseller</option>
-                <option value="Eco Living Brand">Event, summit or conference merchandise</option>
-                <option value="Other Enterprise">Sample kit request and custom procurement</option>
-              </select>
+            {/* Custom Premium Order Purpose Dropdown */}
+            <div className="space-y-1 relative" ref={purposeRef}>
+              <label className="text-xs font-medium text-slate-600">Order purpose</label>
+              <button
+                type="button"
+                onClick={() => setPurposeDropdownOpen(!purposeDropdownOpen)}
+                className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-800 flex items-center justify-between transition-all cursor-pointer ${purposeDropdownOpen
+                  ? "border-[#1b5e3f] ring-2 ring-[#1b5e3f]/20 bg-white"
+                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
+                  }`}
+              >
+                <span className="truncate text-left font-medium">
+                  {formData.buyerType || "Select order purpose"}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ml-2 ${purposeDropdownOpen ? "rotate-180 text-[#1b5e3f]" : ""
+                    }`}
+                />
+              </button>
+
+              {/* Popover Dropdown Menu */}
+              {purposeDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                  {ORDER_PURPOSE_OPTIONS.map((opt) => {
+                    const isSelected = formData.buyerType === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, buyerType: opt }));
+                          setPurposeDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2.5 text-xs transition-all flex items-center justify-between cursor-pointer ${isSelected
+                          ? "bg-emerald-50 text-emerald-950 font-bold border-l-3 border-[#15803d]"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
+                          }`}
+                      >
+                        <span>{opt}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-[#15803d] flex-shrink-0 ml-2" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label htmlFor="q-city" className="text-xs font-medium text-slate-600">Delivery city *</label>
                 <input id="q-city" name="city" required placeholder="Bengaluru" value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, city: e.target.value });
+                    if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.city
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.city && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.city}</p>
+                )}
               </div>
               <div className="space-y-1">
                 <label htmlFor="q-pin" className="text-xs font-medium text-slate-600">PIN code *</label>
                 <input id="q-pin" name="pin" pattern="[0-9]{6}" maxLength={6} required placeholder="560001" value={formData.pin}
-                  onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    const filtered = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setFormData({ ...formData, pin: filtered });
+                    if (fieldErrors.pin) setFieldErrors((prev) => ({ ...prev, pin: "" }));
+                  }}
+                  onBlur={() => {
+                    if (formData.pin && !validatePinCode(formData.pin)) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        pin: "Enter a valid 6-digit Indian PIN code."
+                      }));
+                    }
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.pin
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.pin && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.pin}</p>
+                )}
               </div>
             </div>
 
@@ -761,13 +969,25 @@ export default function QuotePage() {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="q-notes" className="text-xs font-medium text-slate-600">Branding details and notes</label>
-              <textarea id="q-notes" name="notes" rows={3}
-                placeholder="Custom gift box sleeves, sample kit delivery, multi-location dispatch..."
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="q-notes" className="text-xs font-medium text-slate-700">
+                  Additional information <span className="text-[11px] font-normal text-slate-400">(optional)</span>
+                </label>
+                <span className="text-[10px] text-slate-400">
+                  {formData.notes?.length || 0}/2000
+                </span>
+              </div>
+              <textarea
+                id="q-notes"
+                name="notes"
+                rows={3}
+                maxLength={2000}
+                placeholder="Specify custom logo laser engraving, custom gift box sleeves, multi-location dispatch, sample kit requests, or target delivery timelines..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] outline-none" />
+                className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all resize-y min-h-[72px]"
+              />
             </div>
 
             {/* Anti-spam honeypot */}
@@ -795,8 +1015,8 @@ export default function QuotePage() {
                   type="submit"
                   disabled={state.busy || items.length === 0}
                   className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${state.busy
-                      ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
-                      : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                    ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
+                    : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {state.busy ? (

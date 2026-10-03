@@ -8,7 +8,7 @@ export default function Footer() {
   const pathname = usePathname();
 
   // Hide footer on auth pages
-  if (pathname === "/login" || pathname === "/signup") {
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
     return null;
   }
 

@@ -16,7 +16,8 @@ import {
   Truck,
   ArrowRight,
   Check,
-  Globe2
+  Globe2,
+  Mail
 } from "lucide-react";
 
 export const metadata = {
@@ -519,33 +520,61 @@ export default function StoryPage() {
 
       {/* ── 10. Join & Final Call to Action ──────────────────────────────── */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-br from-[#0f3428] via-[#14532d] to-[#15803d] text-white rounded-3xl p-8 sm:p-12 lg:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-lg">
-          <div className="space-y-3 text-center md:text-left max-w-xl">
-            <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-emerald-300 border border-white/15">
-              <span>Make a Difference Today</span>
+        <div className="relative overflow-hidden bg-white border border-slate-200/90 hover:border-emerald-300/80 rounded-3xl py-16 sm:py-24 lg:py-28 px-6 sm:px-12 lg:px-16 text-center shadow-[0_4px_30px_rgba(0,0,0,0.05)] transition-all flex flex-col items-center justify-center min-h-[440px] sm:min-h-[500px]">
+          {/* Top Emerald Brand Accent Bar */}
+          <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-emerald-400 via-brand-600 to-emerald-400" />
+
+          {/* Subtle Background Glow Spheres */}
+          <div className="absolute left-1/2 -top-32 -translate-x-1/2 w-[500px] h-64 bg-emerald-50/70 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute left-1/2 -bottom-32 -translate-x-1/2 w-[500px] h-64 bg-slate-50/80 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 max-w-3xl mx-auto space-y-6 sm:space-y-7">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs sm:text-sm font-bold uppercase tracking-wider shadow-2xs">
+              <Leaf className="w-4 h-4 text-emerald-600" />
+              <span>Make a Positive Impact</span>
             </div>
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
+
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-slate-900">
               Join Our Sustainable Journey
             </h3>
-            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-normal">
-              Every purchase you make contributes to a greener planet. Join thousands of eco-conscious consumers and enterprises making sustainable choices.
-            </p>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 flex-shrink-0">
-            <Link
-              href="/products"
-              className="bg-white hover:bg-emerald-50 text-[#0f3428] font-extrabold text-xs sm:text-sm px-6 py-3.5 rounded-xl shadow-md transition-all duration-200 active:scale-95 inline-flex items-center gap-2"
-            >
-              <span>Start Shopping Sustainably</span>
-              <ArrowRight className="w-4 h-4 text-[#15803d]" />
-            </Link>
-            <Link
-              href="/quote"
-              className="bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-xl border border-white/20 backdrop-blur-md transition-all active:scale-95"
-            >
-              Request Custom Quote
-            </Link>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto font-normal">
+              Be part of a growing community making a positive impact on the planet—replacing single-use plastics with certified agricultural rice-husk homeware and corporate gifts.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-3">
+              <Link
+                href="/products"
+                className="w-full sm:w-auto h-13 sm:h-14 px-8 bg-brand-700 hover:bg-brand-800 text-white font-bold text-sm sm:text-base rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-95 inline-flex items-center justify-center gap-2.5"
+              >
+                <span>Start Shopping Catalog</span>
+                <ArrowRight className="w-4.5 h-4.5" />
+              </Link>
+              <Link
+                href="/quote"
+                className="w-full sm:w-auto h-13 sm:h-14 px-8 bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-sm sm:text-base rounded-2xl border border-slate-200 hover:border-slate-300 transition-all duration-200 active:scale-95 inline-flex items-center justify-center gap-2.5"
+              >
+                <Mail className="w-4.5 h-4.5 text-slate-500" />
+                <span>Contact Us</span>
+              </Link>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8 pt-5 text-xs sm:text-sm text-slate-500 font-medium">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                FDA &amp; LFGB Food-Safe
+              </span>
+              <span className="flex items-center gap-2">
+                <Recycle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                100% Agricultural Husk
+              </span>
+              <span className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                Pan-India Delivery
+              </span>
+            </div>
           </div>
         </div>
       </section>

@@ -644,13 +644,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     setMounted(true);
   }, []);
 
-  const unitLabel = product.unit || "set";
-  const unitLabelPlural =
-    unitLabel.toLowerCase() === "set"
-      ? "Sets"
-      : unitLabel.toLowerCase() === "piece"
-        ? "Pieces"
-        : `${unitLabel}s`;
+  const isSetProduct =
+    product.unit?.toLowerCase() === "set" ||
+    /\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.name || "") ||
+    /\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.slug || "");
+
+  const unitLabel = isSetProduct ? "set" : (product.unit || "piece");
+  const unitLabelPlural = isSetProduct
+    ? "Sets"
+    : (product.unit?.toLowerCase() === "box"
+      ? "Boxes"
+      : product.unit?.toLowerCase() === "pack"
+        ? "Packs"
+        : product.unit?.toLowerCase() === "set"
+          ? "Sets"
+          : "Pieces");
 
   // Extract all unique images
   const rawImagesList = [
@@ -912,6 +920,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     );
     return {
       ...product,
+      unit: unitLabel,
       price: effectiveUnitPrice,                   // after-discount per-unit price
       wholesalePrice: wholesaleUnitPrice,           // original wholesale unit price
       discountPct: activeTierDiscountPct,           // tier discount applied on total

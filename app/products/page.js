@@ -2,7 +2,7 @@ import Link from "next/link";
 import Card from "@/components/Card";
 import HeroSwiper from "@/components/HeroSwiper";
 import { categories, getProducts, normalizeContextKey, matchesProductCategory } from "@/lib/products";
-import { Search } from "lucide-react";
+import { Search, Sparkles, ArrowRight, Mail, Leaf, ArrowUp } from "lucide-react";
 
 export const metadata = {
   title: "Wholesale Product Catalog",
@@ -162,7 +162,7 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
         <HeroSwiper />
       </section>
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+      <div id="products-catalog" className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
         {/* Dynamic Page Header */}
         <div className="space-y-1.5 sm:space-y-2">
           <div className="badge-green">
@@ -285,22 +285,47 @@ export default async function ProductsPage({ searchParams = {} } = {}) {
           </div>
         )}
 
-        {/* Bespoke Enterprise Notice - Clean Light Green */}
-        <div className="bg-brand-50 border border-brand-200 rounded-xl p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
-          <div className="space-y-1 text-center sm:text-left">
-            <h3 className="text-base font-bold text-slate-900">
-              Need Custom Pantone Colors or Bespoke Tooling?
-            </h3>
-            <p className="text-xs text-slate-600 max-w-xl">
-              We manufacture bespoke molds, custom corporate Pantone colors, and bundled gift packaging for enterprise volumes.
-            </p>
+        {/* Bespoke Enterprise Notice - Premium Executive Card */}
+        <div className="pt-10 sm:pt-16 pb-4">
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-[#D9FAE9] border border-emerald-200/90 px-6 sm:px-10 py-10 sm:py-12 text-center shadow-[0_10px_30px_rgba(16,185,129,0.08)]">
+            {/* Soft ambient accents */}
+            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-200/40 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-white/60 blur-3xl" />
+
+            <div className="relative z-10 mx-auto max-w-xl">
+              <Leaf className="mx-auto h-7 w-7 text-emerald-800" strokeWidth={1.8} />
+
+              <p className="mt-3 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-900">
+                B2B Inquiries & Custom Orders
+              </p>
+
+              <h3 className="mt-2.5 text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-slate-900 leading-snug">
+                Have Any Query? We're Happy to Help
+              </h3>
+
+              <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-slate-700 font-normal max-w-lg mx-auto">
+                Exploring options for your business? Share your requirement, whether it is bulk orders, custom colors, logo branding or packaging, and our team will get back to you with the right solution and pricing.
+              </p>
+
+              <div className="mt-7 flex flex-col sm:flex-row items-center justify-center gap-2.5 sm:gap-3">
+                <Link
+                  href="#products-catalog"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-brand-700 hover:bg-brand-800 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-white shadow-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/30"
+                >
+                  <ArrowUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  <span>Explore Products</span>
+                </Link>
+
+                <Link
+                  href="/contact"
+                  className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-white hover:bg-slate-50 border border-emerald-300/80 px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-slate-900 shadow-xs transition-all duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-500/20"
+                >
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-700" />
+                  <span>Contact Us</span>
+                </Link>
+              </div>
+            </div>
           </div>
-          <Link
-            href="/quote"
-            className="btn-primary text-xs sm:text-sm py-2.5 px-5 whitespace-nowrap"
-          >
-            Contact Our Engineering Desk →
-          </Link>
         </div>
       </div>
     </div>
