@@ -1155,26 +1155,26 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             </div>
 
             {/* 4 Compliance Trust Pills */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-                <Sprout className="w-4 h-4 text-brand-700 mb-0.5" />
-                <span className="text-[11px] font-bold text-slate-900 block">Rice Husk</span>
-                <span className="text-[10px] text-slate-500">Bio-Composite</span>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="bg-slate-50 border border-slate-200 rounded-lg py-2.5 sm:p-2 text-center flex flex-col items-center justify-center">
+                <Sprout className="w-4 h-4 text-brand-700 sm:mb-0.5" />
+                <span className="hidden sm:block text-[11px] font-bold text-slate-900">Rice Husk</span>
+                <span className="hidden sm:block text-[10px] text-slate-500">Bio-Composite</span>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-                <ShieldCheck className="w-4 h-4 text-brand-700 mb-0.5" />
-                <span className="text-[11px] font-bold text-slate-900 block">Food Grade</span>
-                <span className="text-[10px] text-slate-500">TUV Certified</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg py-2.5 sm:p-2 text-center flex flex-col items-center justify-center">
+                <ShieldCheck className="w-4 h-4 text-brand-700 sm:mb-0.5" />
+                <span className="hidden sm:block text-[11px] font-bold text-slate-900">Food Grade</span>
+                <span className="hidden sm:block text-[10px] text-slate-500">TUV Certified</span>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-                <DishwasherIcon className="w-4 h-4 text-brand-700 mb-0.5" />
-                <span className="text-[11px] font-bold text-slate-900 block">Dishwasher</span>
-                <span className="text-[10px] text-slate-500">Commercial Safe</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg py-2.5 sm:p-2 text-center flex flex-col items-center justify-center">
+                <DishwasherIcon className="w-4 h-4 text-brand-700 sm:mb-0.5" />
+                <span className="hidden sm:block text-[11px] font-bold text-slate-900">Dishwasher</span>
+                <span className="hidden sm:block text-[10px] text-slate-500">Commercial Safe</span>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-center flex flex-col items-center justify-center">
-                <Flame className="w-4 h-4 text-brand-700 mb-0.5" />
-                <span className="text-[11px] font-bold text-slate-900 block">Microwave</span>
-                <span className="text-[10px] text-slate-500">Reheat Safe</span>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg py-2.5 sm:p-2 text-center flex flex-col items-center justify-center">
+                <Flame className="w-4 h-4 text-brand-700 sm:mb-0.5" />
+                <span className="hidden sm:block text-[11px] font-bold text-slate-900">Microwave</span>
+                <span className="hidden sm:block text-[10px] text-slate-500">Reheat Safe</span>
               </div>
             </div>
 
@@ -2052,27 +2052,19 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           )}
         </div>
 
-        {/* 2. Four Feature / Compliance Trust Cards */}
+        {/* 2. Four Feature / Compliance Trust Cards (Mobile: Icons Only) */}
         <div className="grid grid-cols-4 gap-2">
-          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
-            <Sprout className="w-4 h-4 text-[#1b5e3f] mb-1" />
-            <span className="text-[11px] font-bold text-slate-900 leading-tight">Rice husk</span>
-            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Bio-composite</span>
+          <div className="bg-white border border-slate-200/90 rounded-xl py-2.5 px-2 flex items-center justify-center shadow-2xs">
+            <Sprout className="w-4 h-4 text-[#1b5e3f]" />
           </div>
-          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
-            <ShieldCheck className="w-4 h-4 text-[#1b5e3f] mb-1" />
-            <span className="text-[11px] font-bold text-slate-900 leading-tight">Food grade</span>
-            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">TUV certified</span>
+          <div className="bg-white border border-slate-200/90 rounded-xl py-2.5 px-2 flex items-center justify-center shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-[#1b5e3f]" />
           </div>
-          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
-            <DishwasherIcon className="w-4 h-4 text-[#1b5e3f] mb-1" />
-            <span className="text-[11px] font-bold text-slate-900 leading-tight">Dishwasher</span>
-            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Top rack</span>
+          <div className="bg-white border border-slate-200/90 rounded-xl py-2.5 px-2 flex items-center justify-center shadow-2xs">
+            <DishwasherIcon className="w-4 h-4 text-[#1b5e3f]" />
           </div>
-          <div className="bg-white border border-slate-200/90 rounded-xl p-2 text-center flex flex-col items-center justify-center shadow-2xs">
-            <Flame className="w-4 h-4 text-[#1b5e3f] mb-1" />
-            <span className="text-[11px] font-bold text-slate-900 leading-tight">Microwave</span>
-            <span className="text-[9.5px] text-slate-500 leading-tight mt-0.5">Reheat safe</span>
+          <div className="bg-white border border-slate-200/90 rounded-xl py-2.5 px-2 flex items-center justify-center shadow-2xs">
+            <Flame className="w-4 h-4 text-[#1b5e3f]" />
           </div>
         </div>
 

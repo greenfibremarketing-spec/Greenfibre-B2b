@@ -1,4 +1,4 @@
-import { Sprout, ShieldCheck, Leaf, Wind, Recycle, CheckCircle2 } from "lucide-react";
+import { Sprout, ShieldCheck, Leaf, Wind, Recycle } from "lucide-react";
 
 export default function GreeneryShowcase() {
   return (
@@ -35,21 +35,11 @@ export default function GreeneryShowcase() {
           <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
             <div className="space-y-2">
               <h3 className="text-lg sm:text-xl font-bold text-slate-900">
-                Preserving Fresh Air & Green Farmlands
+                Preserving Fresh Air &amp; Green Farmlands
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 By procuring agricultural biomass directly from farmers in Haryana and Punjab, every single Green Fibre order helps prevent seasonal crop burning and reduces toxic smoke across northern India.
               </p>
-            </div>
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-brand-800">
-              <span className="inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />
-                100% Crop Stubble Diverted
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />
-                Fair Farmer Partnerships
-              </span>
             </div>
           </div>
         </div>
@@ -75,16 +65,6 @@ export default function GreeneryShowcase() {
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 Our plant-based tableware brings organic warmth to your dining room, corporate pantry, or coffee break. Made from food-grade composite with no toxic dyes, melamine, or BPA.
               </p>
-            </div>
-            <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-brand-800">
-              <span className="inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />
-                US FDA 21 CFR Certified
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand-600" />
-                500+ Dishwasher Cycles
-              </span>
             </div>
           </div>
         </div>
