@@ -87,8 +87,8 @@ function NavbarInner() {
 
   return (
     <>
-      <header className="relative z-40 w-full px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-all">
-        <div className="max-w-[1440px] mx-auto bg-[#fbfdf9]/95 sm:bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full px-3.5 sm:px-6 h-13 sm:h-14 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all">
+      <header className="relative z-40 w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-3 transition-all">
+        <div className="max-w-[1440px] mx-auto bg-[#fbfdf9]/95 sm:bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full px-4 sm:px-6 h-[60px] sm:h-14 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all">
 
           {/* LEFT: Logo + Nav */}
           <div className="flex items-center gap-3 sm:gap-6 xl:gap-8 flex-shrink-0">
@@ -100,7 +100,7 @@ function NavbarInner() {
               <img
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
-                className="h-7 sm:h-8 md:h-9 w-auto max-w-[130px] sm:max-w-[175px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
+                className="h-[36px] sm:h-8 md:h-9 w-auto max-w-[145px] sm:max-w-[175px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
               />
             </Link>
 
@@ -155,7 +155,7 @@ function NavbarInner() {
               aria-label="View Wholesale Quote Basket"
               title="View Quote Basket"
             >
-              <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-emerald-900 group-hover:scale-105 transition-transform" strokeWidth={1.8} />
+              <ShoppingBag className="w-4.0 h-4.0 sm:w-5 sm:h-5 text-emerald-900 group-hover:scale-105 transition-transform" strokeWidth={1.8} />
               <span className="absolute -top-1 -right-1 flex items-center justify-center">
                 <Count className="bg-[#ea580c] text-white font-black text-[9.5px] sm:text-[10px] min-w-[17px] sm:min-w-[18px] h-[17px] sm:h-[18px] px-1 rounded-full ring-2 ring-white shadow-xs flex items-center justify-center" />
               </span>
