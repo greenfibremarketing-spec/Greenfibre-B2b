@@ -9,6 +9,7 @@ import {
   BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal,
   Clock, Copy, Check, ArrowRight, Leaf, ChevronDown
 } from "lucide-react";
+import GreenyLoader from "@/components/GreenyLoader";
 import {
   validateEmail,
   validateIndianPhone,
@@ -490,6 +491,9 @@ export default function QuotePage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+      {/* Leaf Loader displayed during quote submission */}
+      <GreenyLoader loading={state.busy} minDuration={1000} />
+
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <p className="text-sm font-medium text-slate-600">
@@ -502,8 +506,8 @@ export default function QuotePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* ── Left: Worksheet & Summary (Sticky / Fixed in view) ─────────────────────────── */}
-        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-20 self-start">
+        {/* ── Left: Worksheet & Summary ─────────────────────────────────────── */}
+        <div className="lg:col-span-6 space-y-5">
           {/* Section header */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
@@ -760,7 +764,7 @@ export default function QuotePage() {
         </div>
 
         {/* ── Right: Your Details Form ──────────────────────────────────── */}
-        <div className="lg:col-span-6 space-y-5">
+        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-6 lg:self-start">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">2</span>

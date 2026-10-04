@@ -12,22 +12,28 @@ const CIRC = 408; // ring circumference (2πr, r = 65)
  *   <GreenyLoader loading={isLoading} />  // manual: you control it
  *   <GreenyLoader minDuration={2500} />   // minimum visible time in ms
  */
-export default function GreenyLoader({ loading, minDuration = 1800 }) {
+export default function GreenyLoader({ loading, minDuration = 1200 }) {
   const auto = loading === undefined;
 
   const [pageReady, setPageReady] = useState(
     () => typeof document !== "undefined" && document.readyState === "complete"
   );
   const [mounted, setMounted] = useState(() => {
-    if (typeof window !== "undefined" && auto && window.sessionStorage?.getItem("greeny_loaded")) {
-      return false;
+    if (auto) {
+      if (typeof window !== "undefined" && window.sessionStorage?.getItem("greeny_loaded")) {
+        return false;
+      }
+      return true;
     }
-    return true;
+    return Boolean(loading);
   });
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(() => {
+    if (auto) return true;
+    return Boolean(loading);
+  });
   const ring = useRef(null);
 
-  const isLoading = auto ? !pageReady : loading;
+  const isLoading = auto ? !pageReady : Boolean(loading);
   const readyRef = useRef(!isLoading);
   readyRef.current = !isLoading;
 
@@ -41,11 +47,13 @@ export default function GreenyLoader({ loading, minDuration = 1800 }) {
 
   // Show again if manual loading starts again
   useEffect(() => {
-    if (!auto && isLoading) {
-      setMounted(true);
-      setVisible(true);
+    if (!auto) {
+      if (loading) {
+        setMounted(true);
+        setVisible(true);
+      }
     }
-  }, [auto, isLoading]);
+  }, [auto, loading]);
 
   // Progress ring: eases to 90%, then completes when ready
   useEffect(() => {

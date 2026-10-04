@@ -676,29 +676,46 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const allImages = Array.from(new Set(rawImagesList));
   const images = allImages.length > 0 ? allImages : ["/images/placeholder.jpg"];
 
-  // Normalize colors
-  const colorVariants = Array.isArray(product.colors) && product.colors.length > 0
-    ? product.colors.map((c) => {
-      if (typeof c === "string") return { name: c, stock: product.totalStock || product.stockQuantity || 100, images: [] };
-      const cImgs = Array.isArray(c.images)
-        ? c.images.map(normalizeImageUrl)
-        : c.image
-          ? [normalizeImageUrl(c.image)]
-          : [];
-      return {
-        ...c,
-        name: c.name || "Natural Sand",
-        stock: c.stock ?? product.totalStock ?? product.stockQuantity ?? 100,
-        images: cImgs
-      };
-    })
-    : (Array.isArray(product.colours) ? product.colours : ["Natural Sand"]).map((c) => ({
-      name: typeof c === "string" ? c : c.name || "Natural Sand",
-      stock: product.totalStock || product.stockQuantity || 100,
-      images: []
-    }));
+  // Color shade hex resolution helper
+  const getColorHex = (cName = "", defaultHex = "") => {
+    if (defaultHex && typeof defaultHex === "string" && defaultHex.startsWith("#")) return defaultHex;
+    const name = String(cName).toLowerCase();
+    if (name.includes("sage") || name.includes("green") || name.includes("olive")) return "#6A9955";
+    if (name.includes("charcoal") || name.includes("black") || name.includes("slate") || name.includes("grey") || name.includes("gray")) return "#2D3748";
+    if (name.includes("orange") || name.includes("terracotta") || name.includes("coral") || name.includes("rust")) return "#D97757";
+    if (name.includes("brown") || name.includes("coffee") || name.includes("husk") || name.includes("wood")) return "#8C6239";
+    if (name.includes("teal") || name.includes("blue") || name.includes("cyan") || name.includes("ocean")) return "#2A9D8F";
+    if (name.includes("pink") || name.includes("rose") || name.includes("blush")) return "#E8A598";
+    if (name.includes("white") || name.includes("cream") || name.includes("ivory")) return "#FAF7F2";
+    if (name.includes("yellow") || name.includes("mustard") || name.includes("ochre")) return "#E9C46A";
+    return "#E5DAC8"; // Natural Husk Sand
+  };
 
-  const initialColor = colorVariants[0]?.name || product.colours?.[0] || "Natural Sand";
+  // Normalize colors
+  const rawColorList = Array.isArray(product.colors) && product.colors.length > 0
+    ? product.colors
+    : Array.isArray(product.colours) && product.colours.length > 0
+      ? product.colours
+      : ["Natural Sand", "Sage Green"];
+
+  const colorVariants = rawColorList.map((c) => {
+    const name = typeof c === "string" ? c : c?.name || "Natural Sand";
+    const rawImgs = typeof c === "object" ? (c?.images || (c?.image ? [c.image] : [])) : [];
+    const cImgs = Array.isArray(rawImgs)
+      ? rawImgs.map(normalizeImageUrl)
+      : typeof rawImgs === "string"
+        ? [normalizeImageUrl(rawImgs)]
+        : [];
+    const colorHex = getColorHex(name, typeof c === "object" ? (c?.colorHex || c?.hex) : "");
+    return {
+      name,
+      colorHex,
+      stock: (typeof c === "object" && c?.stock) ?? product.totalStock ?? product.stockQuantity ?? 100,
+      images: cImgs
+    };
+  });
+
+  const initialColor = colorVariants[0]?.name || "Natural Sand";
 
   // Context / Occasion resolved from previous page selection
   const resolvedOccasionKey = (function () {
@@ -749,6 +766,28 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const [added, setAdded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsLightboxOpen(false);
+      } else if (e.key === "ArrowLeft") {
+        setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+      } else if (e.key === "ArrowRight") {
+        setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isLightboxOpen, images.length]);
   const [modalStep, setModalStep] = useState(1); // 1 = customize, 2 = suggested
   const [activeTab, setActiveTab] = useState("set_contents");
   const [mobileAccordion, setMobileAccordion] = useState("benefits");
@@ -912,6 +951,18 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     }
   };
 
+  const handleSelectColor = (colorName) => {
+    setSelectedColour(colorName);
+    const matched = colorVariants.find((c) => c.name === colorName);
+    if (matched && Array.isArray(matched.images) && matched.images.length > 0) {
+      const targetImg = matched.images[0];
+      const imgIdx = images.findIndex((img) => img === targetImg);
+      if (imgIdx !== -1) {
+        setActiveImageIndex(imgIdx);
+      }
+    }
+  };
+
   const handlePrevImage = () => {
     setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
@@ -930,6 +981,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       isPair: false,
       isPairItem: false,
       unit: unitLabel,
+      selectedColor: selectedColour,
+      selectedColour: selectedColour,
+      color: selectedColour,
       price: effectiveUnitPrice,                   // after-discount per-unit price
       wholesalePrice: wholesaleUnitPrice,           // original wholesale unit price
       discountPct: activeTierDiscountPct,           // tier discount applied on total
@@ -1327,16 +1381,69 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             {/* 3. ORDER QUANTITY & PRICE CALCULATION CARD */}
             <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5">
 
-              {/* Set Quantity Stepper, Quick Addons & Price Calculation */}
-              <div className="bg-slate-50/80 border border-slate-200/90 rounded-xl p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-8">
-                  <div className="space-y-2">
-                    <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
-                      <span>Order Quantity ({unitLabelPlural}):</span>
-                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
-                        MOQ: {currentMoq} {unitLabelPlural}
-                      </span>
-                    </label>
+              {/* Set Quantity Stepper, Color Shades & Price Calculation */}
+              <div className="bg-slate-50/80 border border-slate-200/90 rounded-xl p-4 sm:p-4.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+                  <div className="space-y-3">
+
+                    {/* Color Shade Selection (Compact inline alongside quantity) */}
+                    {colorVariants.length > 0 && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <Palette className="w-3.5 h-3.5 text-brand-700" />
+                            <span>Color Shade:</span>
+                          </label>
+                          <span className="text-[11px] font-bold text-brand-900 bg-brand-50 border border-brand-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <span className="text-slate-500 font-normal">Active:</span>
+                            <span>{selectedColour}</span>
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {colorVariants.map((c, idx) => {
+                            const isSelected = selectedColour === c.name;
+                            const isLight = ["#faf7f2", "#e5dac8", "#ffffff"].includes(c.colorHex?.toLowerCase());
+
+                            return (
+                              <button
+                                key={c.name || idx}
+                                type="button"
+                                onClick={() => handleSelectColor(c.name)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                                  isSelected
+                                    ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
+                                    : "bg-white/80 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"
+                                }`}
+                                title={`Select ${c.name} shade`}
+                              >
+                                <span
+                                  className="w-3.5 h-3.5 rounded-full border border-black/15 shadow-2xs flex-shrink-0 flex items-center justify-center transition-transform"
+                                  style={{ backgroundColor: c.colorHex }}
+                                >
+                                  {isSelected && (
+                                    <Check
+                                      className={`w-2.5 h-2.5 ${isLight ? "text-slate-900" : "text-white"}`}
+                                      strokeWidth={3}
+                                    />
+                                  )}
+                                </span>
+                                <span className="text-[11px] sm:text-xs">{c.name}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Order Quantity Stepper */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
+                        <span>Order Quantity ({unitLabelPlural}):</span>
+                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                          MOQ: {currentMoq} {unitLabelPlural}
+                        </span>
+                      </label>
 
                     {/* Stepper + Free Typing Input + Quick Addons */}
                     <div className="flex items-center gap-2 flex-wrap">
@@ -1404,6 +1511,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                       </div>
                     </div>
                   </div>
+                </div>
 
                   {/* Price Breakdown: Gross → Discount → Net */}
                   <div className="text-left sm:text-right pt-2 sm:pt-0 min-w-[220px] sm:pl-4 space-y-1">
@@ -2136,6 +2244,53 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           </div>
         </div>
 
+        {/* Mobile Color Shade Selection */}
+        {colorVariants.length > 0 && (
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-brand-700" />
+                <span>Select Color Shade</span>
+              </span>
+              <span className="text-[11px] font-bold text-brand-800 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200">
+                {selectedColour}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {colorVariants.map((c, idx) => {
+                const isSelected = selectedColour === c.name;
+                const isLight = ["#faf7f2", "#e5dac8", "#ffffff"].includes(c.colorHex?.toLowerCase());
+
+                return (
+                  <button
+                    key={c.name || idx}
+                    type="button"
+                    onClick={() => handleSelectColor(c.name)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
+                      isSelected
+                        ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
+                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-black/15 flex-shrink-0 flex items-center justify-center"
+                      style={{ backgroundColor: c.colorHex }}
+                    >
+                      {isSelected && (
+                        <Check
+                          className={`w-2.5 h-2.5 ${isLight ? "text-slate-900" : "text-white"}`}
+                          strokeWidth={3}
+                        />
+                      )}
+                    </span>
+                    <span>{c.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* 7. Order Quantity Stepper & Quick Addons */}
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between text-xs">
@@ -2451,31 +2606,120 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         </button>
       </div>
 
-      {/* LIGHTBOX MODAL */}
-      {isLightboxOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center">
+      {/* 100% FULL SCREEN LIGHTBOX MODAL (PORTAL TO DOCUMENT.BODY) */}
+      {mounted && isLightboxOpen && createPortal(
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Full screen image inspection"
+          className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-between p-3 sm:p-6 md:p-8 bg-black/95 backdrop-blur-xl animate-in fade-in duration-200 select-none overflow-hidden"
+          style={{ zIndex: 99999999 }}
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          {/* Top Bar: Product Name & Close Button */}
+          <div
+            className="w-full flex items-center justify-between z-30 pt-1 sm:pt-2 px-2 sm:px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-2 min-w-0 pr-4">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+              <span className="text-white font-bold text-xs sm:text-sm md:text-base tracking-tight truncate">
+                {product.name}
+              </span>
+              <span className="hidden sm:inline text-white/40 text-xs">•</span>
+              <span className="hidden sm:inline text-emerald-300 text-xs font-medium truncate">
+                {activeOccasion.label}
+              </span>
+            </div>
+
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
-              className="absolute top-3 right-3 sm:-top-12 sm:right-0 w-10 h-10 rounded-full bg-black/60 sm:bg-white/20 hover:bg-white text-white hover:text-black flex items-center justify-center transition-colors cursor-pointer z-30 shadow-md backdrop-blur-sm"
-              aria-label="Close zoom modal"
+              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/15 hover:bg-white text-white hover:text-slate-900 border border-white/25 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-xl backdrop-blur-md active:scale-95 flex-shrink-0"
+              aria-label="Close full screen view"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={2.2} />
             </button>
-            <img
-              src={activeImage}
-              alt={`${product.name} High-Res Inspection`}
-              className="max-h-[80vh] max-w-full rounded-2xl object-contain shadow-2xl bg-white"
-              onError={(e) => {
-                e.currentTarget.src = "/images/placeholder.jpg";
-              }}
-            />
-            <div className="mt-3 text-white/90 text-xs font-semibold text-center">
-              {product.name} • {activeOccasion.label} ({activeImageIndex + 1} of {images.length})
+          </div>
+
+          {/* Center Image Container with Navigation Chevrons */}
+          <div
+            className="relative w-full flex-1 flex items-center justify-center py-2 sm:py-4 px-2 sm:px-12 min-h-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Previous Image Arrow */}
+            {images.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                }}
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 sm:bg-white/15 hover:bg-white text-white hover:text-slate-900 border border-white/20 flex items-center justify-center transition-all duration-200 cursor-pointer z-30 shadow-2xl backdrop-blur-md active:scale-90"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
+              </button>
+            )}
+
+            {/* High-Res Full-screen Image */}
+            <div className="relative max-h-full max-w-full flex items-center justify-center">
+              <img
+                src={activeImage}
+                alt={`${product.name} Fullscreen Inspection`}
+                className="max-h-[75vh] sm:max-h-[82vh] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-xl sm:rounded-2xl shadow-2xl"
+                onError={(e) => {
+                  e.currentTarget.src = "/images/placeholder.jpg";
+                }}
+              />
+            </div>
+
+            {/* Next Image Arrow */}
+            {images.length > 1 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                }}
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/60 sm:bg-white/15 hover:bg-white text-white hover:text-slate-900 border border-white/20 flex items-center justify-center transition-all duration-200 cursor-pointer z-30 shadow-2xl backdrop-blur-md active:scale-90"
+                aria-label="Next image"
+              >
+                <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Caption / Thumbnail Indicators */}
+          <div
+            className="w-full flex flex-col items-center justify-center gap-2 pb-1 sm:pb-2 z-30"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Gallery Thumbnail Dots */}
+            {images.length > 1 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-white/15 backdrop-blur-md">
+                {images.map((imgUrl, dotIdx) => (
+                  <button
+                    key={dotIdx}
+                    type="button"
+                    onClick={() => setActiveImageIndex(dotIdx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      dotIdx === activeImageIndex ? "w-6 bg-emerald-400" : "w-2 bg-white/40 hover:bg-white/70"
+                    }`}
+                    aria-label={`View image ${dotIdx + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 border border-white/20 text-white/90 text-[11px] sm:text-xs font-semibold backdrop-blur-md shadow-md">
+              <span>{activeImageIndex + 1} of {images.length}</span>
+              <span className="text-white/40">•</span>
+              <span>{activeOccasion.label}</span>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* ── 2-STEP BUNDLE ADD-ONS & CELEBRATORY UNLOCKED TIER PERKS MODAL ── */}

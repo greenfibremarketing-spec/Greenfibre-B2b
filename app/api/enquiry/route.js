@@ -17,7 +17,7 @@ export async function POST(req) {
     const ip = req.headers.get("x-forwarded-for") || "local";
     const now = Date.now();
     const h = (hits.get(ip) || []).filter((t) => now - t < 600000);
-    
+
     // Rate limit: 60 requests per 10 minutes
     if (h.length >= 60) {
       return NextResponse.json(

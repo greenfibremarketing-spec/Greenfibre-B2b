@@ -117,10 +117,10 @@ export default function NavbarSearch() {
           setIsOpen(!isOpen);
           setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200/90 bg-slate-50/80 hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0 group"
+        className="md:hidden w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-slate-200/90 bg-white/90 hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0 group"
         aria-label="Search catalog"
       >
-        <Search className="w-5 h-5 text-slate-600 group-hover:text-slate-900 transition-colors" strokeWidth={1.75} />
+        <Search className="w-4.5 h-4.5 text-slate-700 group-hover:text-slate-900 transition-colors" strokeWidth={1.75} />
       </button>
 
       {/* Real-Time Dropdown Results Modal */}

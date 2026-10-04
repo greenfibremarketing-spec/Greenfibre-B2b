@@ -87,90 +87,77 @@ function NavbarInner() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
+      <header className="relative z-40 w-full px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-all">
+        <div className="max-w-[1440px] mx-auto bg-[#fbfdf9]/95 sm:bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full px-3.5 sm:px-6 h-13 sm:h-14 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all">
 
           {/* LEFT: Logo + Nav */}
           <div className="flex items-center gap-3 sm:gap-6 xl:gap-8 flex-shrink-0">
             <Link
               href="/"
-              className="flex items-center h-full group select-none flex-shrink-0 py-1 ml-1 sm:ml-0"
+              className="flex items-center h-full group select-none flex-shrink-0 py-1"
               aria-label="Green Fibre Home"
             >
               <img
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
-                className="h-8 sm:h-9 w-auto max-w-[140px] sm:max-w-[180px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
+                className="h-7 sm:h-8 md:h-9 w-auto max-w-[130px] sm:max-w-[175px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
               />
             </Link>
 
             <nav
-              className="hidden lg:flex items-center gap-1 xl:gap-2 text-sm font-semibold text-slate-700"
+              className="hidden lg:flex items-center gap-1 xl:gap-1.5 text-sm font-semibold text-slate-700"
               aria-label="Main Navigation"
             >
               {/* All Products */}
               <Link
                 href="/products"
-                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isAllProductsActive
-                  ? "text-brand-900 bg-brand-50/80 font-bold"
+                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isAllProductsActive
+                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                   }`}
               >
                 <span className="relative z-10">All Products</span>
-                {isAllProductsActive && (
-                  <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-600 rounded-full" />
-                )}
               </Link>
 
               {/* Gifts & Hampers */}
               <Link
                 href="/products?category=Gift+Hampers"
-                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
-                  ? "text-brand-900 bg-brand-50/80 font-bold"
+                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
+                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                   }`}
               >
                 <span className="relative z-10">Gifts &amp; Hampers</span>
-                {isGiftingActive && (
-                  <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-600 rounded-full" />
-                )}
               </Link>
 
               {/* Our Story */}
               <Link
                 href="/story"
-                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isStoryActive
-                  ? "text-brand-900 bg-brand-50/80 font-bold"
+                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isStoryActive
+                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
                   }`}
               >
                 <span className="relative z-10">Our Story</span>
-                {isStoryActive && (
-                  <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-brand-600 rounded-full" />
-                )}
               </Link>
             </nav>
           </div>
 
-          {/* RIGHT: Actions with generous spacing matching logo height */}
-          <div className="flex items-center gap-3 sm:gap-3.5 flex-shrink-0">
+          {/* RIGHT: Actions (Search, User, Dark Green Quote Circle, Mobile Hamburger) */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <NavbarSearch />
             <UserNav />
 
-            {/* Quote Basket (Aesthetic Light Green) */}
+            {/* Light Green Circular Quote Basket Icon with Notification Badge */}
             <Link
               href="/quote"
-              className="relative w-10 h-10 md:w-auto md:h-10 md:px-3.5 flex items-center justify-center gap-2 rounded-xl border border-emerald-200/90 bg-emerald-50/70 hover:bg-emerald-100/80 text-emerald-900 transition-all shadow-2xs cursor-pointer active:scale-95 flex-shrink-0 group"
+              className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-100/90 hover:bg-emerald-200/90 text-emerald-950 border border-emerald-300/80 flex items-center justify-center shadow-xs transition-all duration-200 active:scale-95 flex-shrink-0 group"
               aria-label="View Wholesale Quote Basket"
+              title="View Quote Basket"
             >
-              <div className="relative flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-emerald-600 group-hover:text-emerald-800 transition-colors flex-shrink-0" strokeWidth={1.75} />
-                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center">
-                  <Count className="bg-emerald-500 text-white font-extrabold text-[9px] min-w-[17px] h-[17px] px-1 rounded-full ring-2 ring-white shadow-2xs" />
-                </span>
-              </div>
-              <span className="hidden md:inline text-xs font-semibold text-emerald-950 whitespace-nowrap pl-0.5">
-                Quote Basket
+              <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-emerald-900 group-hover:scale-105 transition-transform" strokeWidth={1.8} />
+              <span className="absolute -top-1 -right-1 flex items-center justify-center">
+                <Count className="bg-[#ea580c] text-white font-black text-[9.5px] sm:text-[10px] min-w-[17px] sm:min-w-[18px] h-[17px] sm:h-[18px] px-1 rounded-full ring-2 ring-white shadow-xs flex items-center justify-center" />
               </span>
             </Link>
 
@@ -178,7 +165,7 @@ function NavbarInner() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90 bg-slate-50/80 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0"
+              className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 bg-white/80 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0"
               aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
             >

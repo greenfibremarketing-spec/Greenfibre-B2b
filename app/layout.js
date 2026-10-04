@@ -5,7 +5,6 @@ import { QuoteProvider } from "@/components/Quote";
 import { AuthProvider } from "@/components/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import GreenyLoader from "@/components/GreenyLoader";
 
 const corporateFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -38,9 +37,6 @@ export default function RootLayout({ children }) {
       <body className="bg-white text-slate-800 font-sans antialiased min-h-screen flex flex-col">
         <AuthProvider>
           <QuoteProvider>
-            {/* Global Page Green Leaf Loader */}
-            <GreenyLoader />
-
             {/* Executive B2B Navigation Header */}
             <Navbar />
 
