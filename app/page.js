@@ -3,7 +3,8 @@ import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
 import HeroSwiper from "@/components/HeroSwiper";
 import BottleModelViewer from "@/components/BottleModelViewer";
-import { categories, getProducts, matchesProductCategory } from "@/lib/products";
+import { categories, getProducts } from "@/lib/products";
+import { ArrowRight } from "lucide-react";
 
 export default async function Home() {
   const allProducts = await getProducts();
@@ -18,49 +19,65 @@ export default async function Home() {
 
       {/* Featured Products Catalog */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+        <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
           <div>
-            <div className="badge-green mb-2">
+            <div className="badge-green mb-1.5 sm:mb-2">
               Wholesale Catalog
             </div>
-            <h2 className="section-title">
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
               Featured Products for Bulk Orders
             </h2>
           </div>
           <Link
             href="/products"
-            className="hidden sm:inline-flex btn-secondary text-xs sm:text-sm font-semibold self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
           >
-            View All ({allProducts.length} Products) →
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5 text-emerald-700" />
           </Link>
         </div>
 
         {/* Category Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-5 sm:mb-6 no-scrollbar touch-pan-x">
+          <Link
+            href="/products"
+            className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[#15803d] text-white hover:bg-[#166534] whitespace-nowrap shadow-2xs transition-all duration-150 active:scale-95 flex-shrink-0"
+          >
+            All Products
+          </Link>
           {categories
             .filter((c) => c !== "All Products")
-            .map((c) => {
-              const count = allProducts.filter((p) => matchesProductCategory(p, c)).length;
-
-              return (
-                <Link
-                  key={c}
-                  href={`/products?category=${encodeURIComponent(c)}`}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-brand-500 hover:text-brand-800 hover:bg-brand-50 whitespace-nowrap shadow-xs transition-all duration-150 hover:-translate-y-0.5"
-                >
-                  {c} <span className="text-slate-400 font-normal">({count})</span>
-                </Link>
-              );
-            })}
+            .map((c) => (
+              <Link
+                key={c}
+                href={`/products?category=${encodeURIComponent(c)}`}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-brand-500 hover:text-brand-800 hover:bg-brand-50 whitespace-nowrap shadow-2xs transition-all duration-150 hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
+              >
+                {c}
+              </Link>
+            ))}
         </div>
 
         {/* Products Grid */}
         {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {featuredProducts.map((p) => (
-              <Card key={p.slug} p={p} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-6">
+              {featuredProducts.map((p) => (
+                <Card key={p.slug} p={p} />
+              ))}
+            </div>
+
+            {/* Bottom View All Button */}
+            <div className="mt-6 sm:mt-8 flex justify-center">
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/90 hover:border-brand-500 text-slate-900 hover:text-brand-800 text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:scale-98"
+              >
+                <span>Explore Full Catalog ({allProducts.length} Products)</span>
+                <ArrowRight className="w-4 h-4 text-brand-700" />
+              </Link>
+            </div>
+          </>
         ) : (
           <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center space-y-3 flex flex-col items-center">
             <p className="text-sm font-semibold text-slate-700">No products in catalog yet</p>

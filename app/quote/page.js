@@ -508,27 +508,36 @@ export default function QuotePage() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
               <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-[10.5px] sm:text-xs font-bold flex-shrink-0">1</span>
-              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight truncate">Your Products</h3>
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight whitespace-nowrap">Your Products</h3>
               <span className="text-xs font-bold text-slate-400 flex-shrink-0">({count})</span>
             </div>
 
             {items.length > 0 && (
-              <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-                {/* Adjust Quantities button on left of Clear all */}
+              <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+                {/* Desktop: Browse more products button */}
+                <Link
+                  href="/products"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
+                  title="Browse catalog to add more products"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Add More Products</span>
+                </Link>
+
+                {/* Desktop: Adjust Quantities button */}
                 <button
                   type="button"
                   onClick={() => setIsAdjustOpen(true)}
-                  className="inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-[#1b5e3f] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
                 >
-                  <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span className="hidden sm:inline">Adjust Quantities</span>
-                  <span className="sm:hidden">Edit Quantities</span>
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Adjust Quantities</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={clear}
-                  className="text-[11px] sm:text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1 py-1 whitespace-nowrap"
+                  className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1.5 py-1 whitespace-nowrap"
                 >
                   Clear all
                 </button>
@@ -723,6 +732,27 @@ export default function QuotePage() {
                   >
                     <span>Request this quote</span>
                   </button>
+                </div>
+
+                {/* Continue Shopping / Browse More Products Banner */}
+                <div className="pt-2">
+                  <Link
+                    href="/products"
+                    className="w-full py-2.5 sm:py-3 px-3.5 sm:px-4 rounded-xl border border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 transition-all duration-200 flex items-center justify-between gap-2 group shadow-2xs hover:shadow-xs active:scale-[0.99]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-800 shadow-2xs group-hover:scale-110 transition-transform flex-shrink-0">
+                        <Plus className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 whitespace-nowrap">
+                        Add more products
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 group-hover:text-emerald-900 flex-shrink-0">
+                      <span>Browse Catalog</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -1224,7 +1254,7 @@ export default function QuotePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-4 py-3 sm:px-6 sm:py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <div className="px-4 py-3 sm:px-6 sm:py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
               <div>
                 <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                   Total Units: <span className="font-bold text-slate-800">{totalUnitsCount}</span>
@@ -1234,13 +1264,24 @@ export default function QuotePage() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsAdjustOpen(false)}
-                className="btn-primary py-1.5 sm:py-2 px-4 sm:px-6 text-xs font-bold shadow-xs cursor-pointer"
-              >
-                Save &amp; Close
-              </button>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/products"
+                  onClick={() => setIsAdjustOpen(false)}
+                  className="inline-flex items-center gap-1 py-1.5 sm:py-2 px-3 sm:px-3.5 rounded-xl border border-emerald-300/90 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs shadow-2xs transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Add Products</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAdjustOpen(false)}
+                  className="btn-primary py-1.5 sm:py-2 px-4 sm:px-5 text-xs font-bold shadow-xs cursor-pointer whitespace-nowrap"
+                >
+                  Save &amp; Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
