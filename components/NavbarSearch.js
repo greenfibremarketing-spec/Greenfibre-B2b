@@ -205,7 +205,7 @@ export default function NavbarSearch() {
                 <Package className="w-8 h-8 text-slate-300 mx-auto" />
                 <div className="text-xs font-bold text-slate-800">No products found</div>
                 <div className="text-[11px] text-slate-500">
-                  Try searching for &quot;tumbler&quot;, &quot;husk&quot;, &quot;mug&quot;, or &quot;gift set&quot;.
+                  Try searching for &quot;mug&quot;, &quot;bottle&quot;, &quot;bowl&quot;, &quot;gift set&quot;, or &quot;planter&quot;.
                 </div>
               </div>
             )
@@ -215,21 +215,28 @@ export default function NavbarSearch() {
                 Popular Searches
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {["Coffee Mug", "Thermal Bottle", "Gift Hampers", "Dining Bowls", "Bento Lunchbox"].map(
-                  (term) => (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => {
-                        setQuery(term);
-                        inputRef.current?.focus();
-                      }}
-                      className="px-2.5 py-1 rounded-md bg-slate-50 hover:bg-brand-50 hover:text-brand-800 border border-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
-                    >
-                      {term}
-                    </button>
-                  )
-                )}
+                {[
+                  "Classic Mug",
+                  "Viora Bottle",
+                  "Soup Bowl",
+                  "Gift Sets",
+                  "Table Planter",
+                  "Canister",
+                  "Casserole",
+                  "Tissue Box"
+                ].map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      setQuery(term);
+                      inputRef.current?.focus();
+                    }}
+                    className="px-2.5 py-1 rounded-md bg-slate-50 hover:bg-brand-50 hover:text-brand-800 border border-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    {term}
+                  </button>
+                ))}
               </div>
             </div>
           )}
