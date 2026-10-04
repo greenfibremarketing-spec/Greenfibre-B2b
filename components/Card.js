@@ -32,15 +32,6 @@ export default function Card({ p, context }) {
           </div>
         )}
 
-        {/* Finishes Badge - floating top-right */}
-        {p.colours?.length > 1 && (
-          <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-900/65 text-white backdrop-blur-xs">
-              {p.colours.length} finishes
-            </span>
-          </div>
-        )}
-
         <Link href={productHref} className="block w-full h-full relative" aria-label={`View ${p.name}`}>
           {p.image ? (
             <img
@@ -80,18 +71,13 @@ export default function Card({ p, context }) {
             {p.tagline || p.desc}
           </p>
 
-          {/* Pricing & MOQ */}
-          <div className="flex items-baseline justify-between mt-1.5">
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
-                {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium">
-                /{p.unit || "unit"}
-              </span>
-            </div>
-            <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-bold bg-slate-50 text-slate-800 border border-slate-200 whitespace-nowrap">
-              MOQ {p.moq}
+          {/* Pricing */}
+          <div className="flex items-baseline gap-1 mt-1.5">
+            <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+              {typeof p.price === "number" ? `₹${p.price}` : "₹0"}
+            </span>
+            <span className="text-[10px] text-slate-400 font-medium">
+              /{p.unit || "unit"}
             </span>
           </div>
         </div>

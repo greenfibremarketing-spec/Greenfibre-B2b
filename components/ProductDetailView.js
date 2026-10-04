@@ -77,46 +77,46 @@ export const B2B_OCCASIONS = [
         max: 100,
         rangeLabel: "10–100 Sets",
         price: 1700,
-        savingsPct: 10,
+        savingsPct: 15,
         leadTime: "7–10 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 2 (101+) unlocks 3 →",
-        perks: ["10% Off MRP", "Welcome & Thank-You Kit Included", "Standard 7-10 Day Production"]
+        perks: ["15% Off MRP", "Welcome & Thank-You Kit Included", "Standard 7-10 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Tier 2 — Personalized",
-        badge: "15% OFF",
+        badge: "20% OFF",
         isPopular: false,
         min: 101,
         max: 200,
         rangeLabel: "101–200 Sets",
         price: 1445,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 complimentary customizations below.",
         nextTierUnlockText: "Tier 3 (201+) unlocks all 5 →",
-        perks: ["15% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
+        perks: ["20% Off MRP", "Your Name Engraved on Product", "Priority Dispatch"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
         title: "Tier 3 — Fully Custom",
-        badge: "Max Value",
+        badge: "25% OFF",
         isPopular: false,
         min: 201,
         max: null,
         rangeLabel: "201+ Sets",
         price: 1360,
-        savingsPct: 20,
+        savingsPct: 25,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 complimentary customizations included.",
         nextTierUnlockText: "",
-        perks: ["20% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
+        perks: ["25% Off MRP", "Custom Product Name + Branded Sleeve", "Dedicated Account Manager"]
       }
     ],
     customizations: [
@@ -185,46 +185,46 @@ export const B2B_OCCASIONS = [
         max: 100,
         rangeLabel: "10–100 Sets",
         price: 1900,
-        savingsPct: 10,
+        savingsPct: 15,
         leadTime: "5–7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 anniversary customizations below.",
         nextTierUnlockText: "Silver Jubilee (101+) unlocks 3 →",
-        perks: ["10% Off MRP", "Gold Satin Ribbon", "5-7 Day Production"]
+        perks: ["15% Off MRP", "Gold Satin Ribbon", "5-7 Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Silver Jubilee",
-        badge: "15% OFF",
+        badge: "20% OFF",
         isPopular: false,
         min: 101,
         max: 200,
         rangeLabel: "101–200 Sets",
         price: 1530,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 anniversary customizations below.",
         nextTierUnlockText: "Platinum (201+) unlocks all 5 →",
-        perks: ["15% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
+        perks: ["20% Off MRP", "3 Free Customizations", "Expedited 5-Day Production"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
         title: "Platinum Jubilee",
-        badge: "Max Value",
+        badge: "25% OFF",
         isPopular: false,
         min: 201,
         max: null,
         rangeLabel: "201+ Sets",
         price: 1440,
-        savingsPct: 20,
+        savingsPct: 25,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 anniversary customizations included complimentary.",
         nextTierUnlockText: "",
-        perks: ["20% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
+        perks: ["25% Off MRP", "All 5 Free", "White-Glove Delivery", "Commemorative Certificate"]
       }
     ],
     customizations: [
@@ -293,46 +293,46 @@ export const B2B_OCCASIONS = [
         max: 100,
         rangeLabel: "10–100 Sets",
         price: 1800,
-        savingsPct: 10,
+        savingsPct: 15,
         leadTime: "7–8 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 wedding customizations below.",
         nextTierUnlockText: "Grand Wedding (101+) unlocks 3 →",
-        perks: ["10% Off MRP", "Blush Ribbon", "7-Day Production"]
+        perks: ["15% Off MRP", "Blush Ribbon", "7-Day Production"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Grand Wedding",
-        badge: "15% OFF",
+        badge: "20% OFF",
         isPopular: false,
         min: 101,
         max: 200,
         rangeLabel: "101–200 Sets",
         price: 1530,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "5–7 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 wedding customizations below.",
         nextTierUnlockText: "Royal Wedding (201+) unlocks all 5 →",
-        perks: ["15% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
+        perks: ["20% Off MRP", "3 Free Customizations", "Free Physical Sample Kit"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
         title: "Royal Wedding",
-        badge: "Max Value",
+        badge: "25% OFF",
         isPopular: false,
         min: 201,
         max: null,
         rangeLabel: "201+ Sets",
         price: 1440,
-        savingsPct: 20,
+        savingsPct: 25,
         leadTime: "3–5 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 wedding customizations included free.",
         nextTierUnlockText: "",
-        perks: ["20% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
+        perks: ["25% Off MRP", "All 5 Free", "Doorstep Venue Delivery", "Dedicated Wedding RM"]
       }
     ],
     customizations: [
@@ -401,46 +401,46 @@ export const B2B_OCCASIONS = [
         max: 100,
         rangeLabel: "10–100 Sets",
         price: 1750,
-        savingsPct: 10,
+        savingsPct: 15,
         leadTime: "7 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "Choose any 2 of 5 festive customizations below.",
         nextTierUnlockText: "Festive Bulk (101+) unlocks 3 →",
-        perks: ["10% Off MRP", "Festive Hamper Box", "2 Free Customizations"]
+        perks: ["15% Off MRP", "Festive Hamper Box", "2 Free Customizations"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Festive Bulk",
-        badge: "15% OFF",
+        badge: "20% OFF",
         isPopular: false,
         min: 101,
         max: 200,
         rangeLabel: "101–200 Sets",
         price: 1485,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "5 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 festive customizations free.",
         nextTierUnlockText: "Mega Festive (201+) unlocks all 5 →",
-        perks: ["15% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
+        perks: ["20% Off MRP", "3 Free Customizations", "Rush 5-Day Production"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
         title: "Mega Festive",
-        badge: "Max Value",
+        badge: "25% OFF",
         isPopular: false,
         min: 201,
         max: null,
         rangeLabel: "201+ Sets",
         price: 1400,
-        savingsPct: 20,
+        savingsPct: 25,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 festive customizations included free.",
         nextTierUnlockText: "",
-        perks: ["20% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
+        perks: ["25% Off MRP", "All 5 Free", "3-Day Rush Production", "Dedicated Festive RM"]
       }
     ],
     customizations: [
@@ -509,46 +509,46 @@ export const B2B_OCCASIONS = [
         max: 100,
         rangeLabel: "10–100 Sets",
         price: 1700,
-        savingsPct: 10,
+        savingsPct: 15,
         leadTime: "5 Days",
         allowedCustomizations: 2,
         customizationAllowanceText: "2 complimentary onboarding customizations included.",
         nextTierUnlockText: "Growing Team (101+) unlocks 3 →",
-        perks: ["10% Off MRP", "Suitable for startups", "2 Free Customizations"]
+        perks: ["15% Off MRP", "Suitable for startups", "2 Free Customizations"]
       },
       {
         id: "tier-2",
         tierNumber: 2,
         title: "Growing Team",
-        badge: "15% OFF",
+        badge: "20% OFF",
         isPopular: false,
         min: 101,
         max: 200,
         rangeLabel: "101–200 Sets",
         price: 1445,
-        savingsPct: 15,
+        savingsPct: 20,
         leadTime: "4 Days",
         allowedCustomizations: 3,
         customizationAllowanceText: "Choose any 3 of 5 onboarding customizations free.",
         nextTierUnlockText: "Enterprise (201+) unlocks all 5 →",
-        perks: ["15% Off MRP", "3 Free Customizations", "Priority Production"]
+        perks: ["20% Off MRP", "3 Free Customizations", "Priority Production"]
       },
       {
         id: "tier-3",
         tierNumber: 3,
         title: "Enterprise Hiring",
-        badge: "Max Value",
+        badge: "25% OFF",
         isPopular: false,
         min: 201,
         max: null,
         rangeLabel: "201+ Sets",
         price: 1360,
-        savingsPct: 20,
+        savingsPct: 25,
         leadTime: "3 Days",
         allowedCustomizations: 5,
         customizationAllowanceText: "All 5 onboarding customizations included.",
         nextTierUnlockText: "",
-        perks: ["20% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
+        perks: ["25% Off MRP", "All 5 Free", "Dedicated HR RM", "Monthly Batch Scheduling"]
       }
     ],
     customizations: [
@@ -722,7 +722,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   // Tiers: same discount percentages but now just for unlocking perks / displaying the tier.
   // The actual final price = wholesaleUnitPrice × qty × (1 - discountPct/100)
   const currentTiers = activeOccasion.tiers.map((t) => {
-    const discountPct = t.tierNumber === 1 ? 10 : t.tierNumber === 2 ? 15 : 20;
+    const discountPct = t.tierNumber === 1 ? 15 : t.tierNumber === 2 ? 20 : 25;
     // Effective per-unit after discount (for display in tier chips)
     const effectivePricePerUnit = wholesaleUnitPrice > 0
       ? Math.round(wholesaleUnitPrice * (1 - discountPct / 100))
@@ -787,7 +787,13 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       originalBasePrice: originalPrice,
       retailPrice: originalPrice,
       activeTierTitle: "Bundle 5% Off Pairing",
-      bundleDiscountApplied: true
+      bundleDiscountApplied: true,
+      isPair: true,
+      isPairItem: true,
+      parentSlug: product.slug,
+      pairedWithSlug: product.slug,
+      pairedWithKey: `${product.slug}-${selectedColour || "Standard"}`,
+      parentName: product.name
     };
 
     add(pairPayload, rel.colours ? rel.colours[0] : "Standard", relQty);
@@ -843,7 +849,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   };
 
   // Pricing breakdown:
-  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 10 : activeTierObj.tierNumber === 2 ? 15 : 20;
+  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 15 : activeTierObj.tierNumber === 2 ? 20 : 25;
   // Gross wholesale subtotal before discount
   const grossWholesaleSubtotal = wholesaleUnitPrice * qty;
   // Discount amount on the total
@@ -866,7 +872,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   };
 
   const handleQtyInputBlur = () => {
-    const minMoq = currentMoq || 10;
+    const minMoq = Math.max(10, currentMoq || 10);
     const parsed = parseInt(qtyInput, 10);
     if (isNaN(parsed) || parsed < minMoq) {
       setQty(minMoq);
@@ -878,14 +884,14 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   };
 
   const handleAdjustQty = (delta) => {
-    const minMoq = currentMoq || 10;
+    const minMoq = Math.max(10, currentMoq || 10);
     const newQty = Math.max(minMoq, (qty || minMoq) + delta);
     setQty(newQty);
     setQtyInput(String(newQty));
   };
 
   const handleSetExactQty = (targetQty) => {
-    const minMoq = currentMoq || 10;
+    const minMoq = Math.max(10, currentMoq || 10);
     const finalQty = Math.max(minMoq, targetQty);
     setQty(finalQty);
     setQtyInput(String(finalQty));
@@ -920,6 +926,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     );
     return {
       ...product,
+      isPrimary: true,
+      isPair: false,
+      isPairItem: false,
       unit: unitLabel,
       price: effectiveUnitPrice,                   // after-discount per-unit price
       wholesalePrice: wholesaleUnitPrice,           // original wholesale unit price
@@ -2484,7 +2493,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "12px",
+            padding: "8px",
             backgroundColor: "rgba(15, 23, 42, 0.72)",
             backdropFilter: "blur(8px)",
             WebkitBackdropFilter: "blur(8px)",
@@ -2498,10 +2507,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             style={{
               position: "relative",
               width: "100%",
-              maxWidth: "520px",
-              maxHeight: "88vh",
+              maxWidth: "480px",
+              maxHeight: "90vh",
               background: "#ffffff",
-              borderRadius: "24px",
+              borderRadius: "20px",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.06)",
               display: "flex",
               flexDirection: "column",
@@ -2518,53 +2527,53 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               const primaryPairQty = primaryAddon ? getPairQty(primaryAddon.slug) : qty;
 
               return (
-                <div className="p-5 sm:p-7 space-y-4 bg-white overflow-y-auto flex-1">
+                <div className="p-4 sm:p-6 space-y-3 sm:space-y-4 bg-white overflow-y-auto flex-1">
                   {/* Top row: Bundle Offer Pill & Close Button */}
                   <div className="flex items-center justify-between">
-                    <div className="inline-flex items-center gap-2 text-emerald-800 text-xs sm:text-[13px] font-semibold tracking-wide">
-                      <span className="w-5 h-[2px] bg-emerald-600 rounded-full inline-block"></span>
+                    <div className="inline-flex items-center gap-1.5 sm:gap-2 text-emerald-800 text-xs sm:text-[13px] font-semibold tracking-wide">
+                      <span className="w-4 sm:w-5 h-[2px] bg-emerald-600 rounded-full inline-block"></span>
                       <span>Bundle offer</span>
                     </div>
                     <button
                       type="button"
                       onClick={handleCloseModal}
-                      className="w-8 h-8 rounded-full border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-slate-200 text-slate-400 hover:text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all cursor-pointer"
                       aria-label="Close"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
 
                   {/* Headline & Subtitle */}
-                  <div className="space-y-1.5 pt-0.5">
-                    <h2 className="text-2xl sm:text-[26px] font-bold text-[#0f3428] tracking-tight leading-tight">
+                  <div className="space-y-1 sm:space-y-1.5">
+                    <h2 className="text-lg sm:text-[23px] font-bold text-[#0f3428] tracking-tight leading-snug sm:leading-tight">
                       Enjoy an Extra 5% Savings
                     </h2>
-                    <p className="text-slate-500 text-xs sm:text-[13px] leading-relaxed">
+                    <p className="text-slate-500 text-[11.5px] sm:text-[13px] leading-relaxed">
                       You&apos;re already saving {activeTierDiscountPct}% on your cart. Add {primaryAddon ? (primaryAddon.name.match(/^[aeiou]/i) ? `an ${primaryAddon.name}` : `a ${primaryAddon.name}`) : "a companion product"} and{" "}
                       <strong className="font-semibold text-slate-800">save 5% more on your overall order.</strong>
                     </p>
                   </div>
 
                   {/* Progress Bar (10% unlocked -> 15% with bundle) */}
-                  <div className="pt-2 pb-1 space-y-2">
+                  <div className="pt-1 pb-0.5 space-y-1.5">
                     <div className="relative flex items-center">
                       <div className="h-1 bg-slate-100 w-full rounded-full overflow-hidden">
                         <div className={`h-full bg-brand-600 transition-all duration-300 ${primaryIsAdded || anyItemAdded ? "w-full" : "w-[4%]"}`} />
                       </div>
                       {/* Left Dot */}
-                      <div className="absolute left-0 w-3 h-3 rounded-full bg-brand-600 ring-4 ring-brand-500/20 -translate-x-0.5" />
+                      <div className="absolute left-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-brand-600 ring-4 ring-brand-500/20 -translate-x-0.5" />
                       {/* Right Dot */}
-                      <div className={`absolute right-0 w-3 h-3 rounded-full transition-all duration-300 translate-x-0.5 ${primaryIsAdded || anyItemAdded
+                      <div className={`absolute right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 translate-x-0.5 ${primaryIsAdded || anyItemAdded
                         ? "bg-brand-600 ring-4 ring-brand-500/20"
                         : "border-2 border-slate-300 bg-white"
                         }`} />
                     </div>
                     <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-brand-700 font-semibold text-[11.5px]">
+                      <span className="text-brand-700 font-semibold text-[10.5px] sm:text-[11.5px]">
                         {activeTierDiscountPct}% off • unlocked
                       </span>
-                      <span className={`text-[11.5px] transition-colors ${primaryIsAdded || anyItemAdded ? "text-brand-700 font-bold" : "text-slate-400 font-normal"}`}>
+                      <span className={`text-[10.5px] sm:text-[11.5px] transition-colors ${primaryIsAdded || anyItemAdded ? "text-brand-700 font-bold" : "text-slate-400 font-normal"}`}>
                         {activeTierDiscountPct + 5}% off with bundle
                       </span>
                     </div>
@@ -2572,7 +2581,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                   {/* Add-on Product Card(s) with Quantity Stepper strictly for pair item */}
                   {hasAddons ? (
-                    <div className="space-y-2.5 pt-1">
+                    <div className="space-y-2 pt-0.5">
                       {relatedProducts.slice(0, 2).map((rel) => {
                         const isAdded = Boolean(pairAdded[rel.slug]);
                         const relQty = getPairQty(rel.slug);
@@ -2582,13 +2591,13 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         return (
                           <div
                             key={rel.slug}
-                            className={`rounded-2xl border p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${isAdded
+                            className={`rounded-xl sm:rounded-2xl border p-2.5 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 transition-all ${isAdded
                               ? "border-emerald-500 bg-emerald-50/20 shadow-xs"
                               : "border-slate-200/90 bg-[#fafbfc] hover:border-slate-300"
                               }`}
                           >
-                            <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                              <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1 relative">
+                            <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
+                              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-0.5 sm:p-1 relative">
                                 {rel.image ? (
                                   <img
                                     src={rel.image}
@@ -2599,47 +2608,47 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                     }}
                                   />
                                 ) : (
-                                  <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-lg">
+                                  <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-base sm:text-lg">
                                     {rel.name ? rel.name.charAt(0).toUpperCase() : "G"}
                                   </div>
                                 )}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h4 className="text-sm font-semibold text-slate-900 truncate leading-snug">
+                                <h4 className="text-xs sm:text-sm font-semibold text-slate-900 truncate leading-tight sm:leading-snug">
                                   {rel.name}
                                 </h4>
-                                <div className="flex items-baseline gap-1.5 mt-0.5">
-                                  <span className="text-sm font-bold text-slate-900">
+                                <div className="flex items-baseline gap-1 sm:gap-1.5 mt-0.5">
+                                  <span className="text-xs sm:text-sm font-bold text-slate-900">
                                     ₹{discP.toLocaleString("en-IN")}
                                   </span>
                                   {origP > 0 && discP < origP && (
-                                    <span className="text-xs text-slate-400 line-through">
+                                    <span className="text-[10px] sm:text-xs text-slate-400 line-through">
                                       ₹{origP.toLocaleString("en-IN")}
                                     </span>
                                   )}
-                                  <span className="text-[11px] text-slate-400 font-normal">
+                                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-normal">
                                     /{rel.unit || "pc"}
                                   </span>
                                 </div>
-                                <span className="inline-block mt-1 text-[10px] font-medium text-emerald-800 border border-emerald-200 bg-emerald-50/80 px-2 py-0.5 rounded-full">
+                                <span className="inline-block mt-0.5 sm:mt-1 text-[9px] sm:text-[10px] font-medium text-emerald-800 border border-emerald-200 bg-emerald-50/80 px-1.5 py-0.5 rounded-full">
                                   +5% more off on combined order
                                 </span>
                               </div>
                             </div>
 
-                            <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 flex-shrink-0">
+                            <div className="flex items-center justify-between sm:justify-end gap-2 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100/80 flex-shrink-0">
                               {/* Quantity Stepper for pair item */}
-                              <div className="inline-flex items-center bg-white border border-slate-200 rounded-xl p-0.5 shadow-2xs">
+                              <div className="inline-flex items-center bg-white border border-slate-200 rounded-lg sm:rounded-xl p-0.5 shadow-2xs">
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handlePairQtyChange(rel.slug, Math.max(1, relQty - 1));
                                   }}
-                                  className="w-6 h-6 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                                   aria-label="Decrease pair quantity"
                                 >
-                                  <Minus className="w-3 h-3" />
+                                  <Minus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 </button>
                                 <input
                                   type="text"
@@ -2650,7 +2659,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                     e.stopPropagation();
                                     handlePairQtyChange(rel.slug, e.target.value);
                                   }}
-                                  className="w-9 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
+                                  className="w-7 sm:w-9 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
                                   aria-label={`Quantity for ${rel.name}`}
                                 />
                                 <button
@@ -2659,10 +2668,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                     e.stopPropagation();
                                     handlePairQtyChange(rel.slug, relQty + 1);
                                   }}
-                                  className="w-6 h-6 rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
                                   aria-label="Increase pair quantity"
                                 >
-                                  <Plus className="w-3 h-3" />
+                                  <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 </button>
                               </div>
 
@@ -2670,7 +2679,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                               <button
                                 type="button"
                                 onClick={() => handleAddPairToQuote(rel)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs ${isAdded
+                                className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer shadow-2xs ${isAdded
                                   ? "bg-brand-600 text-white"
                                   : "border border-brand-600 text-brand-700 hover:bg-brand-600 hover:text-white"
                                   }`}
@@ -2678,12 +2687,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                               >
                                 {isAdded ? (
                                   <>
-                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
                                     <span>Added ({relQty})</span>
                                   </>
                                 ) : (
                                   <>
-                                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                                    <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[2.5]" />
                                     <span>Add ({relQty})</span>
                                   </>
                                 )}
@@ -2696,7 +2705,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   ) : null}
 
                   {/* Bottom Action CTAs */}
-                  <div className="space-y-2 pt-2">
+                  <div className="space-y-1.5 pt-1">
                     <button
                       type="button"
                       onClick={() => {
@@ -2705,7 +2714,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         }
                         setModalStep(2);
                       }}
-                      className="w-full py-3.5 rounded-2xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-500 active:bg-brand-700 shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2 active:scale-[0.98]"
+                      className="w-full py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold text-white bg-brand-600 hover:bg-brand-500 active:bg-brand-700 shadow-sm hover:shadow-md transition-all cursor-pointer text-center flex items-center justify-center gap-2 active:scale-[0.98]"
                     >
                       <span>
                         Add {primaryPairQty > 1 ? `${primaryPairQty}× ` : ""}{primaryAddon ? primaryAddon.name.toLowerCase() : "companion"} &amp; get {activeTierDiscountPct + 5}% off
@@ -2714,7 +2723,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
-                      className="w-full py-1 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-center"
+                      className="w-full py-0.5 sm:py-1 text-[11px] sm:text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-center"
                     >
                       No thanks, continue
                     </button>
@@ -2727,54 +2736,54 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             {modalStep === 2 && (
               <>
                 {/* Step 2 Header: Slim Dark Brand Green */}
-                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                <div className="bg-brand-700 text-white px-3.5 py-2.5 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
                     <span>🎉</span>
                     <span>You&apos;ve unlocked {activeTierObj.tierNumber === 1 ? "Tier 1 — Starter" : activeTierObj.tierNumber === 2 ? "Tier 2 — Personalized" : "Tier 3 — Fully Custom"}!</span>
                   </h2>
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
                     aria-label="Close"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
 
                 {/* Step 2 Body: Checklist of Included Perks */}
-                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-3 bg-slate-50/50">
+                <div className="overflow-y-auto flex-1 p-3 sm:p-5 space-y-2.5 sm:space-y-3 bg-slate-50/50">
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
+                    <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-500">
                       Included Perks Checklist
                     </span>
-                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-200">
                       Cumulative Value
                     </span>
                   </div>
 
                   {/* Perk 1: Tier 1 Starter (Always Unlocked at MOQ 10+) */}
                   <div
-                    className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-300 shadow-2xs relative overflow-hidden group"
+                    className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all duration-300 bg-white border-emerald-300 shadow-2xs relative overflow-hidden group"
                     style={{ animation: "gfPerkPopIn 0.35s ease-out forwards" }}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2.5 sm:gap-3">
                       <div
-                        className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
                         style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards" }}
                       >
-                        <Check className="w-4 h-4 stroke-[3]" />
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
                           <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                             Welcome &amp; Thank-You Kit included
                           </h4>
-                          <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                             Tier 1 Starter
                           </span>
                         </div>
-                        <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                        <p className="text-[10.5px] sm:text-xs text-slate-600 leading-relaxed mt-0.5 sm:mt-1">
                           A little something extra, free with your order. (Personalize message in Step 3)
                         </p>
                       </div>
@@ -2784,26 +2793,26 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   {/* Perk 2: Tier 2 Personalized (Unlocked at 101+ sets) */}
                   {activeTierObj.tierNumber >= 2 ? (
                     <div
-                      className="p-3.5 rounded-2xl border transition-all duration-300 bg-white border-emerald-400 shadow-2xs relative overflow-hidden group"
+                      className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all duration-300 bg-white border-emerald-400 shadow-2xs relative overflow-hidden group"
                       style={{ animation: "gfPerkPopIn 0.45s ease-out forwards" }}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2.5 sm:gap-3">
                         <div
-                          className="w-7 h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                          className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
                           style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.1s" }}
                         >
-                          <Check className="w-4 h-4 stroke-[3]" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                               Your Name Engraved on the Product
                             </h4>
-                            <span className="text-[10px] font-extrabold text-brand-800 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
+                            <span className="text-[9px] sm:text-[10px] font-extrabold text-brand-800 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">
                               Tier 2 Perk ✨
                             </span>
                           </div>
-                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                          <p className="text-[10.5px] sm:text-xs text-slate-600 leading-relaxed mt-0.5 sm:mt-1">
                             Free laser engraving of individual recipient names or company text. (Enter in Step 3)
                           </p>
                         </div>
@@ -2811,35 +2820,35 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
                   ) : (
                     /* Dimmed Locked State for Tier 2 */
-                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-2">
-                      <div className="flex items-start gap-3">
-                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Lock className="w-3.5 h-3.5" />
+                    <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-1.5 sm:space-y-2">
+                      <div className="flex items-start gap-2.5 sm:gap-3">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">
                               Your Name Engraved on the Product
                             </h4>
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                               Tier 2 (101–200 Sets)
                             </span>
                           </div>
-                          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
+                          <p className="text-[10.5px] sm:text-xs text-slate-500 leading-relaxed mt-0.5 sm:mt-1">
                             Free laser engraving of individual recipient names or company text.
                           </p>
                         </div>
                       </div>
-                      <div className="pl-10 pt-1 flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-slate-500 font-medium">
+                      <div className="pl-8 sm:pl-10 pt-0.5 flex items-center justify-between gap-2">
+                        <span className="text-[9.5px] sm:text-[10px] text-slate-500 font-medium">
                           Add {Math.max(0, 101 - qty)} more sets to unlock
                         </span>
                         <button
                           type="button"
                           onClick={() => handleSetExactQty(101)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                          className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
-                          <Zap className="w-3 h-3 text-brand-600" />
+                          <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-brand-600" />
                           <span>Upgrade to 101 sets</span>
                         </button>
                       </div>
@@ -2849,26 +2858,26 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   {/* Perk 3: Tier 3 Fully Custom (Unlocked at 201+ sets) */}
                   {activeTierObj.tierNumber >= 3 ? (
                     <div
-                      className="p-3.5 rounded-2xl border transition-all duration-300 bg-gradient-to-r from-amber-50/50 via-white to-emerald-50/50 border-amber-300 shadow-2xs relative overflow-hidden group"
+                      className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all duration-300 bg-gradient-to-r from-amber-50/50 via-white to-emerald-50/50 border-amber-300 shadow-2xs relative overflow-hidden group"
                       style={{ animation: "gfPerkPopIn 0.55s ease-out forwards" }}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2.5 sm:gap-3">
                         <div
-                          className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
+                          className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs mt-0.5"
                           style={{ animation: "gfCheckPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 0.2s" }}
                         >
-                          <Check className="w-4 h-4 stroke-[3]" />
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
                               Custom Product Name + Branded Box Sleeve
                             </h4>
-                            <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                            <span className="text-[9px] sm:text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
                               Tier 3 VIP 👑
                             </span>
                           </div>
-                          <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed mt-1">
+                          <p className="text-[10.5px] sm:text-xs text-slate-600 leading-relaxed mt-0.5 sm:mt-1">
                             Custom product naming &amp; branded sleeve. (Set name in Step 3; logo collected via phone/WhatsApp)
                           </p>
                         </div>
@@ -2876,35 +2885,35 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
                   ) : (
                     /* Dimmed Locked State for Tier 3 */
-                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-2">
-                      <div className="flex items-start gap-3">
-                        <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Lock className="w-3.5 h-3.5" />
+                    <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 opacity-75 hover:opacity-100 transition-all duration-200 space-y-1.5 sm:space-y-2">
+                      <div className="flex items-start gap-2.5 sm:gap-3">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
                             <h4 className="text-xs sm:text-sm font-bold text-slate-700 leading-tight">
                               Custom Product Name + Branded Box Sleeve
                             </h4>
-                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                               Tier 3 (201+ Sets)
                             </span>
                           </div>
-                          <p className="text-[11px] sm:text-xs text-slate-500 leading-relaxed mt-1">
+                          <p className="text-[10.5px] sm:text-xs text-slate-500 leading-relaxed mt-0.5 sm:mt-1">
                             Custom product naming &amp; branded sleeve. (Logo collected via phone/WhatsApp)
                           </p>
                         </div>
                       </div>
-                      <div className="pl-10 pt-1 flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-slate-500 font-medium">
+                      <div className="pl-8 sm:pl-10 pt-0.5 flex items-center justify-between gap-2">
+                        <span className="text-[9.5px] sm:text-[10px] text-slate-500 font-medium">
                           Add {Math.max(0, 201 - qty)} more sets to unlock
                         </span>
                         <button
                           type="button"
                           onClick={() => handleSetExactQty(201)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:border-amber-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                          className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 hover:border-amber-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
-                          <Crown className="w-3 h-3 text-amber-600" />
+                          <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-600" />
                           <span>Upgrade to 201 sets</span>
                         </button>
                       </div>
@@ -2913,36 +2922,36 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 </div>
 
                 {/* Step 2 Footer: Order Summary & Actions */}
-                <div className="flex-shrink-0 px-5 py-4 border-t border-slate-200 bg-white space-y-3">
+                <div className="flex-shrink-0 px-3.5 py-3 sm:px-5 sm:py-4 border-t border-slate-200 bg-white space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-slate-500 text-[11px] font-medium block">Order Snapshot:</span>
-                      <span className="font-extrabold text-slate-900 text-sm">
+                      <span className="text-slate-500 text-[10px] sm:text-[11px] font-medium block">Order Snapshot:</span>
+                      <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
                         {qty} {unitLabelPlural} • ₹{estimatedSubtotal.toLocaleString("en-IN")}
                       </span>
                     </div>
                     {totalSavings > 0 && (
-                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
+                      <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-emerald-200">
                         Saved ₹{totalSavings.toLocaleString("en-IN")} ({activeTierDiscountPct}% OFF)
                       </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setModalStep(1)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
+                      className="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
                     >
                       ← Back to Add-ons
                     </button>
                     <button
                       type="button"
                       onClick={() => setModalStep(3)}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
+                      className="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
                     >
-                      <span>Next: Personalize Order</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <span>Next: Personalize</span>
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
@@ -2953,77 +2962,77 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             {modalStep === 3 && (
               <>
                 {/* Step 3 Header: Slim Dark Brand Green */}
-                <div className="bg-brand-700 text-white px-5 py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
+                <div className="bg-brand-700 text-white px-3.5 py-2.5 sm:px-5 sm:py-3.5 flex items-center justify-between gap-3 flex-shrink-0 border-b border-brand-800">
+                  <h2 className="text-sm sm:text-lg font-bold text-white tracking-tight flex items-center gap-2 truncate">
                     <span>💌</span>
                     <span>Personalize Order &amp; Customizations</span>
                   </h2>
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
+                    className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center cursor-pointer flex-shrink-0 transition-all bg-white/20 hover:bg-white/35 text-white shadow-xs"
                     aria-label="Close"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </button>
                 </div>
 
                 {/* Step 3 Body: Form Inputs for Card, Engraving, and Custom Product Name */}
-                <div className="overflow-y-auto flex-1 p-4 sm:p-5 space-y-4 bg-slate-50/50">
+                <div className="overflow-y-auto flex-1 p-3 sm:p-5 space-y-3 sm:space-y-4 bg-slate-50/50">
                   {/* Section 1: Kit Card Message (Tier 1+) */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
-                      <div className="w-7 h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                        <FileText className="w-3.5 h-3.5" />
+                  <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-brand-700 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="font-bold text-emerald-950 block">
+                        <span className="font-bold text-emerald-950 block text-[11px] sm:text-xs">
                           Tier 1 Starter Perk (Included in all {qty} {unitLabelPlural}):
                         </span>
-                        <span className="text-[11px] text-emerald-800">
+                        <span className="text-[10px] sm:text-[11px] text-emerald-800">
                           Custom printed plantable seed paper or kraft story card inside each gift box.
                         </span>
                       </div>
                     </div>
 
                     {/* Input 1: Sender Name */}
-                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <div className="space-y-1 bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-2xs">
                       <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
-                          <Building2 className="w-3.5 h-3.5 text-brand-700" />
-                          <span>Sender Name / Organization (From)</span>
+                          <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-700" />
+                          <span>Sender Name / Org (From)</span>
                         </span>
-                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                        <span className="text-[9.5px] text-slate-400 font-normal">Optional</span>
                       </label>
                       <input
                         type="text"
                         value={senderName}
                         onChange={(e) => setSenderName(e.target.value)}
-                        placeholder="e.g. Acme Corp Leadership Team / Rajesh Sharma"
-                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                        placeholder="e.g. Acme Corp / Rajesh Sharma"
+                        className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
                       />
                     </div>
 
                     {/* Input 2: Receiver Name */}
-                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <div className="space-y-1 bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-2xs">
                       <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
                         <span className="flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-brand-700" />
-                          <span>Receiver Name / Recipient Group (To)</span>
+                          <Users className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-700" />
+                          <span>Receiver Name / Group (To)</span>
                         </span>
-                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                        <span className="text-[9.5px] text-slate-400 font-normal">Optional</span>
                       </label>
                       <input
                         type="text"
                         value={receiverName}
                         onChange={(e) => setReceiverName(e.target.value)}
-                        placeholder="e.g. Valued Partner / Jane Smith / Team Member"
-                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                        placeholder="e.g. Valued Partner / Jane Smith"
+                        className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
                       />
                     </div>
 
                     {/* Input 3: Gift Message with 50-60 Word Counter */}
-                    <div className="space-y-2 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-2xs">
+                    <div className="space-y-1.5 bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200 shadow-2xs">
                       {(() => {
                         const messageWordCount = giftMessage.trim()
                           ? giftMessage.trim().split(/\s+/).filter(Boolean).length
@@ -3031,13 +3040,13 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                         return (
                           <>
-                            <div className="flex items-center justify-between flex-wrap gap-1.5">
+                            <div className="flex items-center justify-between flex-wrap gap-1">
                               <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                                <FileText className="w-3.5 h-3.5 text-brand-700" />
+                                <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-700" />
                                 <span>Card Message (50–60 words)</span>
                               </label>
                               <span
-                                className={`text-[10.5px] font-extrabold px-2.5 py-0.5 rounded-full border transition-all ${messageWordCount >= 50 && messageWordCount <= 60
+                                className={`text-[9.5px] sm:text-[10.5px] font-extrabold px-2 py-0.5 rounded-full border transition-all ${messageWordCount >= 50 && messageWordCount <= 60
                                   ? "bg-emerald-100 text-emerald-900 border-emerald-300"
                                   : messageWordCount > 60
                                     ? "bg-amber-100 text-amber-900 border-amber-300"
@@ -3045,21 +3054,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                   }`}
                               >
                                 {messageWordCount >= 50 && messageWordCount <= 60 ? (
-                                  <span>✓ {messageWordCount} / 60 words (Target met!)</span>
+                                  <span>✓ {messageWordCount} / 60 words</span>
                                 ) : messageWordCount > 60 ? (
-                                  <span>⚠ {messageWordCount} words ({messageWordCount - 60} words over target)</span>
+                                  <span>⚠ {messageWordCount} words (+{messageWordCount - 60})</span>
                                 ) : (
-                                  <span>{messageWordCount} / 60 words ({Math.max(0, 50 - messageWordCount)} more for 50)</span>
+                                  <span>{messageWordCount}/60 ({Math.max(0, 50 - messageWordCount)} to 50)</span>
                                 )}
                               </span>
                             </div>
 
                             <textarea
-                              rows={4}
+                              rows={3}
                               value={giftMessage}
                               onChange={(e) => setGiftMessage(e.target.value)}
-                              placeholder="Write your personalized 50 to 60 word greeting or thank-you message to print on the kit card..."
-                              className="w-full p-3 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all resize-none font-medium leading-relaxed"
+                              placeholder="Write your personalized greeting or thank-you message to print on the card..."
+                              className="w-full p-2.5 sm:p-3 rounded-lg sm:rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all resize-none font-medium leading-relaxed"
                             />
                           </>
                         );
@@ -3069,45 +3078,45 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                   {/* Section 2: Tier 2 Product Name Engraving */}
                   {activeTierObj.tierNumber >= 2 ? (
-                    <div className="space-y-1.5 bg-white p-3.5 rounded-2xl border border-emerald-300 shadow-2xs">
+                    <div className="space-y-1 bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-emerald-300 shadow-2xs">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                          <BadgeCheck className="w-3.5 h-3.5 text-brand-700" />
+                          <BadgeCheck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand-700" />
                           <span>Name / Text to Engrave on Product</span>
                         </label>
-                        <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                        <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                           Tier 2 Perk ✨
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 leading-snug">
-                        Enter recipient individual name(s), comma-separated list, or text to be laser engraved on each product:
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 leading-snug">
+                        Recipient name(s) or text to laser engrave:
                       </p>
                       <input
                         type="text"
                         value={engravingName}
                         onChange={(e) => setEngravingName(e.target.value)}
-                        placeholder="e.g. John Doe, Sarah Smith, Alex Wong / Company Tagline"
-                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                        placeholder="e.g. John Doe, Sarah Smith / Company Tagline"
+                        className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm bg-slate-50 border border-slate-200 focus:bg-white focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
                       />
                     </div>
                   ) : (
-                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 text-xs space-y-2">
+                    <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 text-xs space-y-1.5">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0">
-                            <Lock className="w-3.5 h-3.5" />
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center flex-shrink-0">
+                            <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           </div>
                           <div>
                             <h4 className="text-xs font-bold text-slate-700">Product Name Laser Engraving</h4>
-                            <p className="text-[11px] text-slate-500">Unlocked at 101–200 sets (Tier 2)</p>
+                            <p className="text-[10px] sm:text-[11px] text-slate-500">Unlocked at 101–200 sets (Tier 2)</p>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleSetExactQty(101)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                          className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-brand-50 hover:bg-brand-100 text-brand-800 border border-brand-200 hover:border-brand-300 transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
-                          <Zap className="w-3 h-3 text-brand-600" />
+                          <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-brand-600" />
                           <span>Unlock (101 sets)</span>
                         </button>
                       </div>
@@ -3116,54 +3125,54 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                   {/* Section 3: Tier 3 Custom Product Name & Logo Note */}
                   {activeTierObj.tierNumber >= 3 ? (
-                    <div className="space-y-2.5 bg-gradient-to-r from-amber-50/40 via-white to-emerald-50/30 p-3.5 rounded-2xl border border-amber-300 shadow-2xs">
+                    <div className="space-y-2 bg-gradient-to-r from-amber-50/40 via-white to-emerald-50/30 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-amber-300 shadow-2xs">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                          <Crown className="w-3.5 h-3.5 text-amber-600" />
+                          <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600" />
                           <span>Custom Product Name for Box Sleeve</span>
                         </label>
-                        <span className="text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                        <span className="text-[9px] sm:text-[10px] font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
                           Tier 3 VIP 👑
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-600 leading-snug">
-                        Give your gift sets a custom edition name or branded collection title for the box sleeve:
+                      <p className="text-[10px] sm:text-[11px] text-slate-600 leading-snug">
+                        Custom edition name or branded collection title for box sleeve:
                       </p>
                       <input
                         type="text"
                         value={customProductName}
                         onChange={(e) => setCustomProductName(e.target.value)}
-                        placeholder="e.g. Acme Leadership Onboarding Set 2026 / The Eco-Executive Kit"
-                        className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm bg-white border border-amber-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
+                        placeholder="e.g. Acme Leadership Onboarding Set 2026"
+                        className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm bg-white border border-amber-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-100 outline-none text-slate-900 transition-all font-medium"
                       />
 
                       {/* Logo Collection Notification Callout */}
-                      <div className="p-3 rounded-xl bg-amber-50/90 border border-amber-200 flex items-start gap-2.5 text-xs">
-                        <PhoneCall className="w-4 h-4 text-amber-800 flex-shrink-0 mt-0.5" />
-                        <div className="text-[11px] text-amber-950 leading-relaxed">
-                          <span className="font-bold text-amber-900 block">Company Logo / Vector Artwork:</span>
-                          In case of logo branding, our B2B team will contact you shortly via phone / WhatsApp after quote submission to collect your high-res logo file and share a digital 3D mockup for your approval.
+                      <div className="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-amber-50/90 border border-amber-200 flex items-start gap-2 text-xs">
+                        <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-800 flex-shrink-0 mt-0.5" />
+                        <div className="text-[10px] sm:text-[11px] text-amber-950 leading-relaxed">
+                          <span className="font-bold text-amber-900 block">Company Logo Artwork:</span>
+                          Our B2B team will contact you shortly via phone / WhatsApp after quote submission to collect your high-res logo file and share a 3D digital mockup.
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3.5 rounded-2xl border-2 border-dashed border-amber-200/80 bg-amber-50/30 text-xs space-y-2">
+                    <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border-2 border-dashed border-amber-200/80 bg-amber-50/30 text-xs space-y-1.5">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
-                            <Lock className="w-3.5 h-3.5" />
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                            <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                           </div>
                           <div>
-                            <h4 className="text-xs font-bold text-amber-950">Custom Product Name &amp; Branded Box Sleeve / Logo</h4>
-                            <p className="text-[11px] text-amber-900/80">Unlocked at 201+ sets (Tier 3 VIP)</p>
+                            <h4 className="text-xs font-bold text-amber-950">Custom Product Name &amp; Box Sleeve / Logo</h4>
+                            <p className="text-[10px] sm:text-[11px] text-amber-900/80">Unlocked at 201+ sets (Tier 3 VIP)</p>
                           </div>
                         </div>
                         <button
                           type="button"
                           onClick={() => handleSetExactQty(201)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1"
+                          className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] sm:text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white transition-all cursor-pointer shadow-2xs flex items-center gap-1"
                         >
-                          <Crown className="w-3 h-3" />
+                          <Crown className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                           <span>Unlock (201 sets)</span>
                         </button>
                       </div>
@@ -3172,37 +3181,37 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 </div>
 
                 {/* Step 3 Footer: Order Summary & Review Basket */}
-                <div className="flex-shrink-0 px-5 py-4 border-t border-slate-200 bg-white space-y-3">
+                <div className="flex-shrink-0 px-3.5 py-3 sm:px-5 sm:py-4 border-t border-slate-200 bg-white space-y-2.5 sm:space-y-3">
                   <div className="flex items-center justify-between text-xs">
                     <div>
-                      <span className="text-slate-500 text-[11px] font-medium block">Order Snapshot:</span>
-                      <span className="font-extrabold text-slate-900 text-sm">
+                      <span className="text-slate-500 text-[10px] sm:text-[11px] font-medium block">Order Snapshot:</span>
+                      <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
                         {qty} {unitLabelPlural} • ₹{estimatedSubtotal.toLocaleString("en-IN")}
                       </span>
                     </div>
                     {totalSavings > 0 && (
-                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-200">
+                      <span className="text-[10px] sm:text-[11px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-emerald-200">
                         Saved ₹{totalSavings.toLocaleString("en-IN")} ({activeTierDiscountPct}% OFF)
                       </span>
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setModalStep(2)}
-                      className="py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
+                      className="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold border border-slate-300 text-slate-700 hover:bg-slate-100 transition-all cursor-pointer text-center"
                     >
                       ← Back to Perks
                     </button>
                     <Link
                       href="/quote"
                       onClick={handleSaveCustomizations}
-                      className="py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
+                      className="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm bg-brand-700 hover:bg-brand-600 transition-all cursor-pointer text-center"
                     >
-                      <ShoppingBag className="w-4 h-4" />
+                      <ShoppingBag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       <span>Review Basket</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </Link>
                   </div>
                 </div>

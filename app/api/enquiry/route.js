@@ -111,8 +111,8 @@ export async function POST(req) {
       }
 
       const qty = Math.max(1, Math.floor(+i.qty || 1));
-      const isPairItem = Boolean(i.isPairItem || i.isPair || i.bundleDiscountApplied || i.moq === 1);
-      const minRequired = isPairItem ? 1 : (p?.moq || 1);
+      const isPairItem = Boolean(i.isPairItem === true || i.isPair === true);
+      const minRequired = isPairItem ? 1 : Math.max(10, Number(p?.moq) || 10);
 
       if (p && !(qty >= minRequired)) {
         return NextResponse.json(
@@ -123,8 +123,8 @@ export async function POST(req) {
 
       const mrp = +(i.mrp || p?.price || 0);
       const lineGross = mrp * qty;
-      // Dynamic Volume Tier Discount: Tier 1 (<=100): 10%, Tier 2 (101–200): 15%, Tier 3 (201+): 20%
-      const discountPct = Number(i.discountPct) || (qty >= 201 ? 20 : qty >= 101 ? 15 : 10);
+      // Dynamic Volume Tier Discount: Tier 1 (<=100): 15%, Tier 2 (101–200): 20%, Tier 3 (201+): 25%
+      const discountPct = Number(i.discountPct) || (qty >= 201 ? 25 : qty >= 101 ? 20 : 15);
       const tierNumber = Number(i.tierNumber) || (qty >= 201 ? 3 : qty >= 101 ? 2 : 1);
       const lineDiscount = Math.round(lineGross * (discountPct / 100));
       const lineNet = lineGross - lineDiscount;
@@ -148,6 +148,8 @@ export async function POST(req) {
         giftMessage: String(i.giftMessage || "").slice(0, 500),
         engravingName: String(i.engravingName || "").slice(0, 100),
         customProductName: String(i.customProductName || "").slice(0, 100),
+        packagingOption: String(i.packagingOption || "").slice(0, 100),
+        brandingNotes: String(i.brandingNotes || "").slice(0, 500),
         selectedCustomizations: Array.isArray(i.selectedCustomizations) ? i.selectedCustomizations : []
       });
     }

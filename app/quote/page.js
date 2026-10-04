@@ -28,20 +28,28 @@ const ORDER_PURPOSE_OPTIONS = [
 
 export default function QuotePage() {
   const {
-    items,
+    items = [],
+    lineItems = [],
     setQty,
     remove,
     clear,
-    count,
-    hasBundleBonus,
-    bundleBonusAmount,
-    netSubtotalBeforeBundle,
-    estimatedTotal,
+    count = 0,
+    hasBundleBonus = false,
+    bundleBonusAmount = 0,
+    totalGross = 0,
+    totalItemDiscount = 0,
+    totalUnitsCount = 0,
+    netSubtotalBeforeBundle = 0,
+    estimatedTotal = 0,
+    estimatedGST = 0,
+    totalWithGST = 0,
+    totalSavings = 0,
+    savingsPct = "0",
     getItemDiscountPct,
     getItemTierNumber,
     getItemTierLabel,
     BUNDLE_BONUS_PCT = 5,
-  } = useQuote() || { items: [], count: 0, estimatedTotal: 0, hasBundleBonus: false, netSubtotalBeforeBundle: 0, bundleBonusAmount: 0 };
+  } = useQuote() || {};
 
   const { user, isAuthenticated } = useAuth() || {};
 
@@ -94,27 +102,6 @@ export default function QuotePage() {
       setIsAdjustOpen(false);
     }
   }, [items.length, isAdjustOpen]);
-
-  // ── Per-item dynamic tier discount & display values ────────────────────────
-  const lineItems = items.map((item) => {
-    const isPair = Boolean(item.isPairItem || item.isPair || item.bundleDiscountApplied || item.activeTierTitle?.includes("Bundle") || item.moq === 1);
-    const minQty = isPair ? 1 : (item.moq || 10);
-    const mrp = item.wholesalePrice || item.originalBasePrice || item.mrp || 0;
-    const discountPct = getItemDiscountPct ? getItemDiscountPct(item.qty) : (item.qty >= 201 ? 20 : item.qty >= 101 ? 15 : 10);
-    const tierNumber = getItemTierNumber ? getItemTierNumber(item.qty) : (item.qty >= 201 ? 3 : item.qty >= 101 ? 2 : 1);
-    const lineGross = mrp * item.qty;
-    const lineDiscount = Math.round(lineGross * (discountPct / 100));
-    const lineNet = lineGross - lineDiscount;
-    return { ...item, isPair, minQty, mrp, discountPct, tierNumber, lineGross, lineDiscount, lineNet };
-  });
-
-  const totalGross = lineItems.reduce((s, it) => s + it.lineGross, 0);
-  const totalItemDiscount = lineItems.reduce((s, it) => s + it.lineDiscount, 0);
-  const totalUnitsCount = lineItems.reduce((s, it) => s + (it.qty || 0), 0);
-  const totalSavings = totalItemDiscount + (bundleBonusAmount || 0);
-  const savingsPct = totalGross > 0 ? ((totalSavings / totalGross) * 100).toFixed(1) : "0";
-  const estimatedGST = Math.round(estimatedTotal * 0.18);
-  const totalWithGST = estimatedTotal + estimatedGST;
 
   const [state, setState] = useState({ busy: false, error: null, ref: null });
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -518,29 +505,30 @@ export default function QuotePage() {
         {/* ── Left: Worksheet & Summary (Sticky / Fixed in view) ─────────────────────────── */}
         <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-20 self-start">
           {/* Section header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold">1</span>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Products</h3>
-              <span className="text-xs font-bold text-slate-400">({count})</span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-[10.5px] sm:text-xs font-bold flex-shrink-0">1</span>
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight truncate">Your Products</h3>
+              <span className="text-xs font-bold text-slate-400 flex-shrink-0">({count})</span>
             </div>
 
             {items.length > 0 && (
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
                 {/* Adjust Quantities button on left of Clear all */}
                 <button
                   type="button"
                   onClick={() => setIsAdjustOpen(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1b5e3f] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                  className="inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-semibold text-[#1b5e3f] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Adjust Quantities</span>
+                  <SlidersHorizontal className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <span className="hidden sm:inline">Adjust Quantities</span>
+                  <span className="sm:hidden">Edit Quantities</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={clear}
-                  className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1 py-1"
+                  className="text-[11px] sm:text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1 py-1 whitespace-nowrap"
                 >
                   Clear all
                 </button>
@@ -562,17 +550,17 @@ export default function QuotePage() {
           ) : (
             <div className="space-y-4">
               {/* ── Quotation Summary Card (Exact Design from Reference) ── */}
-              <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-sm p-4 sm:p-6 space-y-4 transition-all">
+              <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-xs sm:shadow-sm p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 transition-all">
                 {/* Top Header */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
-                      <h3 className="font-extrabold text-slate-900 text-base sm:text-[17px] tracking-tight">
+                <div className="flex items-start justify-between gap-2.5 sm:gap-3">
+                  <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                      <h3 className="font-extrabold text-slate-900 text-sm sm:text-[17px] tracking-tight truncate">
                         Green Fibre <span className="text-slate-400 font-normal">·</span> Quotation
                       </h3>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-[10.5px] sm:text-xs text-slate-500 truncate">
                       Direct factory wholesale rate <span className="text-slate-400">·</span> Pan-India logistics
                     </p>
                   </div>
@@ -580,7 +568,7 @@ export default function QuotePage() {
                   <button
                     type="button"
                     onClick={() => setIsAdjustOpen(true)}
-                    className="inline-flex items-center justify-center px-3 py-1 bg-white hover:bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                    className="inline-flex items-center justify-center px-2.5 py-1 sm:px-3 sm:py-1 bg-white hover:bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap active:scale-95 flex-shrink-0"
                   >
                     Edit qty
                   </button>
@@ -590,24 +578,28 @@ export default function QuotePage() {
                 <div className="border-t border-dashed border-slate-200" />
 
                 {/* Products List */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {lineItems.map((item) => (
                     <div key={item.key} className="space-y-1">
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start justify-between gap-2.5 sm:gap-3">
                         {/* Left Column: Name, Pair Badge, Details & Discount */}
                         <div className="min-w-0 flex-1 space-y-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-bold text-slate-900 text-sm sm:text-[15px] leading-snug">
+                            <h4 className="font-bold text-slate-900 text-xs sm:text-[15px] leading-snug">
                               {item.name}
                             </h4>
-                            {item.isPair && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded">
-                                Pair
+                            {item.isPair ? (
+                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded">
+                                Pair{item.parentName ? ` with ${item.parentName}` : ""}
+                              </span>
+                            ) : (
+                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded">
+                                Primary
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap">
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-slate-500 flex-wrap">
                             <span>{item.colour && item.colour !== "Standard" ? item.colour : "Standard"}</span>
                             <span className="text-slate-300">·</span>
                             <span>
@@ -624,7 +616,7 @@ export default function QuotePage() {
                               } × ₹{item.mrp.toLocaleString("en-IN")}
                             </span>
                             {item.discountPct > 0 && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-1">
+                              <span className="text-[9.5px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-0.5">
                                 {item.discountPct}% off
                               </span>
                             )}
@@ -633,10 +625,10 @@ export default function QuotePage() {
 
                         {/* Right Column: Net Price + Strikethrough Gross */}
                         <div className="text-right flex-shrink-0">
-                          <div className="text-base sm:text-lg font-black text-slate-900">
+                          <div className="text-sm sm:text-lg font-black text-slate-900">
                             ₹{item.lineNet.toLocaleString("en-IN")}
                           </div>
-                          <div className="text-xs text-slate-400 line-through">
+                          <div className="text-[10.5px] sm:text-xs text-slate-400 line-through">
                             ₹{item.lineGross.toLocaleString("en-IN")}
                           </div>
                         </div>
@@ -649,7 +641,7 @@ export default function QuotePage() {
                 <div className="border-t border-dashed border-slate-200" />
 
                 {/* Financial Ledger Breakdown */}
-                <div className="space-y-2.5 text-xs sm:text-sm text-slate-700">
+                <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-slate-700">
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600">Catalog gross ({totalUnitsCount} units)</span>
                     <span className="font-medium text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
@@ -667,19 +659,19 @@ export default function QuotePage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex items-center justify-between pt-0.5 sm:pt-1">
                     <span className="font-bold text-slate-900">Net taxable subtotal</span>
-                    <span className="font-extrabold text-slate-900 text-sm sm:text-base">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
+                    <span className="font-extrabold text-slate-900 text-xs sm:text-base">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
                   </div>
                 </div>
 
                 {/* Total Savings Pill / Card */}
                 {totalSavings > 0 && (
-                  <div className="bg-[#eef8f2] border border-[#cbebd4] rounded-xl px-4 py-2.5 flex items-center justify-between text-xs sm:text-sm">
-                    <span className="font-bold text-[#14532d]">
+                  <div className="bg-[#eef8f2] border border-[#cbebd4] rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between text-xs sm:text-sm">
+                    <span className="font-bold text-[#14532d] text-[11px] sm:text-sm">
                       You save ₹{totalSavings.toLocaleString("en-IN")} ({savingsPct}%)
                     </span>
-                    <span className="font-semibold text-[#15803d]">
+                    <span className="font-semibold text-[#15803d] text-[11px] sm:text-sm">
                       Direct factory rate
                     </span>
                   </div>
@@ -692,31 +684,31 @@ export default function QuotePage() {
                 </div>
 
                 {/* Big Solid Green Final Quotation Banner */}
-                <div className="bg-[#16a34a] text-white rounded-xl p-4 sm:p-5 flex items-center justify-between shadow-xs">
+                <div className="bg-[#16a34a] text-white rounded-xl p-3.5 sm:p-5 flex items-center justify-between shadow-xs">
                   <div>
-                    <h4 className="text-base sm:text-lg font-bold text-white leading-tight">
+                    <h4 className="text-sm sm:text-lg font-bold text-white leading-tight">
                       Final quotation
                     </h4>
-                    <span className="text-xs text-emerald-100 font-normal block mt-0.5">
+                    <span className="text-[10.5px] sm:text-xs text-emerald-100 font-normal block mt-0.5">
                       Incl. GST
                     </span>
                   </div>
-                  <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                  <div className="text-xl sm:text-3xl font-black text-white tracking-tight">
                     ₹{totalWithGST.toLocaleString("en-IN")}
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
                   <button
                     type="button"
                     onClick={handleDownloadPdf}
                     disabled={isDownloadingPdf}
-                    className="w-full py-3 px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                   >
                     {isDownloadingPdf ? (
                       <>
-                        <span className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                        <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
                         <span>Generating PDF…</span>
                       </>
                     ) : (
@@ -727,7 +719,7 @@ export default function QuotePage() {
                   <button
                     type="button"
                     onClick={handleRequestQuoteClick}
-                    className="w-full py-3 px-4 rounded-xl bg-[#16a34a] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-[#16a34a] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <span>Request this quote</span>
                   </button>
@@ -1068,7 +1060,7 @@ export default function QuotePage() {
 
       {/* ── Adjust Quantities Modal Popup ──────────────────────────────── */}
       {isAdjustOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
@@ -1076,36 +1068,36 @@ export default function QuotePage() {
           />
 
           {/* Modal Content */}
-          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200">
-                  <SlidersHorizontal className="w-4 h-4" />
+            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200 flex-shrink-0">
+                  <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Adjust Quantities</h3>
-                  <p className="text-xs text-slate-500">Update item counts or remove products from your quote</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">Adjust Quantities</h3>
+                  <p className="text-[11px] sm:text-xs text-slate-500 truncate">Update item counts or remove products from your quote</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsAdjustOpen(false)}
-                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
                 aria-label="Close modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             {/* Modal Body - Items List */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-4 divide-y divide-slate-100">
+            <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-3 sm:space-y-4 divide-y divide-slate-100">
               {lineItems.map((item) => (
-                <div key={item.key} className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div key={item.key} className="pt-3 sm:pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                   {/* Left: Image + Info */}
-                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
                     {/* Product Image */}
-                    <div className="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -1116,7 +1108,7 @@ export default function QuotePage() {
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-xl">
+                        <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-base sm:text-xl">
                           {item.name ? item.name.charAt(0).toUpperCase() : "P"}
                         </div>
                       )}
@@ -1124,56 +1116,66 @@ export default function QuotePage() {
 
                     {/* Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-slate-900 truncate leading-snug">{item.name}</h4>
-                        {item.isPair && (
-                          <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
-                            <span>🔗</span> Paired Item (Min: 1)
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate leading-snug">{item.name}</h4>
+                        {item.isPair ? (
+                          <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-900 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                            <span>🔗</span> Pair{item.parentName ? ` with ${item.parentName}` : ""}
+                          </span>
+                        ) : (
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                            <span>📦</span> Primary
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5 sm:mt-1 text-[10.5px] sm:text-xs text-slate-500">
                         {item.colour && item.colour !== "Standard" && (
-                          <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                            Color: {item.colour}
+                          <span className="text-[10px] sm:text-[11px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                            {item.colour}
                           </span>
                         )}
-                        <span className="text-xs text-slate-500">
-                          MRP ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
+                        <span>
+                          ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
                         </span>
                         {!item.isPair && (
-                          <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                          <span className="text-[9.5px] sm:text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-md">
                             MOQ: {item.minQty}
                           </span>
                         )}
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded border transition-colors ${item.tierNumber === 3
+                        <span className={`text-[10px] sm:text-[11px] font-bold px-1.5 py-0.2 rounded border transition-colors ${item.tierNumber === 3
                           ? "text-emerald-900 bg-emerald-100 border-emerald-300"
                           : item.tierNumber === 2
                             ? "text-teal-900 bg-teal-50 border-teal-200"
                             : "text-emerald-700 bg-emerald-50 border-emerald-200"
                           }`}>
-                          {item.discountPct}% OFF • Tier {item.tierNumber}
+                          {item.discountPct}% OFF
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Right: Quantity Stepper & Net Price & Delete */}
-                  <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50">
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 flex-shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                     <div className="text-left sm:text-right">
-                      <p className="text-xs font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
-                      <p className="text-[10px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
                     </div>
 
                     {/* Stepper */}
-                    <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1 shadow-2xs">
+                    <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl p-0.5 sm:p-1 shadow-2xs">
                       <button
                         type="button"
-                        onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || 1) - 1))}
-                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        disabled={item.qty <= item.minQty}
+                        onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || item.minQty) - 1))}
+                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${
+                          item.qty <= item.minQty
+                            ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed opacity-50"
+                            : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                        }`}
+                        title={item.qty <= item.minQty ? (item.isPair ? "Minimum quantity is 1" : "Minimum wholesale quantity is 10") : "Decrease quantity"}
                         aria-label="Decrease quantity"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
 
                       <input
@@ -1185,17 +1187,24 @@ export default function QuotePage() {
                           const c = e.target.value.replace(/\D/g, "");
                           setQty(item.key, c ? parseInt(c, 10) : item.minQty);
                         }}
-                        className="w-12 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
+                        onBlur={(e) => {
+                          const c = parseInt(e.target.value, 10);
+                          if (isNaN(c) || c < item.minQty) {
+                            setQty(item.key, item.minQty);
+                          }
+                        }}
+                        className="w-9 sm:w-12 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
                         aria-label={`Quantity for ${item.name}`}
                       />
 
                       <button
                         type="button"
-                        onClick={() => setQty(item.key, (item.qty || 1) + 1)}
-                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        onClick={() => setQty(item.key, (item.qty || item.minQty) + 1)}
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        title="Increase quantity"
                         aria-label="Increase quantity"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                     </div>
 
@@ -1203,11 +1212,11 @@ export default function QuotePage() {
                     <button
                       type="button"
                       onClick={() => remove(item.key)}
-                      className="w-8 h-8 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
                       title="Remove product"
                       aria-label="Remove item"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
@@ -1215,20 +1224,20 @@ export default function QuotePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <div className="px-4 py-3 sm:px-6 sm:py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                   Total Units: <span className="font-bold text-slate-800">{totalUnitsCount}</span>
                 </p>
-                <p className="text-xs font-bold text-emerald-800">
-                  Net Taxable: ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
+                <p className="text-xs sm:text-sm font-bold text-emerald-800">
+                  Net: ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setIsAdjustOpen(false)}
-                className="btn-primary py-2 px-6 text-xs font-bold shadow-xs cursor-pointer"
+                className="btn-primary py-1.5 sm:py-2 px-4 sm:px-6 text-xs font-bold shadow-xs cursor-pointer"
               >
                 Save &amp; Close
               </button>

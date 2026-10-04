@@ -9,17 +9,17 @@ const QuoteContext = createContext(null);
 export const useQuote = () => useContext(QuoteContext);
 
 // ── Pricing constants & Dynamic Volume Tier Rules ────────────────────────────
-// Tier 1: 1–100 units   -> 10% wholesale discount
-// Tier 2: 101–200 units -> 15% volume discount
-// Tier 3: 201+ units    -> 20% enterprise bulk discount
+// Tier 1: 1–100 units   -> 15% wholesale discount
+// Tier 2: 101–200 units -> 20% volume discount
+// Tier 3: 201+ units    -> 25% enterprise bulk discount
 // Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are in basket.
 export const BUNDLE_BONUS_PCT = 5;
 
 export function getItemDiscountPct(qty) {
   const q = Number(qty) || 1;
-  if (q >= 201 || q >= 200) return 20; // Tier 3: 200+ units -> 20% off
-  if (q >= 101) return 15;  // Tier 2: 101–200 units -> 15% off
-  return 10;                // Tier 1: 1–100 units -> 10% off
+  if (q >= 201 || q >= 200) return 25; // Tier 3: 200+ units -> 25% off
+  if (q >= 101) return 20;  // Tier 2: 101–200 units -> 20% off
+  return 15;                // Tier 1: 1–100 units -> 15% off
 }
 
 export function getItemTierNumber(qty) {
@@ -31,9 +31,9 @@ export function getItemTierNumber(qty) {
 
 export function getItemTierLabel(qty) {
   const q = Number(qty) || 1;
-  if (q >= 201 || q >= 200) return "Tier 3 (200+ units • 20% Off)";
-  if (q >= 101) return "Tier 2 (101–200 units • 15% Off)";
-  return "Tier 1 (Wholesale 1–100 • 10% Off)";
+  if (q >= 201 || q >= 200) return "Tier 3 (200+ units • 25% Off)";
+  if (q >= 101) return "Tier 2 (101–200 units • 20% Off)";
+  return "Tier 1 (Wholesale 1–100 • 15% Off)";
 }
 
 // Safely resolve the original MRP — NEVER from an already-discounted price
@@ -49,6 +49,45 @@ function resolveMRP(product) {
   return 500;
 }
 
+// ── Centralized Pure Function to Compute a Line Item ───────────────────────────
+export function computeLineItem(item) {
+  const isPair = Boolean(item.isPairItem === true || item.isPair === true);
+  const isPrimary = !isPair;
+  const minQty = isPair ? 1 : Math.max(10, Number(item.moq) || 10);
+  const qty = Math.max(minQty, Number(item.qty) || minQty);
+  const mrp = Number(item.wholesalePrice || item.originalBasePrice || item.mrp || item.price || 0);
+
+  // Real-time dynamic volume tier discount
+  const discountPct = getItemDiscountPct(qty);
+  const tierNumber = getItemTierNumber(qty);
+  const tierLabel = getItemTierLabel(qty);
+
+  const lineGross = mrp * qty;
+  const lineDiscount = Math.round(lineGross * (discountPct / 100));
+  const lineNet = lineGross - lineDiscount;
+  const unitPrice = Math.round(mrp * (1 - discountPct / 100));
+
+  return {
+    ...item,
+    qty,
+    mrp,
+    wholesalePrice: mrp,
+    originalBasePrice: mrp,
+    retailPrice: mrp,
+    price: unitPrice,
+    discountPct,
+    tierNumber,
+    tierLabel,
+    isPair,
+    isPairItem: isPair,
+    isPrimary,
+    minQty,
+    lineGross,
+    lineDiscount,
+    lineNet,
+  };
+}
+
 export function QuoteProvider({ children }) {
   const [items, setItems] = useState([]);
   const [toast, setToast] = useState(null);
@@ -57,7 +96,12 @@ export function QuoteProvider({ children }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("gf_quote_v2");
-      if (saved) setItems(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setItems(parsed.map(computeLineItem));
+        }
+      }
     } catch (e) {
       console.error("Failed to load quote basket", e);
     }
@@ -69,9 +113,10 @@ export function QuoteProvider({ children }) {
   };
 
   const saveItems = (newItems) => {
-    setItems(newItems);
+    const computed = newItems.map(computeLineItem);
+    setItems(computed);
     try {
-      localStorage.setItem("gf_quote_v2", JSON.stringify(newItems));
+      localStorage.setItem("gf_quote_v2", JSON.stringify(computed));
     } catch (e) {
       console.error("Failed to persist quote basket", e);
     }
@@ -79,31 +124,48 @@ export function QuoteProvider({ children }) {
 
   // ── add ───────────────────────────────────────────────────────────────────
   const add = (product, colour, qty) => {
-    const key = `${product.slug}-${colour || "standard"}`;
+    // Explicit pair detection ONLY (never from bundle bonuses or tier titles)
+    const isPair = Boolean(product.isPairItem === true || product.isPair === true);
+    const isPrimary = !isPair;
+    const parentSlug = isPair ? (product.parentSlug || product.pairedWithSlug || null) : null;
+    const pairedWithKey = isPair ? (product.pairedWithKey || (parentSlug ? `${parentSlug}-${colour || "standard"}` : null)) : null;
+    const parentName = isPair ? (product.parentName || null) : null;
+
+    // Use a distinct key for paired items so they don't overwrite primary products of same slug
+    const key = isPair && parentSlug
+      ? `${product.slug}-${colour || "standard"}-pair-${parentSlug}`
+      : isPair
+        ? `${product.slug}-${colour || "standard"}-pair`
+        : `${product.slug}-${colour || "standard"}`;
 
     // Lock the MRP on first add — this value never changes regardless of qty updates
     const mrp = resolveMRP(product);
+    const minAllowed = isPair ? 1 : Math.max(10, Number(product.moq) || 10);
+    const validQty = Math.max(minAllowed, parseInt(qty, 10) || minAllowed);
 
     const existing = items.find((x) => x.key === key);
     let updated;
 
     if (existing) {
-      const newQty = existing.qty + qty;
+      const newQty = existing.qty + validQty;
       const lockedMRP = existing.wholesalePrice || existing.originalBasePrice || mrp;
-      const discountPct = getItemDiscountPct(newQty);
-      const lockedUnitPx = Math.round(lockedMRP * (1 - discountPct / 100));
 
       updated = items.map((x) =>
         x.key === key
-          ? {
+          ? computeLineItem({
             ...x,
             qty: newQty,
-            price: lockedUnitPx,
             wholesalePrice: lockedMRP,
             originalBasePrice: lockedMRP,
             retailPrice: lockedMRP,
-            discountPct,
-            tierNumber: getItemTierNumber(newQty),
+            isPrimary: !isPair,
+            isPairItem: isPair,
+            isPair: isPair,
+            parentSlug: isPair ? (parentSlug || x.parentSlug || null) : null,
+            pairedWithSlug: isPair ? (parentSlug || x.pairedWithSlug || null) : null,
+            pairedWithKey: isPair ? (pairedWithKey || x.pairedWithKey || null) : null,
+            parentName: isPair ? (parentName || x.parentName || null) : null,
+            moq: minAllowed,
             customBranding: product.customBranding ?? x.customBranding,
             selectedCustomizations: product.selectedCustomizations ?? x.selectedCustomizations,
             customizationCount: product.customizationCount ?? x.customizationCount,
@@ -115,37 +177,33 @@ export function QuoteProvider({ children }) {
             giftMessage: product.giftMessage ?? x.giftMessage,
             engravingName: product.engravingName ?? x.engravingName,
             customProductName: product.customProductName ?? x.customProductName,
-            isPairItem: product.isPairItem ?? x.isPairItem,
-            isPair: product.isPair ?? x.isPair,
-            moq: (product.isPairItem || x.isPairItem || product.isPair || x.isPair) ? 1 : (product.moq || x.moq || 10),
-          }
+          })
           : x
       );
     } else {
-      const isPair = Boolean(product.isPairItem || product.isPair || product.bundleDiscountApplied || product.activeTierTitle?.includes("Bundle"));
-      const discountPct = getItemDiscountPct(qty);
-      const unitPrice = Math.round(mrp * (1 - discountPct / 100));
-
       updated = [
         ...items,
-        {
+        computeLineItem({
           key,
           slug: product.slug,
           sku: product.sku || "GF-B2B",
           name: product.name,
           unit: product.unit || (/\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.name || "") ? "set" : "piece"),
-          price: unitPrice,
           wholesalePrice: mrp,           // LOCKED MRP — never recalculated
           originalBasePrice: mrp,
           retailPrice: mrp,
-          discountPct,
-          tierNumber: getItemTierNumber(qty),
-          moq: isPair ? 1 : (product.moq || 10),
+          mrp,
+          moq: minAllowed,
+          isPrimary: !isPair,
           isPairItem: isPair,
           isPair: isPair,
+          parentSlug,
+          pairedWithSlug: parentSlug,
+          pairedWithKey,
+          parentName,
           image: product.image,
           colour: colour || "Standard",
-          qty,
+          qty: validQty,
           customBranding: product.customBranding,
           selectedCustomizations: product.selectedCustomizations,
           customizationCount: product.customizationCount,
@@ -157,46 +215,81 @@ export function QuoteProvider({ children }) {
           giftMessage: product.giftMessage || "",
           engravingName: product.engravingName || "",
           customProductName: product.customProductName || "",
-        },
+        }),
       ];
     }
 
     saveItems(updated);
-    showToast(`Added ${qty}× ${product.name} to quote basket.`);
+    showToast(`Added ${validQty}× ${product.name} to quote basket.`);
   };
 
-  // ── setQty ────────────────────────────────────────────────────────────────
+  // ── setQty (Instant Centralized Reactive Update) ───────────────────────────
   const setQty = (key, rawQty) => {
+    const parsed = parseInt(rawQty, 10);
     const updated = items.map((x) => {
       if (x.key !== key) return x;
-      const isPair = Boolean(x.isPairItem || x.isPair || x.bundleDiscountApplied || x.moq === 1);
-      const minAllowed = isPair ? 1 : (x.moq || 10);
-      const parsedQty = Math.max(minAllowed, parseInt(rawQty, 10) || minAllowed);
-      // Always recalculate from the LOCKED MRP with dynamic tier discount
-      const lockedMRP = x.wholesalePrice || x.originalBasePrice || x.mrp || 500;
-      const discountPct = getItemDiscountPct(parsedQty);
-      const newUnitPx = Math.round(lockedMRP * (1 - discountPct / 100));
-      return {
-        ...x,
-        qty: parsedQty,
-        price: newUnitPx,
-        wholesalePrice: lockedMRP,
-        originalBasePrice: lockedMRP,
-        retailPrice: lockedMRP,
-        discountPct,
-        tierNumber: getItemTierNumber(parsedQty),
-        moq: isPair ? 1 : (x.moq || 10),
-        isPairItem: isPair,
-        isPair: isPair,
-      };
+      const isPair = Boolean(x.isPairItem === true || x.isPair === true);
+      const minAllowed = isPair ? 1 : Math.max(10, Number(x.moq) || 10);
+      const validQty = Math.max(minAllowed, isNaN(parsed) ? minAllowed : parsed);
+      return computeLineItem({ ...x, qty: validQty, moq: minAllowed });
     });
     saveItems(updated);
   };
 
   // ── remove / clear ────────────────────────────────────────────────────────
   const remove = (key) => {
-    saveItems(items.filter((x) => x.key !== key));
-    showToast("Item removed from basket.");
+    const itemToRemove = items.find((x) => x.key === key || x.slug === key);
+    if (!itemToRemove) {
+      saveItems(items.filter((x) => x.key !== key));
+      return;
+    }
+
+    const isPrimary = !itemToRemove.isPair && !itemToRemove.isPairItem;
+
+    let remaining;
+    if (isPrimary) {
+      // 1. Remove the primary item
+      // 2. Also remove any paired items linked to this primary item
+      remaining = items.filter((x) => {
+        if (x.key === itemToRemove.key) return false;
+        // Check if x is a pair item linked to this primary item
+        const isLinkedPair = (x.isPair || x.isPairItem) && (
+          x.parentSlug === itemToRemove.slug ||
+          x.pairedWithSlug === itemToRemove.slug ||
+          x.pairedWithKey === itemToRemove.key ||
+          (x.key && x.key.includes(`-pair-${itemToRemove.slug}`))
+        );
+        if (isLinkedPair) return false;
+        return true;
+      });
+
+      // 3. Find all primary items remaining in the basket
+      const remainingPrimary = remaining.filter((x) => !x.isPair && !x.isPairItem);
+
+      // If NO primary items remain at all in the basket, purge all orphan pair items!
+      if (remainingPrimary.length === 0) {
+        remaining = [];
+      } else {
+        // If there are pair items whose parent is no longer in the cart, clean them up
+        remaining = remaining.filter((x) => {
+          if (!x.isPair && !x.isPairItem) return true;
+          if (x.parentSlug || x.pairedWithSlug) {
+            const parentSlug = x.parentSlug || x.pairedWithSlug;
+            return remainingPrimary.some((p) => p.slug === parentSlug);
+          }
+          // If pair had no explicit parentSlug (e.g. legacy), keep only while primary items exist
+          return true;
+        });
+      }
+
+      showToast(`Removed ${itemToRemove.name}${items.length > remaining.length + 1 ? " and linked paired item" : ""}.`);
+    } else {
+      // User is removing a pair item directly
+      remaining = items.filter((x) => x.key !== itemToRemove.key);
+      showToast(`Removed ${itemToRemove.name} from basket.`);
+    }
+
+    saveItems(remaining);
   };
 
   const clear = () => saveItems([]);
@@ -205,24 +298,18 @@ export function QuoteProvider({ children }) {
     saveItems(items.map((x) => (x.key === key ? { ...x, ...data } : x)));
   };
 
-  // ── Derived cart-level totals with dynamic tier discounts ────────────────
-  const totalUnits = items.reduce((acc, it) => acc + (it.qty || 0), 0);
+  // ── Derived cart-level totals with centralized reactive calculations ──────
+  const lineItems = items.map(computeLineItem);
+
+  const totalUnits = lineItems.reduce((acc, it) => acc + (it.qty || 0), 0);
+  const totalUnitsCount = totalUnits;
 
   // Bundle bonus: 5% extra off when 2+ distinct products are paired in basket
-  const hasBundleBonus = items.length >= 2;
+  const hasBundleBonus = lineItems.length >= 2;
 
-  const totalGross = items.reduce((acc, it) => {
-    const mrp = it.wholesalePrice || it.originalBasePrice || it.mrp || 0;
-    return acc + (mrp * (it.qty || 0));
-  }, 0);
+  const totalGross = lineItems.reduce((acc, it) => acc + (it.lineGross || 0), 0);
 
-  const totalItemDiscount = items.reduce((acc, it) => {
-    const mrp = it.wholesalePrice || it.originalBasePrice || it.mrp || 0;
-    const q = it.qty || 0;
-    const discountPct = getItemDiscountPct(q);
-    const lineGross = mrp * q;
-    return acc + Math.round(lineGross * (discountPct / 100));
-  }, 0);
+  const totalItemDiscount = lineItems.reduce((acc, it) => acc + (it.lineDiscount || 0), 0);
 
   const netSubtotalBeforeBundle = totalGross - totalItemDiscount;
 
@@ -231,24 +318,34 @@ export function QuoteProvider({ children }) {
     : 0;
 
   const estimatedTotal = netSubtotalBeforeBundle - bundleBonusAmount;
+  const estimatedGST = Math.round(estimatedTotal * 0.18);
+  const totalWithGST = estimatedTotal + estimatedGST;
+  const totalSavings = totalItemDiscount + bundleBonusAmount;
+  const savingsPct = totalGross > 0 ? ((totalSavings / totalGross) * 100).toFixed(1) : "0";
 
   return (
     <QuoteContext.Provider
       value={{
         items,
+        lineItems,
         add,
         setQty,
         remove,
         clear,
         updateCustomizations,
-        count: items.length,
+        count: lineItems.length,
         totalUnits,
+        totalUnitsCount,
         totalGross,
         totalItemDiscount,
         hasBundleBonus,
         bundleBonusAmount,
         netSubtotalBeforeBundle,
         estimatedTotal,
+        estimatedGST,
+        totalWithGST,
+        totalSavings,
+        savingsPct,
         getItemDiscountPct,
         getItemTierNumber,
         getItemTierLabel,
