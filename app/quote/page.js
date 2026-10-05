@@ -224,47 +224,50 @@ export default function QuotePage() {
     setFieldErrors({ name: "", company: "", email: "", phone: "", city: "", pin: "" });
     setState({ busy: true, error: null, ref: null });
     try {
-      const response = await fetch("/api/enquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          phone: formatIndianPhone(formData.phone),
-          buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
-          userId: user?.id || user?._id || null,
-          isB2BVerified: user?.isB2BVerified || false,
-          totalGross,
-          totalItemDiscount,
-          totalUnitsCount,
-          hasBundleBonus,
-          bundleBonusAmount,
-          netSubtotalBeforeBundle,
-          estimatedTotal,
-          estimatedGST,
-          totalWithGST,
-          items: lineItems.map((it) => ({
-            slug: it.slug,
-            name: it.name,
-            colour: it.colour || "Standard",
-            qty: it.qty,
-            unit: it.unit || "piece",
-            mrp: it.mrp,
-            lineGross: it.lineGross,
-            discountPct: it.discountPct,
-            tierNumber: it.tierNumber,
-            lineDiscount: it.lineDiscount,
-            lineNet: it.lineNet,
-            isPairItem: it.isPair,
-            senderName: it.senderName || "",
-            receiverName: it.receiverName || "",
-            giftMessage: it.giftMessage || "",
-            engravingName: it.engravingName || "",
-            customProductName: it.customProductName || "",
-            selectedCustomizations: it.selectedCustomizations || [],
-            brandingNotes: it.brandingNotes || ""
-          }))
-        })
-      });
+      const [response] = await Promise.all([
+        fetch("/api/enquiry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            phone: formatIndianPhone(formData.phone),
+            buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
+            userId: user?.id || user?._id || null,
+            isB2BVerified: user?.isB2BVerified || false,
+            totalGross,
+            totalItemDiscount,
+            totalUnitsCount,
+            hasBundleBonus,
+            bundleBonusAmount,
+            netSubtotalBeforeBundle,
+            estimatedTotal,
+            estimatedGST,
+            totalWithGST,
+            items: lineItems.map((it) => ({
+              slug: it.slug,
+              name: it.name,
+              colour: it.colour || "Standard",
+              qty: it.qty,
+              unit: it.unit || "piece",
+              mrp: it.mrp,
+              lineGross: it.lineGross,
+              discountPct: it.discountPct,
+              tierNumber: it.tierNumber,
+              lineDiscount: it.lineDiscount,
+              lineNet: it.lineNet,
+              isPairItem: it.isPair,
+              senderName: it.senderName || "",
+              receiverName: it.receiverName || "",
+              giftMessage: it.giftMessage || "",
+              engravingName: it.engravingName || "",
+              customProductName: it.customProductName || "",
+              selectedCustomizations: it.selectedCustomizations || [],
+              brandingNotes: it.brandingNotes || ""
+            }))
+          })
+        }),
+        new Promise((resolve) => setTimeout(resolve, 5000))
+      ]);
 
       let resJson = null;
       const rawText = await response.text();
@@ -491,8 +494,12 @@ export default function QuotePage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
-      {/* Leaf Loader displayed during quote submission */}
-      <GreenyLoader loading={state.busy} minDuration={1000} />
+      {/* Premium Leaf Loader displayed on top during quote submission */}
+      <GreenyLoader
+        loading={state.busy}
+        minDuration={4200}
+        title="Processing Wholesale Quotation"
+      />
 
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
