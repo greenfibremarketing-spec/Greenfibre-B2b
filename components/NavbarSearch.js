@@ -90,7 +90,7 @@ export default function NavbarSearch() {
           }}
           onFocus={() => setIsOpen(true)}
           placeholder="Search products..."
-          className="w-40 lg:w-56 text-xs font-medium pl-8 pr-8 py-1.5 bg-slate-100/90 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-lg text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:w-48 lg:focus:w-64 focus:ring-2 focus:ring-brand-500/20"
+          className="w-40 lg:w-56 h-10 text-xs font-medium pl-8 pr-8 bg-slate-100/90 hover:bg-slate-100 focus:bg-white border border-slate-200 focus:border-brand-500 rounded-xl text-slate-800 placeholder:text-slate-400 outline-none transition-all focus:w-48 lg:focus:w-64 focus:ring-2 focus:ring-brand-500/20 flex items-center"
         />
         {query ? (
           <button
@@ -117,10 +117,10 @@ export default function NavbarSearch() {
           setIsOpen(!isOpen);
           setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200/70 bg-white/90 hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-[0_1px_3px_rgba(0,0,0,0.04)] active:scale-95 flex-shrink-0"
+        className="md:hidden w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border border-slate-200/90 bg-white/90 hover:bg-slate-100 text-slate-700 hover:text-slate-900 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0 group"
         aria-label="Search catalog"
       >
-        <Search className="w-4 h-4" />
+        <Search className="w-4.5 h-4.5 text-slate-700 group-hover:text-slate-900 transition-colors" strokeWidth={1.75} />
       </button>
 
       {/* Real-Time Dropdown Results Modal */}
@@ -205,7 +205,7 @@ export default function NavbarSearch() {
                 <Package className="w-8 h-8 text-slate-300 mx-auto" />
                 <div className="text-xs font-bold text-slate-800">No products found</div>
                 <div className="text-[11px] text-slate-500">
-                  Try searching for &quot;tumbler&quot;, &quot;husk&quot;, &quot;mug&quot;, or &quot;gift set&quot;.
+                  Try searching for &quot;mug&quot;, &quot;bottle&quot;, &quot;bowl&quot;, &quot;gift set&quot;, or &quot;planter&quot;.
                 </div>
               </div>
             )
@@ -215,21 +215,28 @@ export default function NavbarSearch() {
                 Popular Searches
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {["Coffee Mug", "Thermal Bottle", "Gift Hampers", "Dining Bowls", "Bento Lunchbox"].map(
-                  (term) => (
-                    <button
-                      key={term}
-                      type="button"
-                      onClick={() => {
-                        setQuery(term);
-                        inputRef.current?.focus();
-                      }}
-                      className="px-2.5 py-1 rounded-md bg-slate-50 hover:bg-brand-50 hover:text-brand-800 border border-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
-                    >
-                      {term}
-                    </button>
-                  )
-                )}
+                {[
+                  "Classic Mug",
+                  "Viora Bottle",
+                  "Soup Bowl",
+                  "Gift Sets",
+                  "Table Planter",
+                  "Canister",
+                  "Casserole",
+                  "Tissue Box"
+                ].map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      setQuery(term);
+                      inputRef.current?.focus();
+                    }}
+                    className="px-2.5 py-1 rounded-md bg-slate-50 hover:bg-brand-50 hover:text-brand-800 border border-slate-200 text-slate-700 text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    {term}
+                  </button>
+                ))}
               </div>
             </div>
           )}

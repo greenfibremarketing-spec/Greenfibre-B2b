@@ -3,6 +3,12 @@ import { db } from "@/lib/db";
 import { getProduct } from "@/lib/products";
 import { generateQuotationPdf } from "@/lib/quotationPdf";
 import { sendQuotationEmail } from "@/lib/email";
+import {
+  validateEmail,
+  validateIndianPhone,
+  formatIndianPhone,
+  validatePinCode
+} from "@/lib/validation";
 
 const hits = new Map();
 
@@ -11,7 +17,7 @@ export async function POST(req) {
     const ip = req.headers.get("x-forwarded-for") || "local";
     const now = Date.now();
     const h = (hits.get(ip) || []).filter((t) => now - t < 600000);
-    
+
     // Rate limit: 60 requests per 10 minutes
     if (h.length >= 60) {
       return NextResponse.json(
@@ -47,12 +53,43 @@ export async function POST(req) {
       notes: s("notes", 5000)
     };
 
-    if (!client.name || !client.company || !/^\S+@\S+\.\S+$/.test(client.email) || !/^\d{6}$/.test(client.pin)) {
+    if (!client.name || client.name.length < 2) {
       return NextResponse.json(
-        { error: "Please provide a valid contact name, company, work email, and 6-digit PIN code." },
+        { error: "Please provide a valid contact name." },
         { status: 422 }
       );
     }
+
+    if (!client.company || client.company.length < 2) {
+      return NextResponse.json(
+        { error: "Please provide your company or organization name." },
+        { status: 422 }
+      );
+    }
+
+    if (!validateEmail(client.email)) {
+      return NextResponse.json(
+        { error: "Please provide a valid work/corporate email address (e.g. rahul@company.com)." },
+        { status: 422 }
+      );
+    }
+
+    if (!validateIndianPhone(client.phone)) {
+      return NextResponse.json(
+        { error: "Please provide a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9 (e.g. +91 98765 43210)." },
+        { status: 422 }
+      );
+    }
+
+    if (!validatePinCode(client.pin)) {
+      return NextResponse.json(
+        { error: "Please provide a valid 6-digit Indian PIN code (e.g. 560001)." },
+        { status: 422 }
+      );
+    }
+
+    // Format phone cleanly
+    client.phone = formatIndianPhone(client.phone);
 
     const rawItems = Array.isArray(b.items) ? b.items.slice(0, 50) : [];
     if (!rawItems.length) {
@@ -74,8 +111,8 @@ export async function POST(req) {
       }
 
       const qty = Math.max(1, Math.floor(+i.qty || 1));
-      const isPairItem = Boolean(i.isPairItem || i.isPair || i.bundleDiscountApplied || i.moq === 1);
-      const minRequired = isPairItem ? 1 : (p?.moq || 1);
+      const isPairItem = Boolean(i.isPairItem === true || i.isPair === true);
+      const minRequired = isPairItem ? 1 : Math.max(10, Number(p?.moq) || 10);
 
       if (p && !(qty >= minRequired)) {
         return NextResponse.json(
@@ -86,8 +123,8 @@ export async function POST(req) {
 
       const mrp = +(i.mrp || p?.price || 0);
       const lineGross = mrp * qty;
-      // Dynamic Volume Tier Discount: Tier 1 (<=100): 10%, Tier 2 (101–200): 15%, Tier 3 (201+): 20%
-      const discountPct = Number(i.discountPct) || (qty >= 201 ? 20 : qty >= 101 ? 15 : 10);
+      // Dynamic Volume Tier Discount: Tier 1 (<=100): 15%, Tier 2 (101–200): 20%, Tier 3 (201+): 25%
+      const discountPct = Number(i.discountPct) || (qty >= 201 ? 25 : qty >= 101 ? 20 : 15);
       const tierNumber = Number(i.tierNumber) || (qty >= 201 ? 3 : qty >= 101 ? 2 : 1);
       const lineDiscount = Math.round(lineGross * (discountPct / 100));
       const lineNet = lineGross - lineDiscount;
@@ -111,6 +148,8 @@ export async function POST(req) {
         giftMessage: String(i.giftMessage || "").slice(0, 500),
         engravingName: String(i.engravingName || "").slice(0, 100),
         customProductName: String(i.customProductName || "").slice(0, 100),
+        packagingOption: String(i.packagingOption || "").slice(0, 100),
+        brandingNotes: String(i.brandingNotes || "").slice(0, 500),
         selectedCustomizations: Array.isArray(i.selectedCustomizations) ? i.selectedCustomizations : []
       });
     }

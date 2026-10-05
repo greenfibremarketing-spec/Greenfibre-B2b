@@ -1,42 +1,86 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useQuote } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
 import {
   CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
   BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal,
-  Clock, Copy, Check, ArrowRight, Leaf
+  Clock, Copy, Check, ArrowRight, Leaf, ChevronDown
 } from "lucide-react";
+import GreenyLoader from "@/components/GreenyLoader";
+import {
+  validateEmail,
+  validateIndianPhone,
+  formatIndianPhone,
+  filterPhoneInput,
+  validatePinCode
+} from "@/lib/validation";
+
+const ORDER_PURPOSE_OPTIONS = [
+  "Corporate gifting and new joinee welcome kits",
+  "Cafeteria, hotel and restaurant tableware",
+  "Retail store and brand reseller",
+  "Event, summit or conference merchandise",
+  "Sample kit request and custom procurement",
+  "Other / Custom Requirements"
+];
 
 export default function QuotePage() {
   const {
-    items,
+    items = [],
+    lineItems = [],
     setQty,
     remove,
     clear,
-    count,
-    hasBundleBonus,
-    bundleBonusAmount,
-    netSubtotalBeforeBundle,
-    estimatedTotal,
+    count = 0,
+    hasBundleBonus = false,
+    bundleBonusAmount = 0,
+    totalGross = 0,
+    totalItemDiscount = 0,
+    totalUnitsCount = 0,
+    netSubtotalBeforeBundle = 0,
+    estimatedTotal = 0,
+    estimatedGST = 0,
+    totalWithGST = 0,
+    totalSavings = 0,
+    savingsPct = "0",
     getItemDiscountPct,
     getItemTierNumber,
     getItemTierLabel,
     BUNDLE_BONUS_PCT = 5,
-  } = useQuote() || { items: [], count: 0, estimatedTotal: 0, hasBundleBonus: false, netSubtotalBeforeBundle: 0, bundleBonusAmount: 0 };
+  } = useQuote() || {};
 
   const { user, isAuthenticated } = useAuth() || {};
 
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [purposeDropdownOpen, setPurposeDropdownOpen] = useState(false);
+  const purposeRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "", company: "", email: "", phone: "",
-    buyerType: "Corporate Gifting", city: "", pin: "",
+    buyerType: "Corporate gifting and new joinee welcome kits",
+    city: "", pin: "",
     date: "", gstin: "", notes: ""
   });
+
+  const [fieldErrors, setFieldErrors] = useState({
+    name: "", company: "", email: "", phone: "", city: "", pin: ""
+  });
+
+  // Close order purpose dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (purposeRef.current && !purposeRef.current.contains(e.target)) {
+        setPurposeDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -46,7 +90,7 @@ export default function QuotePage() {
         company: prev.company || user.companyName || "",
         email: prev.email || user.email || "",
         phone: prev.phone || user.phone || "",
-        buyerType: prev.buyerType || user.businessType || "Corporate Gifting",
+        buyerType: prev.buyerType || user.businessType || "Corporate gifting and new joinee welcome kits",
         gstin: prev.gstin || user.gstin || "",
         city: prev.city || user.billingAddress?.city || "",
         pin: prev.pin || user.billingAddress?.pincode || "",
@@ -60,27 +104,69 @@ export default function QuotePage() {
     }
   }, [items.length, isAdjustOpen]);
 
-  // ── Per-item dynamic tier discount & display values ────────────────────────
-  const lineItems = items.map((item) => {
-    const isPair = Boolean(item.isPairItem || item.isPair || item.bundleDiscountApplied || item.activeTierTitle?.includes("Bundle") || item.moq === 1);
-    const minQty = isPair ? 1 : (item.moq || 10);
-    const mrp = item.wholesalePrice || item.originalBasePrice || item.mrp || 0;
-    const discountPct = getItemDiscountPct ? getItemDiscountPct(item.qty) : (item.qty >= 201 ? 20 : item.qty >= 101 ? 15 : 10);
-    const tierNumber = getItemTierNumber ? getItemTierNumber(item.qty) : (item.qty >= 201 ? 3 : item.qty >= 101 ? 2 : 1);
-    const lineGross = mrp * item.qty;
-    const lineDiscount = Math.round(lineGross * (discountPct / 100));
-    const lineNet = lineGross - lineDiscount;
-    return { ...item, isPair, minQty, mrp, discountPct, tierNumber, lineGross, lineDiscount, lineNet };
-  });
-
-  const totalGross = lineItems.reduce((s, it) => s + it.lineGross, 0);
-  const totalItemDiscount = lineItems.reduce((s, it) => s + it.lineDiscount, 0);
-  const totalUnitsCount = lineItems.reduce((s, it) => s + (it.qty || 0), 0);
-  const estimatedGST = Math.round(estimatedTotal * 0.18);
-  const totalWithGST = estimatedTotal + estimatedGST;
-
   const [state, setState] = useState({ busy: false, error: null, ref: null });
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  async function handleDownloadPdf() {
+    if (lineItems.length === 0 || isDownloadingPdf) return;
+    setIsDownloadingPdf(true);
+    try {
+      const response = await fetch("/api/quote/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          client: {
+            name: formData.name || user?.fullName || "Valued Enterprise Client",
+            company: formData.company || user?.companyName || "Corporate Buyer",
+            email: formData.email || user?.email || "",
+            phone: formData.phone || user?.phone || "",
+            city: formData.city || "Pan-India",
+            pin: formData.pin || "",
+            buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
+            gstin: formData.gstin || "",
+            notes: formData.notes || ""
+          },
+          items: lineItems,
+          totalGross,
+          totalItemDiscount,
+          netSubtotalBeforeBundle,
+          hasBundleBonus,
+          bundleBonusAmount,
+          estimatedTotal,
+          estimatedGST,
+          totalWithGST
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GreenFibre_Quotation_${Date.now().toString(36).toUpperCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download PDF error:", err);
+      alert("Could not generate PDF download right now. Please submit quote request or try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  }
+
+  function handleRequestQuoteClick() {
+    const formEl = document.getElementById("quote-details-form") || document.querySelector("form");
+    if (formEl) {
+      formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      const firstInput = formEl.querySelector("input:not([type=hidden])");
+      if (firstInput) firstInput.focus();
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -97,6 +183,45 @@ export default function QuotePage() {
       return;
     }
 
+    // Comprehensive client-side validation
+    const errors = {};
+    if (!formData.name?.trim()) {
+      errors.name = "Please enter your full name.";
+    }
+    if (!formData.company?.trim()) {
+      errors.company = "Please enter your company / organization name.";
+    }
+    if (!formData.email?.trim()) {
+      errors.email = "Please enter your work email address.";
+    } else if (!validateEmail(formData.email)) {
+      errors.email = "Please enter a valid work email address (e.g. rahul@company.com).";
+    }
+    if (!formData.phone?.trim()) {
+      errors.phone = "Please enter your phone / WhatsApp number.";
+    } else if (!validateIndianPhone(formData.phone)) {
+      errors.phone = "Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9 (e.g. +91 98765 43210).";
+    }
+    if (!formData.city?.trim()) {
+      errors.city = "Please enter your delivery city.";
+    }
+    if (!formData.pin?.trim()) {
+      errors.pin = "Please enter your 6-digit PIN code.";
+    } else if (!validatePinCode(formData.pin)) {
+      errors.pin = "Please enter a valid 6-digit Indian PIN code (e.g. 560001).";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const firstError = Object.values(errors)[0];
+      setState({
+        busy: false,
+        error: firstError,
+        ref: null
+      });
+      return;
+    }
+
+    setFieldErrors({ name: "", company: "", email: "", phone: "", city: "", pin: "" });
     setState({ busy: true, error: null, ref: null });
     try {
       const response = await fetch("/api/enquiry", {
@@ -104,6 +229,8 @@ export default function QuotePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
+          phone: formatIndianPhone(formData.phone),
+          buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
           userId: user?.id || user?._id || null,
           isB2BVerified: user?.isB2BVerified || false,
           totalGross,
@@ -364,6 +491,9 @@ export default function QuotePage() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+      {/* Leaf Loader displayed during quote submission */}
+      <GreenyLoader loading={state.busy} minDuration={1000} />
+
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <p className="text-sm font-medium text-slate-600">
@@ -376,32 +506,42 @@ export default function QuotePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* ── Left: Worksheet & Summary (Sticky / Fixed in view on desktop) ───────────────── */}
-        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-24 self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto pr-0.5">
+        {/* ── Left: Worksheet & Summary ─────────────────────────────────────── */}
+        <div className="lg:col-span-6 space-y-5">
           {/* Section header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold">1</span>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Products</h3>
-              <span className="text-xs font-bold text-slate-400">({count})</span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-[10.5px] sm:text-xs font-bold flex-shrink-0">1</span>
+              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight whitespace-nowrap">Your Products</h3>
+              <span className="text-xs font-bold text-slate-400 flex-shrink-0">({count})</span>
             </div>
 
             {items.length > 0 && (
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Adjust Quantities button on left of Clear all */}
+              <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+                {/* Desktop: Browse more products button */}
+                <Link
+                  href="/products"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
+                  title="Browse catalog to add more products"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Add More Products</span>
+                </Link>
+
+                {/* Desktop: Adjust Quantities button */}
                 <button
                   type="button"
                   onClick={() => setIsAdjustOpen(true)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1b5e3f] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
                   <span>Adjust Quantities</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={clear}
-                  className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1 py-1"
+                  className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1.5 py-1 whitespace-nowrap"
                 >
                   Clear all
                 </button>
@@ -422,135 +562,201 @@ export default function QuotePage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* ── B2B Quotation Worksheet ── */}
-              <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-sm">
-                <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">B2B Quotation Worksheet</span>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
-                    Direct Factory Wholesale
-                  </span>
+              {/* ── Quotation Summary Card (Exact Design from Reference) ── */}
+              <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-xs sm:shadow-sm p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 transition-all">
+                {/* Top Header */}
+                <div className="flex items-start justify-between gap-2.5 sm:gap-3">
+                  <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
+                      <h3 className="font-extrabold text-slate-900 text-sm sm:text-[17px] tracking-tight truncate">
+                        Green Fibre <span className="text-slate-400 font-normal">·</span> Quotation
+                      </h3>
+                    </div>
+                    <p className="text-[10.5px] sm:text-xs text-slate-500 truncate">
+                      Direct factory wholesale rate <span className="text-slate-400">·</span> Pan-India logistics
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAdjustOpen(true)}
+                    className="inline-flex items-center justify-center px-2.5 py-1 sm:px-3 sm:py-1 bg-white hover:bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap active:scale-95 flex-shrink-0"
+                  >
+                    Edit qty
+                  </button>
                 </div>
 
-                <div className="px-5 py-4">
-                  {/* Per-product rows */}
-                  {lineItems.map((item, idx) => (
-                    <div key={item.key} className="py-3 border-b border-slate-100 last:border-b-0">
-                      <div className="flex items-start justify-between gap-3 text-xs">
-                        <div className="min-w-0 flex-1 space-y-1">
+                {/* Dashed Separator */}
+                <div className="border-t border-dashed border-slate-200" />
+
+                {/* Products List */}
+                <div className="space-y-3 sm:space-y-4">
+                  {lineItems.map((item) => (
+                    <div key={item.key} className="space-y-1">
+                      <div className="flex items-start justify-between gap-2.5 sm:gap-3">
+                        {/* Left Column: Name, Pair Badge, Details & Discount */}
+                        <div className="min-w-0 flex-1 space-y-0.5">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-slate-400 font-mono text-[10px] w-4 flex-shrink-0">{String(idx + 1).padStart(2, "0")}</span>
-                            <span className="font-bold text-slate-900 text-xs sm:text-sm">{item.name}</span>
-                            {item.isPair && (
-                              <span className="text-[10px] px-2 py-0.5 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-300 font-bold flex-shrink-0">
-                                🔗 Pair
+                            <h4 className="font-bold text-slate-900 text-xs sm:text-[15px] leading-snug">
+                              {item.name}
+                            </h4>
+                            {item.isPair ? (
+                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded">
+                                Pair{item.parentName ? ` with ${item.parentName}` : ""}
                               </span>
-                            )}
-                            {item.colour && item.colour !== "Standard" && (
-                              <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded border border-slate-200 font-medium flex-shrink-0">
-                                {item.colour}
+                            ) : (
+                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded">
+                                Primary
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 text-[11px] text-slate-500 flex-wrap pl-5 sm:pl-5">
-                            <span>Quantity: <strong className="text-slate-800 font-bold">{item.qty} {item.unit || "pcs"}</strong></span>
-                            {item.tierNumber > 1 && (
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold border ${item.tierNumber === 3
-                                  ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                                  : "bg-teal-50 text-teal-800 border-teal-200"
-                                }`}>
-                                Tier {item.tierNumber} ({item.discountPct}% Off)
+
+                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-slate-500 flex-wrap">
+                            <span>{item.colour && item.colour !== "Standard" ? item.colour : "Standard"}</span>
+                            <span className="text-slate-300">·</span>
+                            <span>
+                              {item.qty} {
+                                (item.unit === "set" || /\b(set|storage bowl)\b/i.test(item.name || ""))
+                                  ? (item.qty > 1 ? "sets" : "set")
+                                  : item.unit === "piece"
+                                    ? (item.qty > 1 ? "pieces" : "piece")
+                                    : item.unit === "box"
+                                      ? (item.qty > 1 ? "boxes" : "box")
+                                      : item.unit === "pack"
+                                        ? (item.qty > 1 ? "packs" : "pack")
+                                        : (item.unit ? (item.qty > 1 ? `${item.unit}s` : item.unit) : (item.qty > 1 ? "pieces" : "piece"))
+                              } × ₹{item.mrp.toLocaleString("en-IN")}
+                            </span>
+                            {item.discountPct > 0 && (
+                              <span className="text-[9.5px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-0.5">
+                                {item.discountPct}% off
                               </span>
                             )}
                           </div>
                         </div>
 
+                        {/* Right Column: Net Price + Strikethrough Gross */}
                         <div className="text-right flex-shrink-0">
-                          <div className="text-xs sm:text-sm font-black text-slate-900">
+                          <div className="text-sm sm:text-lg font-black text-slate-900">
                             ₹{item.lineNet.toLocaleString("en-IN")}
                           </div>
-                          <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 mt-0.5">
-                            <span className="line-through">₹{item.lineGross.toLocaleString("en-IN")}</span>
-                            <span className="text-emerald-700 font-bold">−{item.discountPct}%</span>
+                          <div className="text-[10.5px] sm:text-xs text-slate-400 line-through">
+                            ₹{item.lineGross.toLocaleString("en-IN")}
                           </div>
                         </div>
                       </div>
                     </div>
                   ))}
+                </div>
 
-                  {/* Subtotals */}
-                  <div className="pt-3 space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-600">
-                      <span>Catalog Gross ({totalUnitsCount} units):</span>
-                      <span className="font-semibold text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
+                {/* Dashed Separator */}
+                <div className="border-t border-dashed border-slate-200" />
+
+                {/* Financial Ledger Breakdown */}
+                <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Catalog gross ({totalUnitsCount} units)</span>
+                    <span className="font-medium text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-700 font-medium">Volume tier discount</span>
+                    <span className="font-bold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
+                  </div>
+
+                  {hasBundleBonus && bundleBonusAmount > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-700 font-medium">Bundle pairing bonus (5%)</span>
+                      <span className="font-bold text-emerald-700">−₹{bundleBonusAmount.toLocaleString("en-IN")}</span>
                     </div>
+                  )}
 
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-1.5 text-slate-700">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                        Volume Tier Discount:
-                      </span>
-                      <span className="font-semibold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs text-slate-600 border-t border-dashed border-slate-200 pt-2">
-                      <span>Subtotal after tier discounts:</span>
-                      <span className="font-bold text-slate-800">₹{(netSubtotalBeforeBundle || 0).toLocaleString("en-IN")}</span>
-                    </div>
-
-                    {hasBundleBonus && (
-                      <div className="flex items-center justify-between text-xs rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2.5">
-                        <span className="flex items-center gap-1.5 text-emerald-900 font-semibold">
-                          <BadgePercent className="w-3.5 h-3.5 text-emerald-600" />
-                          Bundle Pairing Bonus (5% on combined total):
-                        </span>
-                        <span className="font-extrabold text-emerald-900">−₹{(bundleBonusAmount || 0).toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-baseline justify-between pt-2 border-t border-slate-200">
-                      <div>
-                        <span className="text-sm font-extrabold text-slate-900">Net Taxable Subtotal:</span>
-                        <span className="block text-[10px] text-slate-400 font-normal">Excl. GST — Direct factory rate</span>
-                      </div>
-                      <span className="text-xl sm:text-2xl font-black text-[#0f3428] tracking-tight">
-                        ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
-                      </span>
-                    </div>
-
-                    {(totalItemDiscount + (bundleBonusAmount || 0)) > 0 && (
-                      <div className="flex items-center justify-between text-xs bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <span className="font-semibold text-slate-700">
-                          Total Savings ({hasBundleBonus ? "Tier Savings + 5% Bundle" : "Volume Tier Savings"}):
-                        </span>
-                        <span className="font-extrabold text-emerald-800">
-                          −₹{(totalItemDiscount + (bundleBonusAmount || 0)).toLocaleString("en-IN")}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between text-[11.5px] text-slate-500 pt-1">
-                      <span>Estimated 18% GST (Input Tax Credit Eligible):</span>
-                      <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-900 border-t border-slate-200 pt-2">
-                      <span>Final Estimated Quotation (Incl. GST):</span>
-                      <span className="text-base font-black text-slate-900">₹{totalWithGST.toLocaleString("en-IN")}</span>
-                    </div>
+                  <div className="flex items-center justify-between pt-0.5 sm:pt-1">
+                    <span className="font-bold text-slate-900">Net taxable subtotal</span>
+                    <span className="font-extrabold text-slate-900 text-xs sm:text-base">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
                   </div>
                 </div>
 
-                <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-                  <p className="text-[10.5px] text-slate-400 leading-relaxed">
-                    * Official Green Fibre Direct Manufacturer Quotation. 18% GST Input Tax Credit provided upon invoicing.
-                  </p>
+                {/* Total Savings Pill / Card */}
+                {totalSavings > 0 && (
+                  <div className="bg-[#eef8f2] border border-[#cbebd4] rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between text-xs sm:text-sm">
+                    <span className="font-bold text-[#14532d] text-[11px] sm:text-sm">
+                      You save ₹{totalSavings.toLocaleString("en-IN")} ({savingsPct}%)
+                    </span>
+                    <span className="font-semibold text-[#15803d] text-[11px] sm:text-sm">
+                      Direct factory rate
+                    </span>
+                  </div>
+                )}
+
+                {/* GST Row */}
+                <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600">
+                  <span>GST 18% (input tax credit eligible)</span>
+                  <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
+                </div>
+
+                {/* Big Solid Green Final Quotation Banner */}
+                <div className="bg-[#16a34a] text-white rounded-xl p-3.5 sm:p-5 flex items-center justify-between shadow-xs">
+                  <div>
+                    <h4 className="text-sm sm:text-lg font-bold text-white leading-tight">
+                      Final quotation
+                    </h4>
+                    <span className="text-[10.5px] sm:text-xs text-emerald-100 font-normal block mt-0.5">
+                      Incl. GST
+                    </span>
+                  </div>
+                  <div className="text-xl sm:text-3xl font-black text-white tracking-tight">
+                    ₹{totalWithGST.toLocaleString("en-IN")}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
                   <button
                     type="button"
-                    onClick={() => setIsAdjustOpen(true)}
-                    className="text-[11px] font-semibold text-[#1b5e3f] hover:underline flex-shrink-0 cursor-pointer"
+                    onClick={handleDownloadPdf}
+                    disabled={isDownloadingPdf}
+                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
                   >
-                    Edit Quantities →
+                    {isDownloadingPdf ? (
+                      <>
+                        <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                        <span>Generating PDF…</span>
+                      </>
+                    ) : (
+                      <span>Download PDF</span>
+                    )}
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRequestQuoteClick}
+                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-[#16a34a] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Request this quote</span>
+                  </button>
+                </div>
+
+                {/* Continue Shopping / Browse More Products Banner */}
+                <div className="pt-2">
+                  <Link
+                    href="/products"
+                    className="w-full py-2.5 sm:py-3 px-3.5 sm:px-4 rounded-xl border border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 transition-all duration-200 flex items-center justify-between gap-2 group shadow-2xs hover:shadow-xs active:scale-[0.99]"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-800 shadow-2xs group-hover:scale-110 transition-transform flex-shrink-0">
+                        <Plus className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 whitespace-nowrap">
+                        Add more products
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 group-hover:text-emerald-900 flex-shrink-0">
+                      <span>Browse Catalog</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -558,10 +764,10 @@ export default function QuotePage() {
         </div>
 
         {/* ── Right: Your Details Form ──────────────────────────────────── */}
-        <div className="lg:col-span-6 space-y-5">
+        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-6 lg:self-start">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold">2</span>
+              <span className="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">2</span>
               <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Details</h3>
             </div>
             {isAuthenticated && user && (
@@ -575,7 +781,7 @@ export default function QuotePage() {
           {(!isAuthenticated && !user) && (
             <div className="p-4 bg-emerald-50/70 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
               <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#1b5e3f] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
                   <Lock className="w-4 h-4" />
                 </div>
                 <div>
@@ -589,7 +795,7 @@ export default function QuotePage() {
               </div>
               <Link
                 href="/login?redirect=/quote"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1b5e3f] hover:bg-[#144830] text-white shadow-xs transition-all whitespace-nowrap cursor-pointer flex-shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-xs transition-all whitespace-nowrap cursor-pointer flex-shrink-0 active:scale-95"
               >
                 <span>Login to Continue</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -597,19 +803,37 @@ export default function QuotePage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
+          <form id="quote-details-form" onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label htmlFor="q-name" className="text-xs font-medium text-slate-600">Your name *</label>
                 <input id="q-name" name="name" required placeholder="Rahul Sharma" value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, name: e.target.value });
+                    if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.name
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.name && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.name}</p>
+                )}
               </div>
               <div className="space-y-1">
                 <label htmlFor="q-company" className="text-xs font-medium text-slate-600">Company *</label>
                 <input id="q-company" name="company" required placeholder="Freshworks India" value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, company: e.target.value });
+                    if (fieldErrors.company) setFieldErrors((prev) => ({ ...prev, company: "" }));
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.company
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.company && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.company}</p>
+                )}
               </div>
             </div>
 
@@ -617,42 +841,142 @@ export default function QuotePage() {
               <div className="space-y-1">
                 <label htmlFor="q-email" className="text-xs font-medium text-slate-600">Work email *</label>
                 <input id="q-email" name="email" type="email" required placeholder="rahul@freshworks.com" value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, email: e.target.value });
+                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                  }}
+                  onBlur={() => {
+                    if (formData.email && !validateEmail(formData.email)) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        email: "Please enter a valid work email (e.g. rahul@company.com)."
+                      }));
+                    }
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.email
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.email && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.email}</p>
+                )}
               </div>
               <div className="space-y-1">
-                <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">Phone / WhatsApp *</label>
-                <input id="q-phone" name="phone" required placeholder="+91 92173 28777" value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">
+                  Phone / WhatsApp * <span className="text-[10px] text-slate-400 font-normal">(+91 10 digits)</span>
+                </label>
+                <input id="q-phone" name="phone" required type="tel" placeholder="+91 92173 28777" value={formData.phone}
+                  onChange={(e) => {
+                    const filtered = filterPhoneInput(e.target.value);
+                    setFormData({ ...formData, phone: filtered });
+                    if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                  }}
+                  onBlur={() => {
+                    if (formData.phone && !validateIndianPhone(formData.phone)) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        phone: "Enter a valid 10-digit mobile number starting with 6-9 (e.g. +91 98765 43210)."
+                      }));
+                    }
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.phone
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.phone && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.phone}</p>
+                )}
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="q-buyerType" className="text-xs font-medium text-slate-600">Order purpose</label>
-              <select id="q-buyerType" name="buyerType" value={formData.buyerType}
-                onChange={(e) => setFormData({ ...formData, buyerType: e.target.value })}
-                className="w-full text-xs py-2.5 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none cursor-pointer">
-                <option value="Corporate Gifting & HR">Corporate gifting and new joinee welcome kits</option>
-                <option value="Hotel & Hospitality">Cafeteria, hotel and restaurant tableware</option>
-                <option value="Retail Distributor / Reseller">Retail store and brand reseller</option>
-                <option value="Eco Living Brand">Event, summit or conference merchandise</option>
-                <option value="Other Enterprise">Sample kit request and custom procurement</option>
-              </select>
+            {/* Custom Premium Order Purpose Dropdown */}
+            <div className="space-y-1 relative" ref={purposeRef}>
+              <label className="text-xs font-medium text-slate-600">Order purpose</label>
+              <button
+                type="button"
+                onClick={() => setPurposeDropdownOpen(!purposeDropdownOpen)}
+                className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-800 flex items-center justify-between transition-all cursor-pointer ${purposeDropdownOpen
+                  ? "border-[#1b5e3f] ring-2 ring-[#1b5e3f]/20 bg-white"
+                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
+                  }`}
+              >
+                <span className="truncate text-left font-medium">
+                  {formData.buyerType || "Select order purpose"}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ml-2 ${purposeDropdownOpen ? "rotate-180 text-[#1b5e3f]" : ""
+                    }`}
+                />
+              </button>
+
+              {/* Popover Dropdown Menu */}
+              {purposeDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                  {ORDER_PURPOSE_OPTIONS.map((opt) => {
+                    const isSelected = formData.buyerType === opt;
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, buyerType: opt }));
+                          setPurposeDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3.5 py-2.5 text-xs transition-all flex items-center justify-between cursor-pointer ${isSelected
+                          ? "bg-emerald-50 text-emerald-950 font-bold border-l-3 border-[#15803d]"
+                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
+                          }`}
+                      >
+                        <span>{opt}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-[#15803d] flex-shrink-0 ml-2" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label htmlFor="q-city" className="text-xs font-medium text-slate-600">Delivery city *</label>
                 <input id="q-city" name="city" required placeholder="Bengaluru" value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    setFormData({ ...formData, city: e.target.value });
+                    if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.city
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.city && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.city}</p>
+                )}
               </div>
               <div className="space-y-1">
                 <label htmlFor="q-pin" className="text-xs font-medium text-slate-600">PIN code *</label>
                 <input id="q-pin" name="pin" pattern="[0-9]{6}" maxLength={6} required placeholder="560001" value={formData.pin}
-                  onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all" />
+                  onChange={(e) => {
+                    const filtered = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setFormData({ ...formData, pin: filtered });
+                    if (fieldErrors.pin) setFieldErrors((prev) => ({ ...prev, pin: "" }));
+                  }}
+                  onBlur={() => {
+                    if (formData.pin && !validatePinCode(formData.pin)) {
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        pin: "Enter a valid 6-digit Indian PIN code."
+                      }));
+                    }
+                  }}
+                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.pin
+                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
+                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
+                    }`} />
+                {fieldErrors.pin && (
+                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.pin}</p>
+                )}
               </div>
             </div>
 
@@ -671,13 +995,25 @@ export default function QuotePage() {
               </div>
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="q-notes" className="text-xs font-medium text-slate-600">Branding details and notes</label>
-              <textarea id="q-notes" name="notes" rows={3}
-                placeholder="Custom gift box sleeves, sample kit delivery, multi-location dispatch..."
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label htmlFor="q-notes" className="text-xs font-medium text-slate-700">
+                  Additional information <span className="text-[11px] font-normal text-slate-400">(optional)</span>
+                </label>
+                <span className="text-[10px] text-slate-400">
+                  {formData.notes?.length || 0}/2000
+                </span>
+              </div>
+              <textarea
+                id="q-notes"
+                name="notes"
+                rows={3}
+                maxLength={2000}
+                placeholder="Specify custom logo laser engraving, custom gift box sleeves, multi-location dispatch, sample kit requests, or target delivery timelines..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] outline-none" />
+                className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all resize-y min-h-[72px]"
+              />
             </div>
 
             {/* Anti-spam honeypot */}
@@ -694,7 +1030,7 @@ export default function QuotePage() {
               {!isAuthenticated && !user ? (
                 <Link
                   href="/login?redirect=/quote"
-                  className="w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md bg-[#1b5e3f] hover:bg-[#144830] text-white active:scale-[0.99] cursor-pointer"
+                  className="w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md bg-brand-600 hover:bg-brand-500 text-white active:scale-[0.99] cursor-pointer"
                 >
                   <Lock className="w-4 h-4" />
                   <span>Please Login First to Submit Quote</span>
@@ -704,11 +1040,10 @@ export default function QuotePage() {
                 <button
                   type="submit"
                   disabled={state.busy || items.length === 0}
-                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${
-                    state.busy
-                      ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
-                      : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${state.busy
+                    ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
+                    : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {state.busy ? (
                     <>
@@ -759,7 +1094,7 @@ export default function QuotePage() {
 
       {/* ── Adjust Quantities Modal Popup ──────────────────────────────── */}
       {isAdjustOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
@@ -767,36 +1102,36 @@ export default function QuotePage() {
           />
 
           {/* Modal Content */}
-          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200">
-                  <SlidersHorizontal className="w-4 h-4" />
+            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200 flex-shrink-0">
+                  <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Adjust Quantities</h3>
-                  <p className="text-xs text-slate-500">Update item counts or remove products from your quote</p>
+                <div className="min-w-0">
+                  <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">Adjust Quantities</h3>
+                  <p className="text-[11px] sm:text-xs text-slate-500 truncate">Update item counts or remove products from your quote</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setIsAdjustOpen(false)}
-                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors cursor-pointer flex-shrink-0"
                 aria-label="Close modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             {/* Modal Body - Items List */}
-            <div className="p-6 overflow-y-auto flex-1 space-y-4 divide-y divide-slate-100">
+            <div className="p-3.5 sm:p-6 overflow-y-auto flex-1 space-y-3 sm:space-y-4 divide-y divide-slate-100">
               {lineItems.map((item) => (
-                <div key={item.key} className="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div key={item.key} className="pt-3 sm:pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                   {/* Left: Image + Info */}
-                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
                     {/* Product Image */}
-                    <div className="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
                       {item.image ? (
                         <img
                           src={item.image}
@@ -807,7 +1142,7 @@ export default function QuotePage() {
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-xl">
+                        <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-base sm:text-xl">
                           {item.name ? item.name.charAt(0).toUpperCase() : "P"}
                         </div>
                       )}
@@ -815,56 +1150,66 @@ export default function QuotePage() {
 
                     {/* Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-slate-900 truncate leading-snug">{item.name}</h4>
-                        {item.isPair && (
-                          <span className="text-[10px] font-extrabold text-emerald-900 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
-                            <span>🔗</span> Paired Item (Min: 1)
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate leading-snug">{item.name}</h4>
+                        {item.isPair ? (
+                          <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-900 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                            <span>🔗</span> Pair{item.parentName ? ` with ${item.parentName}` : ""}
+                          </span>
+                        ) : (
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                            <span>📦</span> Primary
                           </span>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5 sm:mt-1 text-[10.5px] sm:text-xs text-slate-500">
                         {item.colour && item.colour !== "Standard" && (
-                          <span className="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                            Color: {item.colour}
+                          <span className="text-[10px] sm:text-[11px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                            {item.colour}
                           </span>
                         )}
-                        <span className="text-xs text-slate-500">
-                          MRP ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
+                        <span>
+                          ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
                         </span>
                         {!item.isPair && (
-                          <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
+                          <span className="text-[9.5px] sm:text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-md">
                             MOQ: {item.minQty}
                           </span>
                         )}
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded border transition-colors ${item.tierNumber === 3
-                            ? "text-emerald-900 bg-emerald-100 border-emerald-300"
-                            : item.tierNumber === 2
-                              ? "text-teal-900 bg-teal-50 border-teal-200"
-                              : "text-emerald-700 bg-emerald-50 border-emerald-200"
+                        <span className={`text-[10px] sm:text-[11px] font-bold px-1.5 py-0.2 rounded border transition-colors ${item.tierNumber === 3
+                          ? "text-emerald-900 bg-emerald-100 border-emerald-300"
+                          : item.tierNumber === 2
+                            ? "text-teal-900 bg-teal-50 border-teal-200"
+                            : "text-emerald-700 bg-emerald-50 border-emerald-200"
                           }`}>
-                          {item.discountPct}% OFF • Tier {item.tierNumber}
+                          {item.discountPct}% OFF
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Right: Quantity Stepper & Net Price & Delete */}
-                  <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-50">
+                  <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 flex-shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                     <div className="text-left sm:text-right">
-                      <p className="text-xs font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
-                      <p className="text-[10px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
                     </div>
 
                     {/* Stepper */}
-                    <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1 shadow-2xs">
+                    <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl p-0.5 sm:p-1 shadow-2xs">
                       <button
                         type="button"
-                        onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || 1) - 1))}
-                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        disabled={item.qty <= item.minQty}
+                        onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || item.minQty) - 1))}
+                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${
+                          item.qty <= item.minQty
+                            ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed opacity-50"
+                            : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                        }`}
+                        title={item.qty <= item.minQty ? (item.isPair ? "Minimum quantity is 1" : "Minimum wholesale quantity is 10") : "Decrease quantity"}
                         aria-label="Decrease quantity"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
 
                       <input
@@ -876,17 +1221,24 @@ export default function QuotePage() {
                           const c = e.target.value.replace(/\D/g, "");
                           setQty(item.key, c ? parseInt(c, 10) : item.minQty);
                         }}
-                        className="w-12 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
+                        onBlur={(e) => {
+                          const c = parseInt(e.target.value, 10);
+                          if (isNaN(c) || c < item.minQty) {
+                            setQty(item.key, item.minQty);
+                          }
+                        }}
+                        className="w-9 sm:w-12 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"
                         aria-label={`Quantity for ${item.name}`}
                       />
 
                       <button
                         type="button"
-                        onClick={() => setQty(item.key, (item.qty || 1) + 1)}
-                        className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        onClick={() => setQty(item.key, (item.qty || item.minQty) + 1)}
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer shadow-2xs"
+                        title="Increase quantity"
                         aria-label="Increase quantity"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                     </div>
 
@@ -894,11 +1246,11 @@ export default function QuotePage() {
                     <button
                       type="button"
                       onClick={() => remove(item.key)}
-                      className="w-8 h-8 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors cursor-pointer"
                       title="Remove product"
                       aria-label="Remove item"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
@@ -906,23 +1258,34 @@ export default function QuotePage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+            <div className="px-4 py-3 sm:px-6 sm:py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
               <div>
-                <p className="text-xs text-slate-500 font-medium">
+                <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
                   Total Units: <span className="font-bold text-slate-800">{totalUnitsCount}</span>
                 </p>
-                <p className="text-xs font-bold text-emerald-800">
-                  Net Taxable: ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
+                <p className="text-xs sm:text-sm font-bold text-emerald-800">
+                  Net: ₹{(estimatedTotal || 0).toLocaleString("en-IN")}
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsAdjustOpen(false)}
-                className="btn-primary py-2 px-6 text-xs font-bold shadow-xs cursor-pointer"
-              >
-                Save &amp; Close
-              </button>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/products"
+                  onClick={() => setIsAdjustOpen(false)}
+                  className="inline-flex items-center gap-1 py-1.5 sm:py-2 px-3 sm:px-3.5 rounded-xl border border-emerald-300/90 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs shadow-2xs transition-all active:scale-95 whitespace-nowrap"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Add Products</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsAdjustOpen(false)}
+                  className="btn-primary py-1.5 sm:py-2 px-4 sm:px-5 text-xs font-bold shadow-xs cursor-pointer whitespace-nowrap"
+                >
+                  Save &amp; Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -27,6 +27,8 @@ module.exports = {
         sans: ['var(--font-corporate)', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
       boxShadow: {
+        '2xs': '0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+        'xs': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         'card': '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02)',
         'card-hover': '0 14px 30px -4px rgba(22, 101, 52, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04)',
