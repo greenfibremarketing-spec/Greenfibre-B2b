@@ -2,8 +2,8 @@
 
 import { ExternalLink } from "lucide-react";
 
-export const WHATSAPP_NUMBER = "919211338066";
-export const WHATSAPP_DISPLAY_PHONE = "+91 92113 38066";
+export const WHATSAPP_NUMBER = "919217988874";
+export const WHATSAPP_DISPLAY_PHONE = "+91 92179 88874";
 
 export const WHATSAPP_DEFAULT_MESSAGE =
   "Hi Greenfibre Team,\n\nI would like to request a wholesale B2B quote for sustainable tableware & corporate gifting.\n\nCould you please share your latest catalog and tier pricing?";
@@ -40,7 +40,7 @@ export function NavbarWhatsAppQuote({ className = "" }) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Request Quote on WhatsApp"
-      title="Request B2B Quote on WhatsApp (+91 92113 38066)"
+      title="Request B2B Quote on WhatsApp (+91 92179 88874)"
       className={`relative group flex items-center justify-center gap-2 h-9 sm:h-10 px-0 sm:px-3.5 w-9 sm:w-auto rounded-full bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xs shadow-xs hover:shadow-[0_4px_18px_rgba(16,185,129,0.38)] border border-emerald-400/40 hover:border-emerald-300 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex-shrink-0 cursor-pointer ${className}`}
     >
       {/* Gloss Highlight Overlay */}
@@ -80,7 +80,7 @@ export function FloatingWhatsAppQuote() {
         rel="noopener noreferrer"
         aria-label="Request Instant Quote on WhatsApp"
         className="relative flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-600 via-[#25D366] to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-[0_6px_25px_rgba(22,163,74,0.45)] hover:shadow-[0_8px_32px_rgba(22,163,74,0.6)] border-2 border-white/90 transition-all duration-300 hover:scale-108 active:scale-95 group cursor-pointer"
-        title="Chat on WhatsApp (+91 92113 38066) for instant quote"
+        title="Chat on WhatsApp (+91 92179 88874) for instant quote"
       >
         {/* Soft Ambient Radiance Pulse Ring */}
         <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-40 animate-ping pointer-events-none" />

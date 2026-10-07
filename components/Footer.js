@@ -142,12 +142,12 @@ export default function Footer() {
                 <div>
                   WhatsApp:{" "}
                   <a
-                    href="https://wa.me/919211338066"
+                    href="https://wa.me/919217988874"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-bold text-brand-700 hover:underline"
                   >
-                    +91 92113 38066
+                    +91 92179 88874
                   </a>
                 </div>
               </div>
