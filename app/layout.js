@@ -1,5 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
+import Script from "next/script";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { QuoteProvider } from "@/components/Quote";
 import { AuthProvider } from "@/components/AuthContext";
@@ -34,6 +35,21 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={corporateFont.variable}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-J9GF4NBD8N"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-J9GF4NBD8N');
+          `}
+        </Script>
+      </head>
       <body className="bg-white text-slate-800 font-sans antialiased min-h-screen flex flex-col">
         <AuthProvider>
           <QuoteProvider>
