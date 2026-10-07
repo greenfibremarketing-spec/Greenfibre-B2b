@@ -6,6 +6,7 @@ import { QuoteProvider } from "@/components/Quote";
 import { AuthProvider } from "@/components/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { FloatingWhatsAppQuote } from "@/components/WhatsAppQuoteButton";
 
 const corporateFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -60,6 +61,9 @@ export default function RootLayout({ children }) {
 
             {/* Global Footer */}
             <Footer />
+
+            {/* Global Floating WhatsApp Request Quote Trigger (Desktop & Mobile) */}
+            <FloatingWhatsAppQuote />
           </QuoteProvider>
         </AuthProvider>
       </body>
