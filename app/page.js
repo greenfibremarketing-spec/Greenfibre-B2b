@@ -3,7 +3,8 @@ import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
 import HeroSwiper from "@/components/HeroSwiper";
 import BottleModelViewer from "@/components/BottleModelViewer";
-import { categories, getProducts } from "@/lib/products";
+import { categories as categoryList } from "@/lib/categories";
+import { getProducts } from "@/lib/products";
 import { ArrowRight } from "lucide-react";
 
 export default async function Home() {
@@ -15,6 +16,38 @@ export default async function Home() {
       {/* Full Width Hero Swiper */}
       <section className="w-full max-w-full overflow-hidden max-h-[96vh]">
         <HeroSwiper />
+      </section>
+
+      {/* Executive Primary H1 Heading & Introduction */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-1">
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-7 md:p-8 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-1.5 max-w-3xl">
+            <div className="badge-green inline-block mb-1">
+              Direct Manufacturer · 100% Upcycled Agricultural Stubble
+            </div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              Rice-Husk Tableware &amp; Corporate Gifts, Direct from the Manufacturer
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Certified food-safe durable tableware, thermal drinkware, and curated sustainable gift hampers made from upcycled agricultural crop stubble. Permanent in-house laser branding and pan-India bulk delivery.
+            </p>
+          </div>
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 flex-shrink-0">
+            <Link
+              href="/products"
+              className="px-4 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center gap-1.5"
+            >
+              <span>Explore Catalog</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+            <Link
+              href="/quote"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition-all"
+            >
+              Request Bulk Quote
+            </Link>
+          </div>
+        </div>
       </section>
 
       {/* Featured Products Catalog */}
@@ -45,17 +78,15 @@ export default async function Home() {
           >
             All Products
           </Link>
-          {categories
-            .filter((c) => c !== "All Products")
-            .map((c) => (
-              <Link
-                key={c}
-                href={`/products?category=${encodeURIComponent(c)}`}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-brand-500 hover:text-brand-800 hover:bg-brand-50 whitespace-nowrap shadow-2xs transition-all duration-150 hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
-              >
-                {c}
-              </Link>
-            ))}
+          {categoryList.map((cat) => (
+            <Link
+              key={cat.slug}
+              href={`/category/${cat.slug}`}
+              className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:border-brand-500 hover:text-brand-800 hover:bg-brand-50 whitespace-nowrap shadow-2xs transition-all duration-150 hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
+            >
+              {cat.name}
+            </Link>
+          ))}
         </div>
 
         {/* Products Grid */}
@@ -114,7 +145,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   01
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Upcycled Rice Husk Shell</h4>
+                <h3 className="text-sm font-bold text-slate-900">Upcycled Rice Husk Shell</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 65% natural agricultural crop stubble composite diverts open-field burning and replaces single-use plastics.
@@ -126,7 +157,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   02
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Double-Wall Thermal Insulation</h4>
+                <h3 className="text-sm font-bold text-slate-900">Double-Wall Thermal Insulation</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Maintains beverage heat for 4+ hours and keeps cold drinks chilled for 8+ hours with zero exterior condensation.
@@ -138,7 +169,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   03
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">100% Food-Safe & BPA-Free</h4>
+                <h3 className="text-sm font-bold text-slate-900">100% Food-Safe & BPA-Free</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 US FDA 21 CFR and LFGB certified. Odor-resistant, non-leaching, and safe for hot tea, coffee, and water.
@@ -161,7 +192,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   04
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">360° Fiber Laser Etching</h4>
+                <h3 className="text-sm font-bold text-slate-900">360° Fiber Laser Etching</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Permanent micrometric corporate logos and personalized employee names that never peel or wash off.
@@ -173,7 +204,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   05
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Leak-Proof Cap & Jute Loop</h4>
+                <h3 className="text-sm font-bold text-slate-900">Leak-Proof Cap & Jute Loop</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Precision threaded airtight silicone seal with durable natural jute carrying strap for daily commutes.
@@ -185,7 +216,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   06
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Custom Packaging & 4h Proof</h4>
+                <h3 className="text-sm font-bold text-slate-900">Custom Packaging & 4h Proof</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Recycled FSC kraft gift box with debossed wrap. Free 3D visual proof in 4 hours and Pan-India dispatch.

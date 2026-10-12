@@ -1,11 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AddToQuote } from "./Quote";
 
 export default function Card({ p, context }) {
+  const [imgError, setImgError] = useState(false);
+
   // Always use the clean canonical URL for internal links (no ?context= query param)
   const productHref = `/products/${p.slug}`;
+
+  // Descriptive alt text: "<product name> - <short material descriptor>"
+  const materialDescriptor =
+    p.material ||
+    "Upcycled Rice-Husk Biocomposite Tableware";
+  const imageAlt = `${p.name} - ${materialDescriptor}`;
+  const showImage = Boolean(p.image && !imgError);
 
   return (
     <article className="group bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-2xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col overflow-hidden">
@@ -21,28 +32,22 @@ export default function Card({ p, context }) {
         )}
 
         <Link href={productHref} className="block w-full h-full relative" aria-label={`View ${p.name}`}>
-          {p.image ? (
-            <img
+          {showImage ? (
+            <Image
               src={p.image}
-              alt={p.name}
-              loading="lazy"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.style.display = "none";
-                const fallback = e.currentTarget.parentElement?.querySelector(".img-fallback-badge");
-                if (fallback) fallback.style.display = "flex";
-              }}
-              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out"
+              alt={imageAlt}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              onError={() => setImgError(true)}
+              className="object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out"
             />
-          ) : null}
-          <div
-            className="img-fallback-badge w-full h-full flex flex-col items-center justify-center bg-slate-50 text-emerald-800 p-4"
-            style={{ display: p.image ? "none" : "flex" }}
-          >
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-xl font-black shadow-2xs">
-              {p.name ? p.name[0].toUpperCase() : "G"}
+          ) : (
+            <div className="img-fallback-badge w-full h-full flex flex-col items-center justify-center bg-slate-50 text-emerald-800 p-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-xl font-black shadow-2xs">
+                {p.name ? p.name[0].toUpperCase() : "G"}
+              </div>
             </div>
-          </div>
+          )}
         </Link>
       </div>
 

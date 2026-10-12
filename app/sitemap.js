@@ -1,4 +1,5 @@
 import { getProducts } from "@/lib/products";
+import { categories } from "@/lib/categories";
 
 const BASE_URL = "https://trade.greenfibre.org";
 
@@ -13,11 +14,16 @@ export default async function sitemap() {
     { url: `${BASE_URL}/privacy`, lastModified: new Date() }
   ];
 
+  const categoryPages = categories.map((c) => ({
+    url: `${BASE_URL}/category/${c.slug}`,
+    lastModified: new Date()
+  }));
+
   const productPages = products.map((p) => ({
     url: `${BASE_URL}/products/${p.slug}`,
     lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date()
   }));
 
-  return [...staticPages, ...productPages];
+  return [...staticPages, ...categoryPages, ...productPages];
 }
 

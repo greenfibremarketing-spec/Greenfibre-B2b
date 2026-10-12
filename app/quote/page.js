@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useQuote } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
 import {
@@ -1133,13 +1134,12 @@ export default function QuotePage() {
                     {/* Product Image */}
                     <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
                       {item.image ? (
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-base sm:text-xl">

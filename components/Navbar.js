@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   Menu,
@@ -75,7 +76,8 @@ function NavbarInner() {
   const isAllProductsActive =
     pathname === "/products" && !categoryParam && !typeParam;
   const isGiftingActive =
-    pathname.startsWith("/products") && isGiftingCategory;
+    pathname === "/category/gift-boxes-hampers" ||
+    (pathname.startsWith("/products") && isGiftingCategory);
   const isStoryActive = pathname === "/story";
 
   const displayName =
@@ -97,10 +99,13 @@ function NavbarInner() {
               className="flex items-center h-full group select-none flex-shrink-0 py-1"
               aria-label="Green Fibre Home"
             >
-              <img
+              <Image
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
+                width={175}
+                height={36}
                 className="h-7 sm:h-8 md:h-9 w-auto max-w-[130px] sm:max-w-[175px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
+                priority
               />
             </Link>
 
@@ -121,7 +126,7 @@ function NavbarInner() {
 
               {/* Gifts & Hampers */}
               <Link
-                href="/products?category=Gift+Hampers"
+                href="/category/gift-boxes-hampers"
                 className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
                   ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
@@ -190,9 +195,11 @@ function NavbarInner() {
             <div>
               {/* Drawer Header with Logo & Close Button */}
               <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
-                <img
+                <Image
                   src="/images/logo.png"
                   alt="Green Fibre Logo"
+                  width={140}
+                  height={28}
                   className="h-7 w-auto object-contain flex-shrink-0"
                 />
                 <button
@@ -322,7 +329,7 @@ function NavbarInner() {
 
                 {/* Gifts & Hampers */}
                 <Link
-                  href="/products?category=Gift+Hampers"
+                  href="/category/gift-boxes-hampers"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between p-3 rounded-xl transition-all ${isGiftingActive
                     ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"

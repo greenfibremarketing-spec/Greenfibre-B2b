@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sprout,
   ShieldCheck,
@@ -195,10 +196,12 @@ export default function StoryPage() {
 
           <div className="lg:col-span-5">
             <div className="rounded-2xl overflow-hidden shadow-md aspect-[4/3] bg-slate-100 border border-[#bbf7d0] relative">
-              <img
+              <Image
                 src="/images/green-farmland.jpg"
-                alt="Green Fibre - Sustainable Living"
-                className="w-full h-full object-cover"
+                alt="Green Fibre - Sustainable Rice Husk Agricultural Composite"
+                fill
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                className="object-cover"
               />
               <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/40 shadow-xs flex items-center justify-between text-xs">
                 <span className="font-bold text-[#0f3428]">Natural Rice Husk Composite</span>
@@ -269,11 +272,13 @@ export default function StoryPage() {
 
           <div className="lg:col-span-5 grid grid-cols-2 gap-4">
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200">
-                <img
+              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200 relative">
+                <Image
                   src="/images/green-paddy.jpg"
-                  alt="Organic paddy farm"
-                  className="w-full h-full object-cover"
+                  alt="Organic paddy farm supporting zero crop burning"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 20vw"
+                  className="object-cover"
                 />
               </div>
               <div className="p-4 rounded-2xl bg-[#ebf7ee] border border-[#cbebd4] text-center">
@@ -286,11 +291,13 @@ export default function StoryPage() {
                 <div className="text-2xl font-black text-emerald-400">100%</div>
                 <div className="text-[11px] font-medium text-emerald-100 mt-0.5">Food-Safe & BPA-Free</div>
               </div>
-              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200">
-                <img
+              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200 relative">
+                <Image
                   src="/images/green-dining-nature.jpg"
-                  alt="Sustainable dining tableware"
-                  className="w-full h-full object-cover"
+                  alt="Sustainable dining tableware made from upcycled crop stubble"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 20vw"
+                  className="object-cover"
                 />
               </div>
             </div>

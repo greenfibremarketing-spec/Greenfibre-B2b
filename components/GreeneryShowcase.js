@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Sprout, ShieldCheck, Leaf, Wind, Recycle } from "lucide-react";
 
 export default function GreeneryShowcase() {
@@ -22,10 +23,12 @@ export default function GreeneryShowcase() {
         {/* Left Card: The Green Countryside & Clean Air */}
         <div className="bg-white border border-brand-200/90 rounded-3xl overflow-hidden shadow-sm hover:shadow-card-hover hover:border-brand-400/80 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
           <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-            <img
+            <Image
               src="/images/green-paddy.jpg"
               alt="Lush green organic rice paddy fields under clean sunlight"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
             <div className="absolute top-3 left-3 bg-brand-700/90 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
               <Sprout className="w-3.5 h-3.5" />
@@ -47,10 +50,12 @@ export default function GreeneryShowcase() {
         {/* Right Card: Green Dining & Botanical Living */}
         <div className="bg-white border border-brand-200/90 rounded-3xl overflow-hidden shadow-sm hover:shadow-card-hover hover:border-brand-400/80 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
           <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-            <img
+            <Image
               src="/images/green-tableware-plants.jpg"
               alt="Eco-friendly tableware surrounded by fresh green botanical plants"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             />
             <div className="absolute top-3 left-3 bg-brand-700/90 backdrop-blur-sm text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
               <Leaf className="w-3.5 h-3.5" />

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveCategorySlug } from "@/lib/categories";
 
 export function middleware(request) {
   const { pathname } = request.nextUrl;
@@ -20,6 +21,23 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
+  // 301 Permanent redirect from legacy /products?category=<Name> to clean /category/<slug>
+  if (pathname === "/products" && request.nextUrl.searchParams.has("category")) {
+    const categoryParam = request.nextUrl.searchParams.get("category");
+    if (
+      categoryParam &&
+      categoryParam.trim() &&
+      categoryParam !== "All Products" &&
+      categoryParam.toLowerCase() !== "all"
+    ) {
+      const slug = resolveCategorySlug(categoryParam);
+      if (slug) {
+        const dest = new URL(`/category/${slug}`, request.url);
+        return NextResponse.redirect(dest, { status: 301 });
+      }
+    }
+  }
+
   // Check for b2b_token in cookies
   const token = request.cookies.get("b2b_token")?.value;
   const isAuthenticated = Boolean(token && token.trim().length > 0);
@@ -28,6 +46,7 @@ export function middleware(request) {
   const isPublicPage =
     pathname === "/" ||
     pathname.startsWith("/products") ||
+    pathname.startsWith("/category") ||
     pathname.startsWith("/story") ||
     pathname.startsWith("/our-story") ||
     pathname.startsWith("/terms") ||

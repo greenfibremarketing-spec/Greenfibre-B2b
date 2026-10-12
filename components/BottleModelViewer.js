@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Script from "next/script";
+import Image from "next/image";
 import { RotateCw } from "lucide-react";
 
 export default function BottleModelViewer({
@@ -27,11 +28,12 @@ export default function BottleModelViewer({
     <div className="relative w-full max-w-[380px] mx-auto flex items-center justify-center bg-transparent group">
       {/* Mobile View: High-Quality Static Bottle Image (Fast, Lightweight, No Touch Gesture Traps) */}
       <div className="sm:hidden w-full h-[320px] flex items-center justify-center p-2 relative">
-        <img
+        <Image
           src={poster}
-          alt="Green Fibre Eco Bottle"
-          className="w-full h-full max-h-[300px] object-contain drop-shadow-md select-none pointer-events-none"
-          loading="lazy"
+          alt="Green Fibre Eco Thermal Bottle - Upcycled Rice Husk Biocomposite"
+          fill
+          sizes="(max-width: 640px) 100vw, 380px"
+          className="object-contain drop-shadow-md select-none pointer-events-none"
         />
         <div className="absolute bottom-1 bg-white/90 backdrop-blur-xs border border-emerald-200/90 text-emerald-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-2xs">
           Upcycled Rice Husk Bottle
@@ -89,9 +91,11 @@ export default function BottleModelViewer({
             slot="poster"
             className="w-full h-full flex items-center justify-center bg-transparent p-2"
           >
-            <img
+            <Image
               src={poster}
-              alt="3D Bottle Preview"
+              alt="Green Fibre Eco Thermal Bottle - Upcycled Rice Husk Biocomposite"
+              width={380}
+              height={480}
               className="w-full h-full max-h-[440px] sm:max-h-[480px] object-contain drop-shadow-md"
             />
           </div>

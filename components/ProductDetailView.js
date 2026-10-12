@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Image from "next/image";
 import { useQuote } from "./Quote";
 import {
   Zap,
@@ -1119,13 +1120,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           }`}
                         aria-label={`View angle ${idx + 1}`}
                       >
-                        <img
+                        <Image
                           src={img}
                           alt={`Thumbnail ${idx + 1}`}
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover object-center"
-                          onError={(e) => {
-                            e.currentTarget.src = "/images/placeholder.jpg";
-                          }}
                         />
                         {isActive && (
                           <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-brand-600 text-white rounded-full flex items-center justify-center shadow-xs">
@@ -1140,13 +1140,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
               {/* Main Stage Image Frame */}
               <div className="relative aspect-square max-h-[460px] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-sm flex items-center justify-center group flex-1 min-w-0">
-                <img
+                <Image
                   src={activeImage}
                   alt={`${product.name} - ${selectedColour}`}
-                  className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-103"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/placeholder.jpg";
-                  }}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 460px"
+                  className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-103"
                 />
 
                 {/* Floating Gift Set Badge */}
@@ -2118,13 +2117,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       <div className="md:hidden space-y-4 pb-4">
         {/* 1. Main Stage Image with Gift Set Pill Badge */}
         <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center">
-          <img
+          <Image
             src={activeImage}
             alt={`${product.name} - ${selectedColour}`}
-            className="w-full h-full object-cover object-center"
-            onError={(e) => {
-              e.currentTarget.src = "/images/placeholder.jpg";
-            }}
+            fill
+            sizes="100vw"
+            className="object-cover object-center"
           />
 
           {/* Floating Pill Badge: Gift set */}
@@ -2187,9 +2185,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
         {/* 4. Product Name & Short Description */}
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
             {product.name}
-          </h1>
+          </h2>
           <p className="text-xs text-slate-600 leading-relaxed mt-1">
             {product.shortDescription || product.desc || product.tagline || "Crafted from BioDur biocomposite. Microwave and dishwasher safe."}
           </p>
@@ -2537,13 +2535,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
                   {primaryAddon.image ? (
-                    <img
+                    <Image
                       src={primaryAddon.image}
                       alt={primaryAddon.name}
+                      width={56}
+                      height={56}
                       className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                      }}
                     />
                   ) : (
                     <div className="w-full h-full bg-emerald-50 text-emerald-800 font-bold flex items-center justify-center text-sm">
@@ -2664,13 +2661,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
             {/* High-Res Full-screen Image */}
             <div className="relative max-h-full max-w-full flex items-center justify-center">
-              <img
+              <Image
                 src={activeImage}
                 alt={`${product.name} Fullscreen Inspection`}
-                className="max-h-[75vh] sm:max-h-[82vh] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-xl sm:rounded-2xl shadow-2xl"
-                onError={(e) => {
-                  e.currentTarget.src = "/images/placeholder.jpg";
-                }}
+                width={1200}
+                height={900}
+                className="max-h-[75vh] sm:max-h-[82vh] max-w-[95vw] sm:max-w-[85vw] w-auto h-auto object-contain rounded-xl sm:rounded-2xl shadow-2xl"
               />
             </div>
 
@@ -2843,13 +2839,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 flex-1">
                               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-0.5 sm:p-1 relative">
                                 {rel.image ? (
-                                  <img
+                                  <Image
                                     src={rel.image}
                                     alt={rel.name}
+                                    width={64}
+                                    height={64}
                                     className="w-full h-full object-contain"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = "none";
-                                    }}
                                   />
                                 ) : (
                                   <div className="w-full h-full bg-emerald-50 text-emerald-800 font-extrabold flex items-center justify-center text-base sm:text-lg">
