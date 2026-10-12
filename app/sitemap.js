@@ -1,17 +1,23 @@
 import { getProducts } from "@/lib/products";
 
-const u = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const BASE_URL = "https://trade.greenfibre.org";
 
 export default async function sitemap() {
   const products = await getProducts();
-  return [
-    { url: u, lastModified: new Date() },
-    { url: `${u}/products`, lastModified: new Date() },
-    { url: `${u}/story`, lastModified: new Date() },
-    { url: `${u}/quote`, lastModified: new Date() },
-    ...products.map((p) => ({
-      url: `${u}/products/${p.slug}`,
-      lastModified: new Date()
-    }))
+
+  const staticPages = [
+    { url: `${BASE_URL}/`, lastModified: new Date() },
+    { url: `${BASE_URL}/products`, lastModified: new Date() },
+    { url: `${BASE_URL}/story`, lastModified: new Date() },
+    { url: `${BASE_URL}/terms`, lastModified: new Date() },
+    { url: `${BASE_URL}/privacy`, lastModified: new Date() }
   ];
+
+  const productPages = products.map((p) => ({
+    url: `${BASE_URL}/products/${p.slug}`,
+    lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date()
+  }));
+
+  return [...staticPages, ...productPages];
 }
+

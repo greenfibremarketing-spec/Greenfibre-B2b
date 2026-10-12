@@ -12,15 +12,31 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const p = await getProduct(params.slug);
-  if (!p) return {};
+  if (!p) {
+    return { robots: { index: false, follow: false } };
+  }
+
+  const descParts = [
+    `${p.name} for bulk B2B orders.`,
+    p.moq ? `Minimum order: ${p.moq} ${p.unit || "units"}.` : null,
+    p.leadTime ? `Lead time: ${p.leadTime}.` : null,
+    "Custom laser branding and Pan-India dispatch available."
+  ].filter(Boolean);
+
+  const ogImage = p.images?.[0] || p.image || null;
+
   return {
-    title: `${p.name} - Wholesale Bulk Orders`,
-    description: `${p.desc} Minimum Order Quantity: ${p.moq} ${p.unit}. Custom laser branding and Pan-India dispatch.`,
+    title: `${p.name} - Bulk Order & Custom Branding`,
+    description: descParts.join(" "),
     alternates: { canonical: `/products/${p.slug}` },
     openGraph: {
       title: `${p.name} | Green Fibre B2B`,
-      description: p.desc,
-      images: p.image ? [{ url: p.image }] : []
+      description: descParts.join(" "),
+      images: ogImage ? [{ url: ogImage }] : []
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: ogImage ? [ogImage] : []
     }
   };
 }

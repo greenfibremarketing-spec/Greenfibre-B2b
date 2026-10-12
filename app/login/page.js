@@ -3,7 +3,8 @@ import AuthForm from "@/components/AuthForm";
 
 export const metadata = {
   title: "B2B Enterprise Portal Sign In",
-  description: "Sign in to your Green Fibre B2B corporate account to manage bulk quotes, volume tier pricing, and laser branding orders."
+  description: "Sign in to your Green Fibre B2B corporate account to manage bulk quotes, volume tier pricing, and laser branding orders.",
+  robots: { index: false, follow: false }
 };
 
 export default function LoginPage() {

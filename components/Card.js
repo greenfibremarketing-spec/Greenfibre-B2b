@@ -4,20 +4,8 @@ import Link from "next/link";
 import { AddToQuote } from "./Quote";
 
 export default function Card({ p, context }) {
-  const targetContext =
-    context ||
-    p.activeContext?.key ||
-    (p.category === "Corporate"
-      ? "corporate"
-      : p.category === "Anniversary"
-        ? "anniversary"
-        : p.category === "Wedding"
-          ? "wedding"
-          : null);
-
-  const productHref = targetContext
-    ? `/products/${p.slug}?context=${encodeURIComponent(targetContext)}`
-    : `/products/${p.slug}`;
+  // Always use the clean canonical URL for internal links (no ?context= query param)
+  const productHref = `/products/${p.slug}`;
 
   return (
     <article className="group bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-2xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col overflow-hidden">

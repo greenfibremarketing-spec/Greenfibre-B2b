@@ -3,7 +3,8 @@ import AuthForm from "@/components/AuthForm";
 
 export const metadata = {
   title: "Create Enterprise B2B Account",
-  description: "Register for a Green Fibre direct manufacturer account to unlock wholesale tier pricing, permanent laser branding, and pan-India bulk delivery."
+  description: "Register for a Green Fibre direct manufacturer account to unlock wholesale tier pricing, permanent laser branding, and pan-India bulk delivery.",
+  robots: { index: false, follow: false }
 };
 
 export default function SignUpPage() {

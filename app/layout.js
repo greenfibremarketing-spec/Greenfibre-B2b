@@ -13,21 +13,27 @@ const corporateFont = Plus_Jakarta_Sans({
   display: "swap"
 });
 
-const url = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export const metadata = {
-  metadataBase: new URL(url),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://trade.greenfibre.org"),
   title: {
     default: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
     template: "%s | Green Fibre B2B"
   },
   description:
     "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: "Green Fibre B2B",
+    locale: "en_IN",
     title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
-    description: "Everyday durable tableware and gift sets made from upcycled rice-husk crop stubble. Custom laser branding and Pan-India delivery."
+    description: "Everyday durable tableware and gift sets made from upcycled rice-husk crop stubble. Custom laser branding and Pan-India delivery.",
+    images: [{ url: "/images/logo.png", width: 1200, height: 630, alt: "Green Fibre B2B" }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/images/logo.png"]
   }
 };
 
