@@ -24,7 +24,10 @@ import {
 export const metadata = {
   title: "Our Story • Engineering Green Products From Rice Husk | Green Fibre",
   description:
-    "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes."
+    "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes.",
+  alternates: {
+    canonical: "/story"
+  }
 };
 
 const stats = [

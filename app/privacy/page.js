@@ -19,7 +19,10 @@ import {
 export const metadata = {
   title: "Privacy & Replacement Policy • B2B Enterprise Protection | Green Fibre",
   description:
-    "Official Privacy, Data Protection, and Transit Damage Replacement Policy for Green Fibre B2B wholesale buyers, enterprise clients, and institutional partners."
+    "Official Privacy, Data Protection, and Transit Damage Replacement Policy for Green Fibre B2B wholesale buyers, enterprise clients, and institutional partners.",
+  alternates: {
+    canonical: "/privacy"
+  }
 };
 
 export default function PrivacyPage() {

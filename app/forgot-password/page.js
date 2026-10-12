@@ -3,7 +3,8 @@ import AuthForm from "@/components/AuthForm";
 
 export const metadata = {
   title: "Reset B2B Account Password | Green Fibre",
-  description: "Reset your Green Fibre corporate account password securely via email verification code (OTP)."
+  description: "Reset your Green Fibre corporate account password securely via email verification code (OTP).",
+  robots: { index: false, follow: false }
 };
 
 export default function ForgotPasswordPage() {

@@ -7,6 +7,15 @@ import { categories as categoryList } from "@/lib/categories";
 import { getProducts } from "@/lib/products";
 import { ArrowRight } from "lucide-react";
 
+export const metadata = {
+  title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
+  description:
+    "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
+  alternates: {
+    canonical: "/"
+  }
+};
+
 export default async function Home() {
   const allProducts = await getProducts();
   const featuredProducts = allProducts.slice(0, 8);

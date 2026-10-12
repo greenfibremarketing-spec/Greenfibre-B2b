@@ -28,7 +28,7 @@ const organizationAndWebsiteSchema = {
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Udyog Kendra 2",
-        "addressLocality": "Greater Noida, Gautam Buddha Nagar",
+        "addressLocality": "Greater Noida",
         "addressRegion": "Uttar Pradesh",
         "postalCode": "201306",
         "addressCountry": "IN"
@@ -65,14 +65,13 @@ export const metadata = {
   },
   description:
     "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: "Green Fibre B2B",
     locale: "en_IN",
     title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
     description: "Everyday durable tableware and gift sets made from upcycled rice-husk crop stubble. Custom laser branding and Pan-India delivery.",
-    images: [{ url: "/images/logo.png", width: 1200, height: 630, alt: "Green Fibre B2B" }]
+    images: [{ url: "/images/logo.png", alt: "Green Fibre B2B" }]
   },
   twitter: {
     card: "summary_large_image",
