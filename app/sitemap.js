@@ -14,6 +14,12 @@ export default async function sitemap() {
     { url: `${BASE_URL}/privacy`, lastModified: new Date() }
   ];
 
+  const landingPages = [
+    { url: `${BASE_URL}/corporate-gifting`, lastModified: new Date() },
+    { url: `${BASE_URL}/custom-branded-water-bottles`, lastModified: new Date() },
+    { url: `${BASE_URL}/diwali-corporate-gifts`, lastModified: new Date() }
+  ];
+
   const categoryPages = categories.map((c) => ({
     url: `${BASE_URL}/category/${c.slug}`,
     lastModified: new Date()
@@ -24,6 +30,6 @@ export default async function sitemap() {
     lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date()
   }));
 
-  return [...staticPages, ...categoryPages, ...productPages];
+  return [...staticPages, ...landingPages, ...categoryPages, ...productPages];
 }
 

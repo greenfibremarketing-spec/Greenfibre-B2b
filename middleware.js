@@ -47,6 +47,9 @@ export function middleware(request) {
     pathname === "/" ||
     pathname.startsWith("/products") ||
     pathname.startsWith("/category") ||
+    pathname.startsWith("/corporate-gifting") ||
+    pathname.startsWith("/custom-branded-water-bottles") ||
+    pathname.startsWith("/diwali-corporate-gifts") ||
     pathname.startsWith("/story") ||
     pathname.startsWith("/our-story") ||
     pathname.startsWith("/terms") ||

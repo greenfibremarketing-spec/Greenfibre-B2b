@@ -78,6 +78,7 @@ function NavbarInner() {
   const isGiftingActive =
     pathname === "/category/gift-boxes-hampers" ||
     (pathname.startsWith("/products") && isGiftingCategory);
+  const isCorporateGiftingActive = pathname === "/corporate-gifting";
   const isStoryActive = pathname === "/story";
 
   const displayName =
@@ -133,6 +134,17 @@ function NavbarInner() {
                   }`}
               >
                 <span className="relative z-10">Gifts &amp; Hampers</span>
+              </Link>
+
+              {/* Corporate Gifting */}
+              <Link
+                href="/corporate-gifting"
+                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isCorporateGiftingActive
+                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  }`}
+              >
+                <span className="relative z-10">Corporate Gifting</span>
               </Link>
 
               {/* Our Story */}
@@ -341,6 +353,24 @@ function NavbarInner() {
                       <Gift className="w-4 h-4" />
                     </div>
                     <span className="text-sm font-semibold">Gifts &amp; Hampers</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </Link>
+
+                {/* Corporate Gifting Solutions */}
+                <Link
+                  href="/corporate-gifting"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isCorporateGiftingActive
+                    ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCorporateGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold">Corporate Gifting</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>

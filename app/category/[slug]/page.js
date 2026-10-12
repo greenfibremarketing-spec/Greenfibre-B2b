@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { categories, getCategoryBySlug } from "@/lib/categories";
 import { getProducts, matchesProductCategory } from "@/lib/products";
 import Card from "@/components/Card";
+import JsonLd from "@/components/JsonLd";
 import { ChevronRight, Home as HomeIcon, Package } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -48,9 +49,29 @@ export default async function CategoryPage({ params }) {
   const categoryProducts = allProducts.filter((p) =>
     matchesProductCategory(p, category.name)
   );
+  const siteUrl = "https://trade.greenfibre.org";
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: category.name,
+        item: `${siteUrl}/category/${category.slug}`
+      }
+    ]
+  };
 
   return (
     <div className="bg-slate-100 min-h-screen py-6 sm:py-10">
+      <JsonLd data={breadcrumbSchema} />
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         {/* Breadcrumb Navigation: Home > Category */}
         <nav

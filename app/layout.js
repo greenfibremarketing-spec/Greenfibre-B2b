@@ -6,12 +6,55 @@ import { AuthProvider } from "@/components/AuthContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+import JsonLd from "@/components/JsonLd";
+
 const corporateFont = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-corporate",
   display: "swap"
 });
+
+const organizationAndWebsiteSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://trade.greenfibre.org/#organization",
+      "name": "Green Fibre",
+      "url": "https://trade.greenfibre.org",
+      "logo": "https://trade.greenfibre.org/images/logo.png",
+      "telephone": "+919217328777",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Udyog Kendra 2",
+        "addressLocality": "Greater Noida, Gautam Buddha Nagar",
+        "addressRegion": "Uttar Pradesh",
+        "postalCode": "201306",
+        "addressCountry": "IN"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "telephone": "+919217328777",
+          "contactType": "sales",
+          "areaServed": "IN",
+          "availableLanguage": ["en", "hi"]
+        }
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://trade.greenfibre.org/#website",
+      "url": "https://trade.greenfibre.org",
+      "name": "Green Fibre B2B",
+      "description": "Sustainable Tableware & Corporate Gifting Direct from Manufacturer",
+      "publisher": {
+        "@id": "https://trade.greenfibre.org/#organization"
+      }
+    }
+  ]
+};
 
 
 export const metadata = {
@@ -41,6 +84,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={corporateFont.variable}>
       <body className="bg-white text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+        <JsonLd data={organizationAndWebsiteSchema} />
         <AuthProvider>
           <QuoteProvider>
             {/* Executive B2B Navigation Header */}

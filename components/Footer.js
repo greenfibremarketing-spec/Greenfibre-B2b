@@ -61,12 +61,27 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Company & Policies */}
+          {/* Column 3: Corporate Solutions & Legal */}
           <div className="space-y-3.5">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Company &amp; Legal
+              Corporate Solutions
             </h3>
             <ul className="space-y-2.5 text-xs text-slate-600">
+              <li>
+                <Link href="/corporate-gifting" className="hover:text-brand-700 transition-colors">
+                  Corporate Gifts Bulk India
+                </Link>
+              </li>
+              <li>
+                <Link href="/custom-branded-water-bottles" className="hover:text-brand-700 transition-colors">
+                  Custom Branded Water Bottles
+                </Link>
+              </li>
+              <li>
+                <Link href="/diwali-corporate-gifts" className="hover:text-brand-700 transition-colors">
+                  Sustainable Diwali Hampers
+                </Link>
+              </li>
               <li>
                 <Link href="/story" className="hover:text-brand-700 transition-colors flex items-center gap-1.5">
                   <span>Our Story</span>
