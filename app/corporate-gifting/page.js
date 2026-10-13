@@ -134,7 +134,7 @@ export default function CorporateGiftingPage() {
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
               Equip your enterprise with meaningful, functional corporate gifts bulk India buyers trust.
               Crafted from upcycled agricultural rice-husk crop stubble composite (65% plant residue),
-              every Green Fibre gift set replaces single-use plastics with durable, certified food-safe homeware.
+              every Green Fibre gift set replaces single-use plastics with durable, food-safe homeware.
             </p>
           </div>
 
@@ -218,13 +218,12 @@ export default function CorporateGiftingPage() {
               economy story.
             </p>
             <p>
-              Based in Greater Noida, our manufacturing plant manages product molding, surface finishing, quality inspection,
-              and in-house laser engraving under one roof. Whether you are outfitting a new team cohort or curating premium
+              Based in Greater Noida, our team handles in-house laser engraving for your logo. Whether you are outfitting a new team cohort or curating premium
               holiday gift hampers, your branding is etched with clean, enduring precision. Every package is shipped inside
               an earthy recycled kraft gift box that arrives gift-ready without excessive packaging waste.
             </p>
             <p>
-              Every product in our corporate gifting catalog is certified BPA-free and food-safe, making our dinnerware,
+              Every product in our corporate gifting catalog is BPA-free and food-safe, making our dinnerware,
               mugs, and desk organizers practical for daily employee use at home or in the office. Because we manufacture
               using an upcycled rice-husk crop stubble composite featuring 65% plant residue, corporate gifts carry a
               tangible connection to rural farmers across Haryana and Punjab. From our Greater Noida facility,

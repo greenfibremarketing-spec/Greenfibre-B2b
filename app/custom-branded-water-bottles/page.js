@@ -72,11 +72,11 @@ export default function CustomBrandedWaterBottlesPage() {
     },
     {
       q: "How does the double-wall thermal bottle design work?",
-      a: "The double-wall thermal bottle construction provides thermal insulation to protect hands and maintain beverage temperatures, combining the durable bio-composite shell with an easy-to-clean, food-safe inner lining."
+      a: "The double-wall thermal bottle construction provides thermal insulation to protect hands and maintain beverage temperatures, combining the durable bio-composite shell with a stainless steel inner."
     },
     {
       q: "How are corporate logos engraved onto custom bottles?",
-      a: "All custom logo engraved bottles are personalized utilizing in-house laser engraving at our Greater Noida plant. We deliver crisp, permanent marks that do not fade, scratch, or peel during everyday handling."
+      a: "All custom logo engraved bottles are personalized utilizing in-house laser engraving at our Greater Noida plant. We deliver crisp, permanent laser engraving that does not fade or peel during everyday handling."
     },
     {
       q: "How quickly can my team preview our bottle design?",
@@ -194,7 +194,7 @@ export default function CustomBrandedWaterBottlesPage() {
             <h2 className="text-lg font-bold text-slate-900">Recycled Gift Packaging</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Each unit is presented in a recycled kraft gift box ready for company orientation welcome kits or executive
-              gifting. We guarantee punctual Pan-India delivery to single or multiple corporate hubs.
+              gifting. We coordinate Pan-India delivery to single or multiple corporate hubs.
             </p>
           </div>
         </section>
@@ -225,9 +225,9 @@ export default function CustomBrandedWaterBottlesPage() {
               our distribution network ensures secure, timely Pan-India delivery.
             </p>
             <p>
-              Unlike conventional plastic drinkware, our double-wall thermal bottles are 100% BPA-free and certified
+              Unlike conventional plastic drinkware, our double-wall thermal bottles are 100% BPA-free and
               food-safe for both hot and cold beverages. Fabricated using an upcycled rice-husk crop stubble composite
-              (65% plant residue) sourced from farmers in Haryana and Punjab, every bottle helps eliminate stubble burning.
+              (65% plant residue) sourced from farmers in Haryana and Punjab, every bottle helps divert crop residue from open burning.
               Our in-house design unit in Greater Noida turns your logo into a free 3D visual proof in 4 hours, and packages
               every bottle inside a protective recycled kraft gift box with streamlined Pan-India delivery.
             </p>

@@ -58,7 +58,7 @@ const organizationAndWebsiteSchema = {
 
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://trade.greenfibre.org"),
+  metadataBase: new URL("https://trade.greenfibre.org"),
   title: {
     default: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
     template: "%s | Green Fibre B2B"

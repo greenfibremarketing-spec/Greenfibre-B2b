@@ -76,7 +76,7 @@ export default function DiwaliCorporateGiftsPage() {
     },
     {
       q: "What packaging is used for corporate Diwali hampers?",
-      a: "Each curated festive set is enclosed in an eco-friendly recycled kraft gift box, eliminating non-recyclable plastic glossy wraps while presenting a distinguished, premium aesthetic."
+      a: "Each curated festive set is enclosed in an eco-friendly recycled kraft gift box, presenting a distinguished, premium aesthetic."
     },
     {
       q: "Do you offer multi-location dispatch across India for festive orders?",
@@ -169,7 +169,7 @@ export default function DiwaliCorporateGiftsPage() {
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Post-harvest paddy stubble burning traditionally coincides with Diwali festivities. By sourcing
               rice husk from farmers in Haryana and Punjab and transforming it into a 65% plant-residue composite,
-              our festive hampers directly combat agricultural air pollution while providing durable homeware.
+              our festive hampers help divert crop residue from open burning while providing durable homeware.
             </p>
           </div>
 
@@ -180,7 +180,7 @@ export default function DiwaliCorporateGiftsPage() {
             <h2 className="text-lg font-bold text-slate-900">Laser Engraving in 4 Hours</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Operating out of Greater Noida, our in-house laser engraving delivers custom company logos and festive
-              salutations. We supply a free 3D visual proof in 4 hours, guaranteeing precise layout before running bulk
+              salutations. We supply a free 3D visual proof in 4 hours to confirm precise layout before running bulk
               batches.
             </p>
           </div>
@@ -192,8 +192,7 @@ export default function DiwaliCorporateGiftsPage() {
             <h2 className="text-lg font-bold text-slate-900">Recycled Kraft Packaging</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Every festive set is housed inside an earthy recycled kraft gift box ready for distribution.
-              We provide streamlined Pan-India delivery to guarantee all corporate parcels reach their destinations
-              well before the festive holidays.
+              Contact our team early to confirm order deadlines and lead times.
             </p>
           </div>
         </section>
@@ -211,8 +210,7 @@ export default function DiwaliCorporateGiftsPage() {
 
           <div className="prose prose-slate max-w-none text-sm sm:text-base text-slate-600 leading-relaxed space-y-4">
             <p>
-              Corporate Diwali gifting in India is often dominated by perishable sweets and generic plastic novelties
-              that contribute to festive landfill waste. Sustainable Diwali hampers offer a thoughtful, enduring
+              Many Diwali corporate gifts are perishable or single-use; durable, reusable gifts stay useful long after the festival. Sustainable Diwali hampers offer a thoughtful, enduring
               alternative that employees and clients welcome into their family dining rooms. Crafted from upcycled
               rice-husk crop stubble composite (65% plant residue), each tableware and drinkware piece is food-safe,
               BPA-free, and designed for daily household use.

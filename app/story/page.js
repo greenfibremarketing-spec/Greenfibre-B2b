@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Our Story - Engineering Green Products From Rice Husk | Green Fibre",
+  title: "Our Story - Engineering Green Products From Rice Husk",
   description:
     "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes.",
   alternates: {
