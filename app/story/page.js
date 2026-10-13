@@ -23,22 +23,22 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Our Story • Engineering Green Products From Rice Husk | Green Fibre",
+  title: "Our Story - Engineering Green Products From Rice Husk | Green Fibre",
   description:
     "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes.",
   alternates: {
     canonical: "/story"
   },
   openGraph: {
-    type: "article",
-    title: "Our Story • Engineering Green Products From Rice Husk | Green Fibre",
+    type: "website",
+    title: "Our Story - Engineering Green Products From Rice Husk | Green Fibre",
     description:
-      "Green Fibre transforms agricultural rice husk into durable, food-safe tableware & corporate gifts. Zero stubble burning. 100% upcycled.",
+      "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic and craft durable, food-safe everyday essentials.",
     url: "/story",
     images: [
       {
         url: "/images/green-farmland.jpg",
-        alt: "Green Fibre — Sustainable Rice Husk Agricultural Composite"
+        alt: "Green Fibre - Sustainable Rice Husk Agricultural Composite"
       }
     ]
   },
@@ -188,7 +188,7 @@ export default function StoryPage() {
     "@context": "https://schema.org",
     "@type": "AboutPage",
     "@id": `${siteUrl}/story#aboutpage`,
-    name: "Our Story — Green Fibre",
+    name: "Our Story - Green Fibre",
     description:
       "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials.",
     url: `${siteUrl}/story`,

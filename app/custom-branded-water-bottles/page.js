@@ -30,7 +30,7 @@ export const metadata = {
     images: [
       {
         url: "/images/thermal-bottle.jpg",
-        alt: "Custom Logo Engraved Thermal Water Bottles — Green Fibre B2B"
+        alt: "Custom Logo Engraved Thermal Water Bottles - Green Fibre B2B"
       }
     ]
   },

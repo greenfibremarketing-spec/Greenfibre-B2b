@@ -44,7 +44,7 @@ export async function generateMetadata({ params }) {
       images: [
         {
           url: ogImage,
-          alt: `${category.name} — Green Fibre Sustainable B2B Collection`
+          alt: `${category.name} - Green Fibre Sustainable B2B Collection`
         }
       ]
     },

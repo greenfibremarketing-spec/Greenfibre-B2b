@@ -31,7 +31,7 @@ export const metadata = {
     images: [
       {
         url: "/images/gift-set-classic.jpg",
-        alt: "Eco-Friendly Corporate Gifts Bulk India — Green Fibre"
+        alt: "Eco-Friendly Corporate Gifts Bulk India - Green Fibre"
       }
     ]
   },

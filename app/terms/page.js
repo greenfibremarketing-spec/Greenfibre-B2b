@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Terms & Conditions \u2022 B2B Wholesale Supply | Green Fibre",
+  title: "Terms & Conditions - B2B Wholesale Supply | Green Fibre",
   description:
     "Official Terms and Conditions governing B2B wholesale orders, custom corporate branding, purchase order finalization, inventory locking, and replacement policies for Green Fibre products.",
   alternates: {

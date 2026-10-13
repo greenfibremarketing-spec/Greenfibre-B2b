@@ -30,7 +30,7 @@ export const metadata = {
     images: [
       {
         url: "/images/gift-set-classic.jpg",
-        alt: "Sustainable Diwali Hampers & Corporate Gifts Bulk India — Green Fibre"
+        alt: "Sustainable Diwali Hampers & Corporate Gifts Bulk India - Green Fibre"
       }
     ]
   },

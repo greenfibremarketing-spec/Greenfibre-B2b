@@ -79,12 +79,7 @@ export const metadata = {
   ],
   authors: [{ name: "Green Fibre", url: "https://trade.greenfibre.org" }],
   creator: "Green Fibre",
-  publisher: "Green Fibre — Charvik Moulds and Product Private Limited",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false
-  },
+  publisher: "Green Fibre - Charvik Moulds and Product Private Limited",
   icons: {
     icon: [
       { url: "/images/logo.png", type: "image/png" }
@@ -104,9 +99,9 @@ export const metadata = {
       "max-snippet": -1
     }
   },
-  verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || ""
-  },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION } }
+    : {}),
   category: "B2B Wholesale",
   openGraph: {
     type: "website",
@@ -114,11 +109,10 @@ export const metadata = {
     locale: "en_IN",
     title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
     description: "Everyday durable tableware and gift sets made from upcycled rice-husk crop stubble. Custom laser branding and Pan-India delivery.",
-    url: "https://trade.greenfibre.org",
     images: [
       {
         url: "/images/hero.jpg",
-        alt: "Green Fibre B2B — Sustainable Tableware & Corporate Gifting"
+        alt: "Green Fibre B2B - Sustainable Tableware & Corporate Gifting"
       }
     ]
   },
