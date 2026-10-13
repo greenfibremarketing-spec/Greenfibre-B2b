@@ -27,13 +27,20 @@ export const metadata = {
     title: "Corporate Gifts Bulk India | Eco-Friendly Corporate Gifting | Green Fibre",
     description:
       "Sustainable bulk corporate gifting in India. Made with 65% upcycled crop stubble composite, in-house laser engraving, recycled kraft packaging, and free 3D visual proof in 4 hours.",
-    url: "/corporate-gifting"
+    url: "/corporate-gifting",
+    images: [
+      {
+        url: "/images/gift-set-classic.jpg",
+        alt: "Eco-Friendly Corporate Gifts Bulk India — Green Fibre"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "Corporate Gifts Bulk India | Eco-Friendly Corporate Gifting | Green Fibre",
     description:
-      "Sustainable bulk corporate gifting in India. Made with 65% upcycled crop stubble composite, in-house laser engraving, recycled kraft packaging, and free 3D visual proof in 4 hours."
+      "Sustainable bulk corporate gifting in India. Made with 65% upcycled crop stubble composite, in-house laser engraving, recycled kraft packaging, and free 3D visual proof in 4 hours.",
+    images: ["/images/gift-set-classic.jpg"]
   }
 };
 

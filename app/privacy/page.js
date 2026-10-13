@@ -17,11 +17,26 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Privacy & Replacement Policy • B2B Enterprise Protection | Green Fibre",
+  title: "Privacy & Replacement Policy \u2022 B2B Enterprise Protection | Green Fibre",
   description:
     "Official Privacy, Data Protection, and Transit Damage Replacement Policy for Green Fibre B2B wholesale buyers, enterprise clients, and institutional partners.",
   alternates: {
     canonical: "/privacy"
+  },
+  openGraph: {
+    type: "website",
+    title: "Privacy & Replacement Policy | Green Fibre B2B",
+    description:
+      "Official Privacy, Data Protection, and Transit Damage Replacement Policy for Green Fibre B2B wholesale buyers and enterprise clients.",
+    url: "/privacy",
+    images: ["/images/hero.jpg"]
+  },
+  twitter: {
+    card: "summary",
+    title: "Privacy & Replacement Policy | Green Fibre B2B",
+    description:
+      "Corporate data confidentiality, enterprise procurement privacy, and transparent replacement policies for B2B wholesale buyers.",
+    images: ["/images/hero.jpg"]
   }
 };
 

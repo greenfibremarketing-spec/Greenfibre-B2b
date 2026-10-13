@@ -21,6 +21,12 @@ export function middleware(request) {
     return NextResponse.next();
   }
 
+  // 301 Permanent redirect from alias /our-story to canonical /story
+  if (pathname === "/our-story") {
+    const dest = new URL("/story", request.url);
+    return NextResponse.redirect(dest, { status: 301 });
+  }
+
   // 301 Permanent redirect from legacy /products?category=<Name> to clean /category/<slug>
   if (pathname === "/products" && request.nextUrl.searchParams.has("category")) {
     const categoryParam = request.nextUrl.searchParams.get("category");
@@ -76,14 +82,6 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images (public images)
-     */
-    "/((?!api|_next/static|_next/image|images|favicon.ico).*)"
+    "/((?!api|_next/static|_next/image|images|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|webp|svg|gif|ico|txt|xml|woff2?)$).*)"
   ]
 };

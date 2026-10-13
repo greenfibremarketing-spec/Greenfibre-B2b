@@ -10,6 +10,15 @@ export async function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }));
 }
 
+const categoryOgImages = {
+  drinkware: "/images/thermal-bottle.jpg",
+  "gift-boxes-hampers": "/images/gift-set-classic.jpg",
+  "kitchen-dining": "/images/bento-box.jpg",
+  tableware: "/images/green-tableware-plants.jpg",
+  "storage-organizers": "/images/storage-basket.jpg",
+  "home-living": "/images/planter-medium.jpg"
+};
+
 export async function generateMetadata({ params }) {
   const category = getCategoryBySlug(params.slug);
   if (!category) {
@@ -18,6 +27,8 @@ export async function generateMetadata({ params }) {
       robots: { index: false, follow: false }
     };
   }
+
+  const ogImage = categoryOgImages[category.slug] || "/images/hero.jpg";
 
   return {
     title: category.metaTitle,
@@ -29,12 +40,19 @@ export async function generateMetadata({ params }) {
       type: "website",
       title: category.metaTitle,
       description: category.metaDescription,
-      url: `/category/${category.slug}`
+      url: `/category/${category.slug}`,
+      images: [
+        {
+          url: ogImage,
+          alt: `${category.name} — Green Fibre Sustainable B2B Collection`
+        }
+      ]
     },
     twitter: {
       card: "summary_large_image",
       title: category.metaTitle,
-      description: category.metaDescription
+      description: category.metaDescription,
+      images: [ogImage]
     }
   };
 }
@@ -69,9 +87,31 @@ export default async function CategoryPage({ params }) {
     ]
   };
 
+  const collectionSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: category.metaTitle,
+    description: category.metaDescription,
+    url: `${siteUrl}/category/${category.slug}`
+  };
+
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${category.name} Products`,
+    itemListElement: categoryProducts.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `${siteUrl}/products/${p.slug}`,
+      name: p.name
+    }))
+  };
+
   return (
     <div className="bg-slate-100 min-h-screen py-6 sm:py-10">
       <JsonLd data={breadcrumbSchema} />
+      <JsonLd data={collectionSchema} />
+      <JsonLd data={itemListSchema} />
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         {/* Breadcrumb Navigation: Home > Category */}
         <nav

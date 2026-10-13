@@ -3,6 +3,7 @@ import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
 import HeroSwiper from "@/components/HeroSwiper";
 import BottleModelViewer from "@/components/BottleModelViewer";
+import JsonLd from "@/components/JsonLd";
 import { categories as categoryList } from "@/lib/categories";
 import { getProducts } from "@/lib/products";
 import { ArrowRight } from "lucide-react";
@@ -13,6 +14,26 @@ export const metadata = {
     "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
   alternates: {
     canonical: "/"
+  },
+  openGraph: {
+    type: "website",
+    title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
+    description:
+      "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
+    url: "/",
+    images: [
+      {
+        url: "/images/hero.jpg",
+        alt: "Green Fibre B2B Sustainable Rice Husk Tableware & Corporate Gifting"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
+    description:
+      "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
+    images: ["/images/hero.jpg"]
   }
 };
 
@@ -20,8 +41,21 @@ export default async function Home() {
   const allProducts = await getProducts();
   const featuredProducts = allProducts.slice(0, 8);
 
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Featured Sustainable B2B Products",
+    itemListElement: featuredProducts.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `https://trade.greenfibre.org/products/${p.slug}`,
+      name: p.name
+    }))
+  };
+
   return (
     <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
+      <JsonLd data={itemListSchema} />
       {/* Full Width Hero Swiper */}
       <section className="w-full max-w-full overflow-hidden max-h-[96vh]">
         <HeroSwiper />

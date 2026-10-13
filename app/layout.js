@@ -65,17 +65,71 @@ export const metadata = {
   },
   description:
     "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
+  keywords: [
+    "rice husk tableware",
+    "eco-friendly corporate gifts",
+    "sustainable tableware India",
+    "bulk corporate gifting",
+    "custom branded bottles",
+    "upcycled crop stubble products",
+    "BPA-free tableware manufacturer",
+    "laser engraved corporate gifts",
+    "Green Fibre B2B",
+    "rice husk composite products"
+  ],
+  authors: [{ name: "Green Fibre", url: "https://trade.greenfibre.org" }],
+  creator: "Green Fibre",
+  publisher: "Green Fibre — Charvik Moulds and Product Private Limited",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false
+  },
+  icons: {
+    icon: [
+      { url: "/images/logo.png", type: "image/png" }
+    ],
+    apple: [
+      { url: "/images/logo.png", type: "image/png" }
+    ]
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1
+    }
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || ""
+  },
+  category: "B2B Wholesale",
   openGraph: {
     type: "website",
     siteName: "Green Fibre B2B",
     locale: "en_IN",
     title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
     description: "Everyday durable tableware and gift sets made from upcycled rice-husk crop stubble. Custom laser branding and Pan-India delivery.",
-    images: [{ url: "/images/logo.png", alt: "Green Fibre B2B" }]
+    url: "https://trade.greenfibre.org",
+    images: [
+      {
+        url: "/images/hero.jpg",
+        alt: "Green Fibre B2B — Sustainable Tableware & Corporate Gifting"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/images/logo.png"]
+    title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
+    description: "Direct manufacturer of eco-friendly tableware, drinkware, and corporate gift sets from upcycled rice-husk composite.",
+    images: ["/images/hero.jpg"]
+  },
+  other: {
+    "theme-color": "#15803d"
   }
 };
 

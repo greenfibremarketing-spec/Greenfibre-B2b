@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import JsonLd from "@/components/JsonLd";
 import {
   Sprout,
   ShieldCheck,
@@ -27,6 +28,26 @@ export const metadata = {
     "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes.",
   alternates: {
     canonical: "/story"
+  },
+  openGraph: {
+    type: "article",
+    title: "Our Story • Engineering Green Products From Rice Husk | Green Fibre",
+    description:
+      "Green Fibre transforms agricultural rice husk into durable, food-safe tableware & corporate gifts. Zero stubble burning. 100% upcycled.",
+    url: "/story",
+    images: [
+      {
+        url: "/images/green-farmland.jpg",
+        alt: "Green Fibre — Sustainable Rice Husk Agricultural Composite"
+      }
+    ]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Our Story | Green Fibre B2B",
+    description:
+      "From crop stubble to durable tableware. How Green Fibre upcycles rice husk into sustainable corporate gifts.",
+    images: ["/images/green-farmland.jpg"]
   }
 };
 
@@ -161,8 +182,44 @@ const commitmentsList = [
 ];
 
 export default function StoryPage() {
+  const siteUrl = "https://trade.greenfibre.org";
+
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${siteUrl}/story#aboutpage`,
+    name: "Our Story — Green Fibre",
+    description:
+      "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials.",
+    url: `${siteUrl}/story`,
+    mainEntity: {
+      "@id": `${siteUrl}/#organization`
+    }
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Our Story",
+        item: `${siteUrl}/story`
+      }
+    ]
+  };
+
   return (
     <div className="space-y-16 sm:space-y-24 py-8 sm:py-12 bg-white">
+      <JsonLd data={aboutPageSchema} />
+      <JsonLd data={breadcrumbSchema} />
       {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center bg-gradient-to-br from-[#ebf7ee] via-[#f4faf5] to-[#f0fdf4] border border-[#cbebd4] rounded-3xl p-6 sm:p-10 lg:p-14 shadow-xs">

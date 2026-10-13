@@ -26,13 +26,20 @@ export const metadata = {
     title: "Rice Husk Water Bottle | Custom Logo Engraved Bottles | Green Fibre",
     description:
       "Enterprise custom logo engraved bottles made from upcycled rice-husk crop stubble composite (65% plant residue). Double-wall thermal bottle with free 3D visual proof in 4 hours.",
-    url: "/custom-branded-water-bottles"
+    url: "/custom-branded-water-bottles",
+    images: [
+      {
+        url: "/images/thermal-bottle.jpg",
+        alt: "Custom Logo Engraved Thermal Water Bottles — Green Fibre B2B"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "Rice Husk Water Bottle | Custom Logo Engraved Bottles | Green Fibre",
     description:
-      "Enterprise custom logo engraved bottles made from upcycled rice-husk crop stubble composite (65% plant residue). Double-wall thermal bottle with free 3D visual proof in 4 hours."
+      "Enterprise custom logo engraved bottles made from upcycled rice-husk crop stubble composite (65% plant residue). Double-wall thermal bottle with free 3D visual proof in 4 hours.",
+    images: ["/images/thermal-bottle.jpg"]
   }
 };
 

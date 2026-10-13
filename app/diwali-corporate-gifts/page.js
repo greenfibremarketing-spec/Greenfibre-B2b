@@ -26,13 +26,20 @@ export const metadata = {
     title: "Diwali Corporate Gifts Bulk | Sustainable Diwali Hampers | Green Fibre",
     description:
       "Celebrate festive season with sustainable Diwali hampers and corporate gifts bulk India orders. Made with upcycled crop stubble composite, laser engraving, and Pan-India delivery.",
-    url: "/diwali-corporate-gifts"
+    url: "/diwali-corporate-gifts",
+    images: [
+      {
+        url: "/images/gift-set-classic.jpg",
+        alt: "Sustainable Diwali Hampers & Corporate Gifts Bulk India — Green Fibre"
+      }
+    ]
   },
   twitter: {
     card: "summary_large_image",
     title: "Diwali Corporate Gifts Bulk | Sustainable Diwali Hampers | Green Fibre",
     description:
-      "Celebrate festive season with sustainable Diwali hampers and corporate gifts bulk India orders. Made with upcycled crop stubble composite, laser engraving, and Pan-India delivery."
+      "Celebrate festive season with sustainable Diwali hampers and corporate gifts bulk India orders. Made with upcycled crop stubble composite, laser engraving, and Pan-India delivery.",
+    images: ["/images/gift-set-classic.jpg"]
   }
 };
 
