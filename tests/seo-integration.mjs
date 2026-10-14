@@ -48,6 +48,18 @@ async function request(url, options = {}, expected = 200) {
   return response;
 }
 const bodyOptions = (body, cookie, method = "PUT", origin = base) => ({ method, headers: { "Content-Type": "application/json", Origin: origin, ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(body) });
+async function checkRedirect(url, cookie, destination) {
+  const response = await fetch(base + url, { redirect: "manual", headers: cookie ? { Cookie: cookie } : {}, signal: AbortSignal.timeout(60000) });
+  if (response.status === 307) assert.equal(new URL(response.headers.get("location"), base).pathname, destination);
+  else {
+    assert.equal(response.status, 200);
+    const html = await response.text();
+    // Next.js redirects after streaming begins use a redirect instruction in HTML.
+    assert.ok(html.includes(`NEXT_REDIRECT;replace;${destination};307;`), `Streamed redirect to ${destination}`);
+    assert.ok(!html.includes("Website SEO</h1>"), "No protected editor is rendered");
+  }
+  checks++;
+}
 try {
   let ready = false;
   for (let attempt = 0; attempt < 90; attempt++) {
@@ -57,8 +69,19 @@ try {
   }
   assert.ok(ready, "Development server is ready");
   await request("/api/seo", {}, 403);
-  const login = await request("/api/b2b/login", bodyOptions({ email: adminEmail, password }, null, "POST"));
+  await checkRedirect("/status", null, "/status/login");
+  await checkRedirect("/signup?redirect=%2Fstatus", null, "/status/login");
+  await checkRedirect("/login?redirect=%2Fstatus", null, "/status/login");
+  await checkRedirect("/status", "b2b_token=expired-invalid-token", "/status/login");
+  const signInPage = await (await request("/status/login", { headers: { Cookie: "b2b_token=expired-invalid-token" } })).text();
+  assert.ok(signInPage.includes("SEO Administrator Sign In"));
+  assert.ok(!signInPage.includes("Create Enterprise Account"));
+  await request("/api/seo/login", bodyOptions({ email: "buyer@example.com", password }, null, "POST"), 403);
+  await request("/api/seo/login", bodyOptions({ email: adminEmail, password: "IncorrectPassword" }, null, "POST"), 401);
+  await request("/api/seo/login", bodyOptions({ email: adminEmail, password }, null, "POST", "https://untrusted.example"), 403);
+  const login = await request("/api/seo/login", bodyOptions({ email: adminEmail, password }, null, "POST"));
   const cookie = login.headers.get("set-cookie").split(";")[0];
+  await checkRedirect("/status/login", cookie, "/status");
   const buyerLogin = await request("/api/b2b/login", bodyOptions({ email: "buyer@example.com", password }, null, "POST"));
   const buyerCookie = buyerLogin.headers.get("set-cookie").split(";")[0];
   await request("/api/seo", { headers: { Cookie: buyerCookie } }, 403);
@@ -84,9 +107,7 @@ try {
   const statusHtml = await (await request("/status", { headers: { Cookie: cookie } })).text();
   assert.ok(statusHtml.includes("Website SEO"));
   assert.ok(statusHtml.includes('href="/status"'), "admin navigation link appears");
-  const buyerHtml = await (await request("/status", { headers: { Cookie: buyerCookie } })).text();
-  assert.ok(buyerHtml.includes("Administrator access required"));
-  assert.ok(!buyerHtml.includes("Website SEO"));
+  await checkRedirect("/status", buyerCookie, "/status/login");
   await request("/api/b2b/reset-password", bodyOptions({ email: adminEmail, otp: "999999", newPassword: "AttemptedTakeover123" }, null, "POST"), 400);
   await request("/api/seo/image", { method: "POST", headers: { Cookie: cookie, Origin: base }, body: "not an image" }, 422);
   const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a2ioAAAAASUVORK5CYII=", "base64");
@@ -106,7 +127,7 @@ try {
   assert.ok((await (await request("/products/seo-test-mug")).text()).includes("<title>Custom Mug SEO</title>"));
   console.log(`Passed ${checks} HTTP checks plus metadata, persistence, permissions, sitemap, image and OTP assertions.`);
   if (process.argv.includes("--keep-open")) {
-    console.log(`Isolated UI preview: ${base}/login?redirect=/status (fixture login ${adminEmail}, password ${password}).`);
+    console.log(`Isolated UI preview: ${base}/status/login (fixture login ${adminEmail}, password ${password}).`);
     await new Promise((resolve) => { process.once("SIGINT", resolve); process.once("SIGTERM", resolve); });
   }
 } catch (error) {

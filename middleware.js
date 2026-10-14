@@ -4,6 +4,21 @@ import { resolveCategorySlug } from "@/lib/categories";
 export function middleware(request) {
   const { pathname } = request.nextUrl;
 
+  // Recover links created by the old customer signup redirect.
+  const destination = request.nextUrl.searchParams.get("redirect") || "";
+  if ((pathname === "/signup" || pathname === "/login") && /^\/status(?:\/|$)/.test(destination)) {
+    return NextResponse.redirect(new URL("/status/login", request.url));
+  }
+
+  // SEO routes perform JWT and administrator checks on the server. Let them
+  // handle missing/expired sessions before the customer registration redirect.
+  if (pathname === "/status" || pathname.startsWith("/status/")) {
+    if (pathname !== "/status/login" && !request.cookies.get("b2b_token")?.value) {
+      return NextResponse.redirect(new URL("/status/login", request.url));
+    }
+    return NextResponse.next();
+  }
+
   // Public paths that do not require authentication
   const isAuthPage =
     pathname.startsWith("/login") ||

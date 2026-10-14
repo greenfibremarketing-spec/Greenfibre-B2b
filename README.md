@@ -3,7 +3,9 @@ Run: `cp .env.example .env.local`, fill MONGODB_URI (+ SMTP_*), `npm i && npm ru
 
 ## Website SEO editor
 
-Sign in with `greenfibre.marketing@gmail.com` and open **Status** in the desktop navigation or mobile menu (`/status`). The account must already exist, or be registered using the email OTP flow. Customer accounts cannot read or change SEO settings.
+Open `/status` to reach the dedicated **SEO Administrator Sign In** page (`/status/login`). Sign in with the existing password for `greenfibre.marketing@gmail.com`, then manage SEO in **Status**. The approved account must already exist. Customer registration and login pages are separate from this editor; customer accounts cannot read or change SEO settings. Expired or invalid sessions return to the SEO sign-in page.
+
+The complete editor and sign-in fix are on the `seo-status-login-fix` branch, based on `seo-editor`. Deploy this branch (or merge it into the deployed branch) for the live `/status` URL to use the editor. Deploying `seo-merge-main` alone does not include the editor.
 
 The editor supports the homepage, all public content pages, categories, and products: SEO title, description, keywords, canonical URL, social image upload or URL, Open Graph and Twitter titles/descriptions, noindex, nofollow, and an editorial focus keyword. Saved settings are rendered in the HTML head on the server using Next.js `generateMetadata`. Blank text fields retain the page's default metadata. Titles entered in the editor are used exactly as entered. Filtered catalog results stay noindex. Pages marked noindex or canonicalized to another URL are excluded from the sitemap. The editor itself is noindex and excluded from robots/sitemap.
 

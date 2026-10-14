@@ -60,7 +60,7 @@ function NavbarInner({ canManageSeo }) {
     }
   };
 
-  if (pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
+  if (pathname === "/status/login" || pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
     return null;
   }
 
