@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Corporate Gifts Bulk India | Eco-Friendly Corporate Gifting | Green Fibre",
+  title: "Eco-Friendly Corporate Gifts in Bulk, India",
   description:
     "Order eco-friendly corporate gifting solutions in bulk across India. Manufactured from upcycled rice-husk crop stubble composite (65% plant residue) with in-house laser engraving and Pan-India delivery.",
   alternates: {
@@ -192,7 +192,7 @@ export default function CorporateGiftingPage() {
             <h2 className="text-lg font-bold text-slate-900">Pan-India Delivery</h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Individual gift units are presented in a protective recycled kraft gift box engineered for transit.
-              We provide prompt, synchronized Pan-India delivery to fulfill annual conferences, employee onboarding,
+              We coordinate Pan-India delivery to fulfill annual conferences, employee onboarding,
               and executive gifting campaigns.
             </p>
           </div>

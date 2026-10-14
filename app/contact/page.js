@@ -2,7 +2,7 @@ import ContactClient from "@/components/ContactClient";
 import JsonLd from "@/components/JsonLd";
 
 export const metadata = {
-  title: "Contact Us | Greenfibre B2B Corporate Desk & Factory Inquiries",
+  title: "Contact Us | Corporate Desk & Factory Inquiries",
   description:
     "Connect with Greenfibre for wholesale inquiries, custom Pantone color-matching, bespoke compression molds, corporate hampers, and physical sample requests.",
   alternates: {

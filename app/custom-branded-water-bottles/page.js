@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Rice Husk Water Bottle | Custom Logo Engraved Bottles | Green Fibre",
+  title: "Custom Logo Rice Husk Water Bottles",
   description:
     "Order double-wall thermal rice husk water bottles and custom logo engraved bottles in bulk. Crafted from upcycled crop stubble (65% plant residue) with in-house laser engraving and Pan-India delivery.",
   alternates: {
@@ -222,14 +222,14 @@ export default function CustomBrandedWaterBottlesPage() {
               Manufactured with agricultural residue sourced from farmers in Haryana and Punjab and processed at our Greater
               Noida manufacturing site, each bottle undergoes thorough quality checks. High-contrast in-house laser engraving
               applies your organizational logo with permanent clarity. After packaging inside sturdy recycled kraft gift boxes,
-              our distribution network ensures secure, timely Pan-India delivery.
+              we coordinate Pan-India delivery.
             </p>
             <p>
               Unlike conventional plastic drinkware, our double-wall thermal bottles are 100% BPA-free and
               food-safe for both hot and cold beverages. Fabricated using an upcycled rice-husk crop stubble composite
               (65% plant residue) sourced from farmers in Haryana and Punjab, every bottle helps divert crop residue from open burning.
               Our in-house design unit in Greater Noida turns your logo into a free 3D visual proof in 4 hours, and packages
-              every bottle inside a protective recycled kraft gift box with streamlined Pan-India delivery.
+              every bottle inside a protective recycled kraft gift box with Pan-India delivery.
             </p>
           </div>
 

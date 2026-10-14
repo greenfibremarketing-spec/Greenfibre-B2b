@@ -31,7 +31,7 @@ export async function generateMetadata({ params }) {
   const ogImage = categoryOgImages[category.slug] || "/images/hero.jpg";
 
   return {
-    title: category.metaTitle,
+    title: { absolute: category.metaTitle },
     description: category.metaDescription,
     alternates: {
       canonical: `/category/${category.slug}`

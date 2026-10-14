@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "Diwali Corporate Gifts Bulk | Sustainable Diwali Hampers | Green Fibre",
+  title: "Sustainable Diwali Corporate Gifts in Bulk",
   description:
     "Order sustainable Diwali hampers and bulk Diwali corporate gifts in India. Made from upcycled rice-husk crop stubble composite (65% plant residue) with in-house laser engraving and recycled kraft gift boxes.",
   alternates: {
@@ -307,7 +307,7 @@ export default function DiwaliCorporateGiftsPage() {
             </h2>
             <p className="text-sm sm:text-base text-emerald-200/90 leading-relaxed">
               Secure factory allocation for Diwali hampers. Connect with our Greater Noida team,
-              receive a free 3D visual proof in 4 hours, and coordinate timely Pan-India dispatch.
+              receive a free 3D visual proof in 4 hours, and coordinate Pan-India dispatch.
             </p>
           </div>
 
