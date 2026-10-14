@@ -148,7 +148,7 @@ export default function CorporateGiftingPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
-              href="https://wa.me/919211338066"
+              href="https://wa.me/919217988874"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary text-sm font-semibold inline-flex items-center gap-2 px-6 py-3 border border-slate-300 hover:border-emerald-600 hover:text-emerald-800 transition-all"
@@ -327,7 +327,7 @@ export default function CorporateGiftingPage() {
               Request Custom Quote
             </Link>
             <a
-              href="https://wa.me/919211338066"
+              href="https://wa.me/919217988874"
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 rounded-full bg-emerald-800/80 hover:bg-emerald-800 text-white text-sm font-semibold border border-emerald-700 transition-all inline-flex items-center gap-2"
