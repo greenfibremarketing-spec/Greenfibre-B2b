@@ -146,7 +146,7 @@ export default function ContactClient() {
     const text = encodeURIComponent(
       `Hi Greenfibre Team,\n\nI am contacting from ${formData.company || "my business"}.\nName: ${formData.name || ""}\nInquiry: ${formData.inquiryType}\nQuantity: ${formData.quantity}\n\nDetails: ${formData.message || "I would like to inquire about your products."}`
     );
-    return `https://wa.me/919211338066?text=${text}`;
+    return `https://wa.me/919217988874?text=${text}`;
   };
 
   return (
@@ -477,7 +477,7 @@ export default function ContactClient() {
 
               {/* WhatsApp */}
               <a
-                href="https://wa.me/919211338066"
+                href="https://wa.me/919217988874"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white hover:bg-[#25D366]/10 border border-slate-200/90 hover:border-[#25D366]/50 transition-all shadow-2xs group"
@@ -491,7 +491,7 @@ export default function ContactClient() {
                       WhatsApp Desk (Fastest)
                     </div>
                     <div className="font-bold text-slate-900 text-sm sm:text-base truncate">
-                      +91 92113 38066
+                      +91 92179 88874
                     </div>
                   </div>
                 </div>
