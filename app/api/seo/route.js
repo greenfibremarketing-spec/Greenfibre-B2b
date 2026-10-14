@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSeoAdmin, assertSameOrigin } from "@/lib/seo-admin";
-import { getSeoPages, validSeoPath, seoFormDefaults } from "@/lib/seo-pages";
-import { validateSeoSettings } from "@/lib/seo-config";
+import { getSeoPages, validSeoPath } from "@/lib/seo-pages";
+import { validateSeoSettings, resolveSeoMetadata, seoMetadataToForm } from "@/lib/seo-config";
+import { getPageSeoDefaults } from "@/lib/seo-defaults";
 import { readSeoSettings, saveSeoSettings } from "@/lib/seo-store";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,11 @@ export async function GET(request) {
     if (!await getSeoAdmin(request)) return json({ error: "SEO administrator access required." }, 403);
     const pagePath = new URL(request.url).searchParams.get("path") || "/";
     if (!await validSeoPath(pagePath)) return json({ error: "Page not found." }, 404);
-    const [saved, defaults] = await Promise.all([readSeoSettings(pagePath), seoFormDefaults(pagePath)]);
+    const [saved, baseMetadata] = await Promise.all([readSeoSettings(pagePath), getPageSeoDefaults(pagePath)]);
+    const defaults = seoMetadataToForm(resolveSeoMetadata(pagePath, baseMetadata));
+    const effective = seoMetadataToForm(resolveSeoMetadata(pagePath, baseMetadata, saved), saved?.focusKeyword || "");
     const pages = new URL(request.url).searchParams.has("pages") ? await getSeoPages() : undefined;
-    return json({ settings: saved || defaults, defaults, pages, updatedAt: saved?.updatedAt || null });
+    return json({ settings: saved || defaults, defaults, baseMetadata, effective, source: saved ? "saved" : "defaults", pages, updatedAt: saved?.updatedAt || null });
   } catch (error) {
     console.error("[SEO GET]", error);
     return json({ error: "SEO settings are unavailable. Please try again." }, 503);
@@ -39,7 +42,9 @@ export async function PUT(request) {
     const saved = await saveSeoSettings(body.path, settings, admin.email);
     revalidatePath(body.path);
     revalidatePath("/sitemap.xml");
-    return json({ success: true, updatedAt: saved.updatedAt, settings: saved });
+    const baseMetadata = await getPageSeoDefaults(body.path);
+    const effective = seoMetadataToForm(resolveSeoMetadata(body.path, baseMetadata, saved), saved.focusKeyword || "");
+    return json({ success: true, updatedAt: saved.updatedAt, settings: saved, effective, baseMetadata });
   } catch (error) {
     console.error("[SEO PUT]", error);
     return json({ error: "Could not save SEO settings. Please try again; your changes have not been published." }, 503);

@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SEO_FIELDS, SITE_URL } from "@/lib/seo-config";
+import { SEO_FIELDS, SITE_URL, resolveSeoMetadata, seoMetadataToForm } from "@/lib/seo-config";
 
 export default function SeoEditor() {
   const [pagePath, setPagePath] = useState("/");
   const [pages, setPages] = useState([{ path: "/", label: "Homepage" }]);
   const [settings, setSettings] = useState(null);
   const [defaults, setDefaults] = useState({});
+  const [baseMetadata, setBaseMetadata] = useState(null);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ export default function SeoEditor() {
         if (!response.ok) throw new Error(data.error || "Could not load SEO settings.");
         setSettings(data.settings);
         setDefaults(data.defaults);
+        setBaseMetadata(data.baseMetadata);
         setPages(data.pages);
         setUpdatedAt(data.updatedAt);
         setDirty(false);
@@ -65,6 +67,7 @@ export default function SeoEditor() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not save SEO settings.");
       setSettings(data.settings);
+      setBaseMetadata(data.baseMetadata);
       setUpdatedAt(data.updatedAt);
       setDirty(false);
       setMessage("SEO saved. The new settings are now used when this page is rendered.");
@@ -89,7 +92,8 @@ export default function SeoEditor() {
     finally { setBusy(false); }
   }
 
-  const effective = (key) => settings?.[key] || defaults[key] || "";
+  const resolved = baseMetadata ? seoMetadataToForm(resolveSeoMetadata(pagePath, baseMetadata, settings), settings?.focusKeyword || "") : defaults;
+  const effective = (key) => resolved[key] || "";
   const title = effective("title");
   const description = effective("description");
   const focusKeyword = settings?.focusKeyword?.trim().toLowerCase();
@@ -100,7 +104,10 @@ export default function SeoEditor() {
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div><p className="text-sm font-semibold text-emerald-700">Status / SEO</p><h1 className="mt-2 text-3xl font-bold text-slate-900">Website SEO</h1><p className="mt-2 text-sm text-slate-600">Manage search results and social sharing for each page.</p></div>
-          <a href={pagePath} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold bg-white">View page ↗</a>
+          <div className="flex gap-2"><button type="button" disabled={busy || loading} onClick={() => {
+            if (dirty && !window.confirm("Refresh records and discard unsaved SEO changes?")) return;
+            setReload((value) => value + 1);
+          }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold bg-white disabled:opacity-50">Refresh records</button><a href={pagePath} target="_blank" rel="noopener noreferrer" className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold bg-white">View page ↗</a></div>
         </div>
         <div className="bg-white border border-slate-200 rounded-2xl p-5">
           <label htmlFor="seo-page" className="text-sm font-semibold">Page to edit</label>
@@ -109,6 +116,7 @@ export default function SeoEditor() {
             setPagePath(event.target.value);
           }}>{pages.map((page) => <option key={page.path} value={page.path}>{page.label} — {page.path}</option>)}</select>
           <p className="mt-2 text-xs text-slate-500">Blank text fields use the page’s existing SEO. Focus Keyword is for your editorial reference.</p>
+          <p className="mt-2 text-xs text-emerald-800">{updatedAt ? "Source: saved SEO overrides combined with this page’s current website defaults." : "Source: this page’s current website metadata. These defaults have not been saved as a separate SEO record."} {dirty ? "Preview includes unsaved changes." : "Previews show the resolved public-page metadata at load time."} Use Refresh records after product data changes.</p>
         </div>
         {error && <div role="alert" className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-800">{error} {(!settings || loading) && <button type="button" onClick={() => setReload((value) => value + 1)} className="underline ml-2">Retry</button>}</div>}
         {message && <div role="status" className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-900">{message}</div>}
@@ -136,7 +144,7 @@ export default function SeoEditor() {
             <aside className="space-y-5 lg:sticky lg:top-6">
               <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3"><h2 className="font-bold">Search preview</h2><p className="text-xs text-slate-600 break-all">{effective("canonical") || `${SITE_URL}${pagePath}`}</p><p className="text-lg text-blue-800 break-words">{title}</p><p className="text-sm text-slate-600 break-words">{description}</p><p className="text-xs text-slate-400">Search engines may choose a different title or description.</p></div>
               <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-3"><h2 className="font-bold">Social preview</h2>{effective("socialImage") && <img src={effective("socialImage")} alt="Social card preview" className="w-full aspect-[1200/630] object-cover rounded-lg" />}<p className="font-semibold text-sm break-words">{effective("ogTitle") || title}</p><p className="text-xs text-slate-600 break-words">{effective("ogDescription") || description}</p></div>
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-sm space-y-2"><h2 className="font-bold">Page status</h2><p>{settings.noindex ? "Hidden from search indexing" : "Search indexing allowed"}</p><p>{settings.nofollow ? "Link following disabled" : "Link following allowed"}</p>{focusKeyword && <><p>Focus keyword in title: {title.toLowerCase().includes(focusKeyword) ? "Yes" : "No"}</p><p>Focus keyword in description: {description.toLowerCase().includes(focusKeyword) ? "Yes" : "No"}</p></>}</div>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-sm space-y-2"><h2 className="font-bold">Page status</h2><p>{resolved.noindex ? "Hidden from search indexing" : "Search indexing allowed"}</p><p>{resolved.nofollow ? "Link following disabled" : "Link following allowed"}</p>{focusKeyword && <><p>Focus keyword in title: {title.toLowerCase().includes(focusKeyword) ? "Yes" : "No"}</p><p>Focus keyword in description: {description.toLowerCase().includes(focusKeyword) ? "Yes" : "No"}</p></>}</div>
             </aside>
           </div>
         )}

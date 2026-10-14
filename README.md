@@ -3,9 +3,11 @@ Run: `cp .env.example .env.local`, fill MONGODB_URI (+ SMTP_*), `npm i && npm ru
 
 ## Website SEO editor
 
+For step-by-step instructions, field explanations, live verification and troubleshooting, see [read.md](read.md).
+
 Open `/status` to reach the dedicated **SEO Administrator Sign In** page (`/status/login`). Sign in with the existing password for `greenfibre.marketing@gmail.com`, then manage SEO in **Status**. The approved account must already exist. Customer registration and login pages are separate from this editor; customer accounts cannot read or change SEO settings. Expired or invalid sessions return to the SEO sign-in page.
 
-The complete editor and sign-in fix are on the `seo-status-login-fix` branch, based on `seo-editor`. Deploy this branch (or merge it into the deployed branch) for the live `/status` URL to use the editor. Deploying `seo-merge-main` alone does not include the editor.
+The complete editor and sign-in fix have been published to `main` and deployed on Vercel. The implementation branch is `seo-status-login-fix`, based on `seo-editor`. Production follows `main`; successful SEO saves do not require another deployment.
 
 The editor supports the homepage, all public content pages, categories, and products: SEO title, description, keywords, canonical URL, social image upload or URL, Open Graph and Twitter titles/descriptions, noindex, nofollow, and an editorial focus keyword. Saved settings are rendered in the HTML head on the server using Next.js `generateMetadata`. Blank text fields retain the page's default metadata. Titles entered in the editor are used exactly as entered. Filtered catalog results stay noindex. Pages marked noindex or canonicalized to another URL are excluded from the sitemap. The editor itself is noindex and excluded from robots/sitemap.
 
@@ -18,7 +20,7 @@ Configuration:
 
 Upload PNG, JPEG or WebP images (up to 5 MB; 1200 × 630 recommended), then click **Save SEO**. Uploaded images are served publicly for social crawlers. Search/social previews are illustrative; the focus keyword is not emitted as a ranking tag.
 
-Deploy the application changes and configure the production environment before using the editor at `https://trade.greenfibre.org/status`. Existing page-specific SEO and structured data remain the defaults until settings are saved.
+The live editor is available at `https://trade.greenfibre.org/status`. Existing page-specific SEO and structured data remain the defaults until settings are saved. Production saves require the environment configuration listed above.
 
 Validation: `npm run build`; `node --test tests/seo-config.test.mjs`; `node tests/seo-integration.mjs` (starts an isolated local development server and mock catalog; does not change production or the existing local database).
 

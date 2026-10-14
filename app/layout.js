@@ -1,4 +1,5 @@
 import { getSeoAdmin } from "@/lib/seo-admin";
+import { SITE_KEYWORDS, SITE_TITLE_TEMPLATE } from "@/lib/seo-config";
 import "./globals.css";
 import Link from "next/link";
 import Script from "next/script";
@@ -66,22 +67,11 @@ export const metadata = {
   metadataBase: new URL("https://trade.greenfibre.org"),
   title: {
     default: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
-    template: "%s | Green Fibre B2B"
+    template: SITE_TITLE_TEMPLATE
   },
   description:
     "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
-  keywords: [
-    "rice husk tableware",
-    "eco-friendly corporate gifts",
-    "sustainable tableware India",
-    "bulk corporate gifting",
-    "custom branded bottles",
-    "upcycled crop stubble products",
-    "BPA-free tableware manufacturer",
-    "laser engraved corporate gifts",
-    "Green Fibre B2B",
-    "rice husk composite products"
-  ],
+  keywords: SITE_KEYWORDS,
   authors: [{ name: "Green Fibre", url: "https://trade.greenfibre.org" }],
   creator: "Green Fibre",
   publisher: "Green Fibre - Charvik Moulds and Product Private Limited",

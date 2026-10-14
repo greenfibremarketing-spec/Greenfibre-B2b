@@ -48,6 +48,23 @@ async function request(url, options = {}, expected = 200) {
   return response;
 }
 const bodyOptions = (body, cookie, method = "PUT", origin = base) => ({ method, headers: { "Content-Type": "application/json", Origin: origin, ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(body) });
+async function assertPublishedMetadata(pagePath, values) {
+  const html = await (await request(pagePath)).text();
+  const decode = (value = "") => value.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+  const attribute = (tag, name) => decode((tag.match(new RegExp(`\\b${name}="([^"]*)"`)) || [])[1]);
+  const meta = (name) => {
+    const tag = (html.match(/<meta\b[^>]*>/g) || []).find((tag) => attribute(tag, "name") === name || attribute(tag, "property") === name);
+    return tag ? attribute(tag, "content") : "";
+  };
+  assert.equal(decode((html.match(/<title>(.*?)<\/title>/) || [])[1]), values.title, "editor and HTML title agree");
+  for (const [field, name] of Object.entries({ description: "description", ogTitle: "og:title", ogDescription: "og:description", twitterTitle: "twitter:title", twitterDescription: "twitter:description", socialImage: "og:image" })) {
+    assert.equal(meta(name), values[field], `${pagePath} ${field} agrees with the SEO editor`);
+  }
+  assert.equal(meta("keywords"), values.keywords.split("\n").join(","));
+  const canonical = (html.match(/<link\b[^>]*>/g) || []).find((tag) => attribute(tag, "rel") === "canonical");
+  assert.equal(attribute(canonical, "href"), values.canonical);
+  assert.equal(meta("robots"), `${values.noindex ? "noindex" : "index"}, ${values.nofollow ? "nofollow" : "follow"}`);
+}
 async function checkRedirect(url, cookie, destination) {
   const response = await fetch(base + url, { redirect: "manual", headers: cookie ? { Cookie: cookie } : {}, signal: AbortSignal.timeout(60000) });
   if (response.status === 307) assert.equal(new URL(response.headers.get("location"), base).pathname, destination);
@@ -87,6 +104,11 @@ try {
   await request("/api/seo", { headers: { Cookie: buyerCookie } }, 403);
   const loaded = await (await request("/api/seo?path=/&pages=1", { headers: { Cookie: cookie } })).json();
   assert.ok(loaded.pages.some((page) => page.path === "/products/seo-test-mug"));
+  assert.equal(loaded.source, "defaults");
+  await assertPublishedMetadata("/", loaded.effective);
+  const productDefaults = await (await request("/api/seo?path=/products/seo-test-mug", { headers: { Cookie: cookie } })).json();
+  await assertPublishedMetadata("/products/seo-test-mug", productDefaults.effective);
+  assert.equal(productDefaults.defaults.twitterTitle, productDefaults.defaults.ogTitle);
   const settings = { ...loaded.settings, title: "Green Fibre SEO Test <safe>", description: "Server-rendered sustainable gifts test description.", keywords: "eco gifts\neco gifts\nrice husk", ogTitle: "Social SEO Test", twitterTitle: "Twitter SEO Test", noindex: true, nofollow: true, focusKeyword: "eco gifts" };
   await request("/api/seo", bodyOptions({ path: "/", settings }, cookie, "PUT", "https://untrusted.example"), 403);
   await request("/api/seo", bodyOptions({ path: "/", settings: { ...settings, canonical: "javascript:bad" } }, cookie), 422);
@@ -102,6 +124,8 @@ try {
   assert.ok(html.includes('name="robots" content="noindex, nofollow"'));
   const restored = await (await request("/api/seo?path=/", { headers: { Cookie: cookie } })).json();
   assert.equal(restored.settings.title, settings.title);
+  assert.equal(restored.source, "saved");
+  await assertPublishedMetadata("/", restored.effective);
   const sitemap = await (await request("/sitemap.xml")).text();
   assert.ok(!sitemap.includes("<loc>https://trade.greenfibre.org/</loc>"), "noindex homepage omitted from sitemap");
   const statusHtml = await (await request("/status", { headers: { Cookie: cookie } })).text();
@@ -122,9 +146,15 @@ try {
   const category = await (await request("/api/seo?path=/category/drinkware", { headers: { Cookie: cookie } })).json();
   await request("/api/seo", bodyOptions({ path: "/category/drinkware", settings: { ...category.settings, title: "Custom Drinkware SEO" } }, cookie));
   assert.ok((await (await request("/category/drinkware")).text()).includes("<title>Custom Drinkware SEO</title>"));
+  const categoryState = await (await request("/api/seo?path=/category/drinkware", { headers: { Cookie: cookie } })).json();
+  await assertPublishedMetadata("/category/drinkware", categoryState.effective);
   const detail = await (await request("/api/seo?path=/products/seo-test-mug", { headers: { Cookie: cookie } })).json();
   await request("/api/seo", bodyOptions({ path: "/products/seo-test-mug", settings: { ...detail.settings, title: "Custom Mug SEO" } }, cookie));
   assert.ok((await (await request("/products/seo-test-mug")).text()).includes("<title>Custom Mug SEO</title>"));
+  const partial = { ...detail.settings, title: "Changed live mug", description: "Updated product description", ogTitle: "", ogDescription: "", twitterTitle: "", twitterDescription: "", canonical: "", socialImage: "", keywords: "" };
+  const partialSaved = await (await request("/api/seo", bodyOptions({ path: "/products/seo-test-mug", settings: partial }, cookie))).json();
+  await assertPublishedMetadata("/products/seo-test-mug", partialSaved.effective);
+  assert.equal(partialSaved.effective.twitterTitle, partial.title);
   console.log(`Passed ${checks} HTTP checks plus metadata, persistence, permissions, sitemap, image and OTP assertions.`);
   if (process.argv.includes("--keep-open")) {
     console.log(`Isolated UI preview: ${base}/status/login (fixture login ${adminEmail}, password ${password}).`);
