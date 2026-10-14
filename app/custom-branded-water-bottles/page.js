@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import {
@@ -14,34 +16,9 @@ import {
   CheckCircle2
 } from "lucide-react";
 
-export const metadata = {
-  title: "Custom Logo Rice Husk Water Bottles",
-  description:
-    "Order double-wall thermal rice husk water bottles and custom logo engraved bottles in bulk. Crafted from upcycled crop stubble (65% plant residue) with in-house laser engraving and Pan-India delivery.",
-  alternates: {
-    canonical: "/custom-branded-water-bottles"
-  },
-  openGraph: {
-    type: "website",
-    title: "Rice Husk Water Bottle | Custom Logo Engraved Bottles | Green Fibre",
-    description:
-      "Enterprise custom logo engraved bottles made from upcycled rice-husk crop stubble composite (65% plant residue). Double-wall thermal bottle with free 3D visual proof in 4 hours.",
-    url: "/custom-branded-water-bottles",
-    images: [
-      {
-        url: "/images/thermal-bottle.jpg",
-        alt: "Custom Logo Engraved Thermal Water Bottles - Green Fibre B2B"
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Rice Husk Water Bottle | Custom Logo Engraved Bottles | Green Fibre",
-    description:
-      "Enterprise custom logo engraved bottles made from upcycled rice-husk crop stubble composite (65% plant residue). Double-wall thermal bottle with free 3D visual proof in 4 hours.",
-    images: ["/images/thermal-bottle.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/custom-branded-water-bottles", staticSeoDefaults["/custom-branded-water-bottles"]);
+}
 
 export default function CustomBrandedWaterBottlesPage() {
   const siteUrl = "https://trade.greenfibre.org";

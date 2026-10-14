@@ -167,6 +167,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
   // If already logged in, redirect
   useEffect(() => {
     if (isAuthenticated && user && !isLoading && !successMessage) {
+      router.refresh();
       router.push(redirectTarget);
     }
   }, [isAuthenticated, user, isLoading, redirectTarget, router, successMessage]);
@@ -264,6 +265,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
       setSuccessMessage("Welcome back! Taking you to Home...");
       setTimeout(() => {
         router.push(redirectTarget);
+        router.refresh();
       }, 750);
     } catch (err) {
       setErrorMessage(err.message || "Invalid work email or password. Please try again.");
@@ -409,6 +411,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
       setSuccessMessage("Account verified and created! Taking you to Home...");
       setTimeout(() => {
         router.push(redirectTarget);
+        router.refresh();
       }, 850);
     } catch (err) {
       setErrorMessage(err.message || "Verification failed. Please check the code and try again.");

@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { productMetadata } from "@/lib/seo-defaults";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/Card";
@@ -13,34 +15,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }) {
-  const p = await getProduct(params.slug);
-  if (!p) {
-    return { robots: { index: false, follow: false } };
-  }
-
-  const descParts = [
-    `${p.name} for bulk B2B orders.`,
-    p.moq ? `Minimum order: ${p.moq} ${p.unit || "units"}.` : null,
-    p.leadTime ? `Lead time: ${p.leadTime}.` : null,
-    "Custom laser branding and Pan-India dispatch available."
-  ].filter(Boolean);
-
-  const ogImage = p.images?.[0] || p.image || null;
-
-  return {
-    title: `${p.name} - Bulk Order & Custom Branding`,
-    description: descParts.join(" "),
-    alternates: { canonical: `/products/${p.slug}` },
-    openGraph: {
-      title: `${p.name} | Green Fibre B2B`,
-      description: descParts.join(" "),
-      images: ogImage ? [{ url: ogImage }] : []
-    },
-    twitter: {
-      card: "summary_large_image",
-      images: ogImage ? [ogImage] : []
-    }
-  };
+  return applySeoSettings(`/products/${params.slug}`, await productMetadata({ params }));
 }
 
 export default async function ProductDetailPage({ params, searchParams = {} }) {

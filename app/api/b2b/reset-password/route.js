@@ -55,7 +55,11 @@ export async function POST(req) {
       );
     }
 
-    if (otpRecord.otp !== otp && !otpRecord.verified) {
+    if ((otpRecord.attempts || 0) >= 5) {
+      return NextResponse.json({ success: false, message: "Too many attempts. Please request a new code." }, { status: 429 });
+    }
+    if (otpRecord.otp !== otp) {
+      await otps.updateOne({ _id: otpRecord._id }, { $inc: { attempts: 1 } });
       return NextResponse.json(
         { success: false, message: "Invalid verification code. Please check and try again." },
         { status: 400 }

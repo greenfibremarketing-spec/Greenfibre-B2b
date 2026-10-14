@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import {
@@ -15,34 +17,9 @@ import {
   Layers
 } from "lucide-react";
 
-export const metadata = {
-  title: "Eco-Friendly Corporate Gifts in Bulk, India",
-  description:
-    "Order eco-friendly corporate gifting solutions in bulk across India. Manufactured from upcycled rice-husk crop stubble composite (65% plant residue) with in-house laser engraving and Pan-India delivery.",
-  alternates: {
-    canonical: "/corporate-gifting"
-  },
-  openGraph: {
-    type: "website",
-    title: "Corporate Gifts Bulk India | Eco-Friendly Corporate Gifting | Green Fibre",
-    description:
-      "Sustainable bulk corporate gifting in India. Made with 65% upcycled crop stubble composite, in-house laser engraving, recycled kraft packaging, and free 3D visual proof in 4 hours.",
-    url: "/corporate-gifting",
-    images: [
-      {
-        url: "/images/gift-set-classic.jpg",
-        alt: "Eco-Friendly Corporate Gifts Bulk India - Green Fibre"
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Corporate Gifts Bulk India | Eco-Friendly Corporate Gifting | Green Fibre",
-    description:
-      "Sustainable bulk corporate gifting in India. Made with 65% upcycled crop stubble composite, in-house laser engraving, recycled kraft packaging, and free 3D visual proof in 4 hours.",
-    images: ["/images/gift-set-classic.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/corporate-gifting", staticSeoDefaults["/corporate-gifting"]);
+}
 
 export default function CorporateGiftingPage() {
   const siteUrl = "https://trade.greenfibre.org";

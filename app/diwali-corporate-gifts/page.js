@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import JsonLd from "@/components/JsonLd";
 import {
@@ -14,34 +16,9 @@ import {
   CheckCircle2
 } from "lucide-react";
 
-export const metadata = {
-  title: "Sustainable Diwali Corporate Gifts in Bulk",
-  description:
-    "Order sustainable Diwali hampers and bulk Diwali corporate gifts in India. Made from upcycled rice-husk crop stubble composite (65% plant residue) with in-house laser engraving and recycled kraft gift boxes.",
-  alternates: {
-    canonical: "/diwali-corporate-gifts"
-  },
-  openGraph: {
-    type: "website",
-    title: "Diwali Corporate Gifts Bulk | Sustainable Diwali Hampers | Green Fibre",
-    description:
-      "Celebrate festive season with sustainable Diwali hampers and corporate gifts bulk India orders. Made with upcycled crop stubble composite, laser engraving, and Pan-India delivery.",
-    url: "/diwali-corporate-gifts",
-    images: [
-      {
-        url: "/images/gift-set-classic.jpg",
-        alt: "Sustainable Diwali Hampers & Corporate Gifts Bulk India - Green Fibre"
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Diwali Corporate Gifts Bulk | Sustainable Diwali Hampers | Green Fibre",
-    description:
-      "Celebrate festive season with sustainable Diwali hampers and corporate gifts bulk India orders. Made with upcycled crop stubble composite, laser engraving, and Pan-India delivery.",
-    images: ["/images/gift-set-classic.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/diwali-corporate-gifts", staticSeoDefaults["/diwali-corporate-gifts"]);
+}
 
 export default function DiwaliCorporateGiftsPage() {
   const siteUrl = "https://trade.greenfibre.org";

@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
@@ -8,34 +10,9 @@ import { categories as categoryList } from "@/lib/categories";
 import { getProducts } from "@/lib/products";
 import { ArrowRight } from "lucide-react";
 
-export const metadata = {
-  title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
-  description:
-    "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
-  alternates: {
-    canonical: "/"
-  },
-  openGraph: {
-    type: "website",
-    title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
-    description:
-      "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
-    url: "/",
-    images: [
-      {
-        url: "/images/hero.jpg",
-        alt: "Green Fibre B2B Sustainable Rice Husk Tableware & Corporate Gifting"
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Green Fibre B2B | Sustainable Tableware & Corporate Gifting",
-    description:
-      "Direct manufacturer of eco-friendly tableware, coffee drinkware, lunchboxes, and corporate gift sets made from upcycled agricultural rice-husk composite.",
-    images: ["/images/hero.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/", staticSeoDefaults["/"]);
+}
 
 export default async function Home() {
   const allProducts = await getProducts();

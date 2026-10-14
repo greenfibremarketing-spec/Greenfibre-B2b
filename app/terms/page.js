@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import {
   FileText,
@@ -16,29 +18,9 @@ import {
   Ban
 } from "lucide-react";
 
-export const metadata = {
-  title: "Terms & Conditions - B2B Wholesale Supply",
-  description:
-    "Official Terms and Conditions governing B2B wholesale orders, custom corporate branding, purchase order finalization, inventory locking, and replacement policies for Green Fibre products.",
-  alternates: {
-    canonical: "/terms"
-  },
-  openGraph: {
-    type: "website",
-    title: "Terms & Conditions | Green Fibre B2B",
-    description:
-      "Official Terms governing B2B wholesale orders, custom corporate branding, PO finalization, inventory locking, and replacement policies.",
-    url: "/terms",
-    images: ["/images/hero.jpg"]
-  },
-  twitter: {
-    card: "summary",
-    title: "Terms & Conditions | Green Fibre B2B",
-    description:
-      "B2B wholesale supply terms, PO finalization, inventory lock policies, and transit damage replacement guarantee.",
-    images: ["/images/hero.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/terms", staticSeoDefaults["/terms"]);
+}
 
 export default function TermsPage() {
   return (

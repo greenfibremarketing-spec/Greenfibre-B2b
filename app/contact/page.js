@@ -1,29 +1,11 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import ContactClient from "@/components/ContactClient";
 import JsonLd from "@/components/JsonLd";
 
-export const metadata = {
-  title: "Contact Us | Corporate Desk & Factory Inquiries",
-  description:
-    "Connect with Greenfibre for wholesale inquiries, custom Pantone color-matching, bespoke compression molds, corporate hampers, and physical sample requests.",
-  alternates: {
-    canonical: "/contact"
-  },
-  openGraph: {
-    type: "website",
-    title: "Contact Us | Greenfibre B2B Corporate Desk & Factory Inquiries",
-    description:
-      "Connect with Greenfibre for wholesale inquiries, custom branding, corporate hampers, and physical sample requests. Direct manufacturer based in Greater Noida.",
-    url: "/contact",
-    images: ["/images/hero.jpg"]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact Us | Greenfibre B2B Corporate Desk",
-    description:
-      "Reach the Greenfibre B2B sales desk for wholesale pricing, custom laser branding, and pan-India bulk delivery inquiries.",
-    images: ["/images/hero.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/contact", staticSeoDefaults["/contact"]);
+}
 
 export default function ContactPage() {
   const siteUrl = "https://trade.greenfibre.org";

@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { categoryMetadata } from "@/lib/seo-defaults";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { categories, getCategoryBySlug } from "@/lib/categories";
@@ -10,51 +12,10 @@ export async function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }));
 }
 
-const categoryOgImages = {
-  drinkware: "/images/thermal-bottle.jpg",
-  "gift-boxes-hampers": "/images/gift-set-classic.jpg",
-  "kitchen-dining": "/images/bento-box.jpg",
-  tableware: "/images/green-tableware-plants.jpg",
-  "storage-organizers": "/images/storage-basket.jpg",
-  "home-living": "/images/planter-medium.jpg"
-};
+
 
 export async function generateMetadata({ params }) {
-  const category = getCategoryBySlug(params.slug);
-  if (!category) {
-    return {
-      title: "Category Not Found",
-      robots: { index: false, follow: false }
-    };
-  }
-
-  const ogImage = categoryOgImages[category.slug] || "/images/hero.jpg";
-
-  return {
-    title: { absolute: category.metaTitle },
-    description: category.metaDescription,
-    alternates: {
-      canonical: `/category/${category.slug}`
-    },
-    openGraph: {
-      type: "website",
-      title: category.metaTitle,
-      description: category.metaDescription,
-      url: `/category/${category.slug}`,
-      images: [
-        {
-          url: ogImage,
-          alt: `${category.name} - Green Fibre Sustainable B2B Collection`
-        }
-      ]
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: category.metaTitle,
-      description: category.metaDescription,
-      images: [ogImage]
-    }
-  };
+  return applySeoSettings(`/category/${params.slug}`, await categoryMetadata({ params }));
 }
 
 export default async function CategoryPage({ params }) {

@@ -9,7 +9,8 @@ export default function robots() {
         "/signup",
         "/forgot-password",
         "/quote",
-        "/admin"
+        "/admin",
+        "/status"
       ]
     },
     sitemap: "https://trade.greenfibre.org/sitemap.xml"

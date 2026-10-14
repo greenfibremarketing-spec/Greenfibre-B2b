@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import Image from "next/image";
 import JsonLd from "@/components/JsonLd";
@@ -22,34 +24,9 @@ import {
   Mail
 } from "lucide-react";
 
-export const metadata = {
-  title: "Our Story - Engineering Green Products From Rice Husk",
-  description:
-    "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes.",
-  alternates: {
-    canonical: "/story"
-  },
-  openGraph: {
-    type: "website",
-    title: "Our Story - Engineering Green Products From Rice Husk | Green Fibre",
-    description:
-      "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic and craft durable, food-safe everyday essentials.",
-    url: "/story",
-    images: [
-      {
-        url: "/images/green-farmland.jpg",
-        alt: "Green Fibre - Sustainable Rice Husk Agricultural Composite"
-      }
-    ]
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Our Story | Green Fibre B2B",
-    description:
-      "From crop stubble to durable tableware. How Green Fibre upcycles rice husk into sustainable corporate gifts.",
-    images: ["/images/green-farmland.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/story", staticSeoDefaults["/story"]);
+}
 
 const stats = [
   { value: "100k+", label: "Happy Customers", icon: Users },

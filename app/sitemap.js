@@ -1,5 +1,8 @@
 import { getProducts } from "@/lib/products";
 import { categories } from "@/lib/categories";
+import { readSeoIndex } from "@/lib/seo-store";
+
+export const dynamic = "force-dynamic";
 
 const BASE_URL = "https://trade.greenfibre.org";
 
@@ -35,6 +38,15 @@ export default async function sitemap() {
     priority: 0.9
   }));
 
-  return [...staticPages, ...landingPages, ...categoryPages, ...productPages];
+  let settings = {};
+  try { settings = await readSeoIndex(); } catch (error) { console.error("[SEO sitemap]", error.message); }
+  return [...staticPages, ...landingPages, ...categoryPages, ...productPages]
+    .filter((page) => {
+      const seo = settings[new URL(page.url).pathname];
+      if (seo?.noindex) return false;
+      if (seo?.canonical && seo.canonical.replace(/\/$/, "") !== page.url.replace(/\/$/, "")) return false;
+      return true;
+    })
+    .map((page) => ({ ...page, ...(settings[new URL(page.url).pathname]?.updatedAt ? { lastModified: settings[new URL(page.url).pathname].updatedAt } : {}) }));
 }
 

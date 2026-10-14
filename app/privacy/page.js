@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -16,29 +18,9 @@ import {
   Ban
 } from "lucide-react";
 
-export const metadata = {
-  title: "Privacy & Replacement Policy - B2B Enterprise Protection",
-  description:
-    "Official Privacy, Data Protection, and Transit Damage Replacement Policy for Green Fibre B2B wholesale buyers, enterprise clients, and institutional partners.",
-  alternates: {
-    canonical: "/privacy"
-  },
-  openGraph: {
-    type: "website",
-    title: "Privacy & Replacement Policy | Green Fibre B2B",
-    description:
-      "Official Privacy, Data Protection, and Transit Damage Replacement Policy for Green Fibre B2B wholesale buyers and enterprise clients.",
-    url: "/privacy",
-    images: ["/images/hero.jpg"]
-  },
-  twitter: {
-    card: "summary",
-    title: "Privacy & Replacement Policy | Green Fibre B2B",
-    description:
-      "Corporate data confidentiality, enterprise procurement privacy, and transparent replacement policies for B2B wholesale buyers.",
-    images: ["/images/hero.jpg"]
-  }
-};
+export async function generateMetadata() {
+  return applySeoSettings("/privacy", staticSeoDefaults["/privacy"]);
+}
 
 export default function PrivacyPage() {
   return (
