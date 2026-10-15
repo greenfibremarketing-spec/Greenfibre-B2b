@@ -39,38 +39,6 @@ export default async function Home() {
         <HeroSwiper />
       </section>
 
-      {/* Executive Primary H1 Heading & Introduction */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-1">
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-7 md:p-8 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-5">
-          <div className="space-y-1.5 max-w-3xl">
-            <div className="badge-green inline-block mb-1">
-              Direct Manufacturer · 100% Upcycled Agricultural Stubble
-            </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Rice-Husk Tableware &amp; Corporate Gifts, Direct from the Manufacturer
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Certified food-safe durable tableware, thermal drinkware, and curated sustainable gift hampers made from upcycled agricultural crop stubble. Permanent in-house laser branding and pan-India bulk delivery.
-            </p>
-          </div>
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 flex-shrink-0">
-            <Link
-              href="/products"
-              className="px-4 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center gap-1.5"
-            >
-              <span>Explore Catalog</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-            <Link
-              href="/quote"
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition-all"
-            >
-              Request Bulk Quote
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Featured Products Catalog */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
@@ -78,9 +46,9 @@ export default async function Home() {
             <div className="badge-green mb-1.5 sm:mb-2">
               Wholesale Catalog
             </div>
-            <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
               Featured Products for Bulk Orders
-            </h2>
+            </h1>
           </div>
           <Link
             href="/products"
