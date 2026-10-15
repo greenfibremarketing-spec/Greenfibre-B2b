@@ -6,6 +6,7 @@
 
 # testing
 /coverage
+/tmp/pdfs/
 /.data/
 
 # next.js

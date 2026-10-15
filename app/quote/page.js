@@ -288,7 +288,7 @@ export default function QuotePage() {
       }
 
       clear();
-      setState({ busy: false, error: null, ref: resJson.reference });
+      setState({ busy: false, error: null, ref: resJson.reference, emailSent: resJson.emailSent === true, warning: resJson.warning });
     } catch (err) {
       setState({ busy: false, error: err.message, ref: null });
     }
@@ -323,8 +323,7 @@ export default function QuotePage() {
                 We&apos;ve got your<br />request.
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-xl">
-                Your order summary and official quotation PDF have been generated and dispatched to{" "}
-                <strong className="text-slate-900 font-bold">{formData.email}</strong>.
+                {state.emailSent ? <>Your order summary and official quotation PDF have been sent to <strong className="text-slate-900 font-bold">{formData.email}</strong>.</> : <span role="alert">{state.warning || "Your quotation was received, but email delivery could not be confirmed. Please contact our team with your reference below."}</span>}
               </p>
             </div>
 

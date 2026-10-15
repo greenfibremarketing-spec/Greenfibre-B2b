@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getProduct } from "@/lib/products";
 import { generateQuotationPdf } from "@/lib/quotationPdf";
+import { quotationAttachments } from "@/lib/quotationAttachment";
 import { sendQuotationEmail } from "@/lib/email";
 import {
   validateEmail,
@@ -11,6 +12,7 @@ import {
 } from "@/lib/validation";
 
 const hits = new Map();
+export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
@@ -202,8 +204,10 @@ export async function POST(req) {
         items,
         ...pricing
       });
+      quotationAttachments(pdfBuffer);
     } catch (pdfErr) {
       console.error("Quotation PDF Generation Error:", pdfErr);
+      return NextResponse.json({ error: "Could not generate the quotation PDF. Your basket has been kept; please try again." }, { status: 503 });
     }
 
     const enquiryDocument = {
@@ -231,8 +235,9 @@ export async function POST(req) {
     }
 
     // Attempt to send email with quotation summary & PDF attachment
+    let emailSent = false;
     try {
-      await sendQuotationEmail({
+      const emailResult = await sendQuotationEmail({
         to: client.email,
         reference,
         client,
@@ -240,6 +245,7 @@ export async function POST(req) {
         pricing,
         pdfBuffer
       });
+      emailSent = Boolean(emailResult?.success && !emailResult?.devMode);
     } catch (smtpErr) {
       console.error("Enquiry Email Sending Error (non-fatal):", smtpErr);
     }
@@ -247,7 +253,9 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       reference,
-      pdfGenerated: Boolean(pdfBuffer)
+      pdfGenerated: true,
+      emailSent,
+      ...(!emailSent && { warning: "Your quotation was received, but the email could not be sent. Please contact our team with your quotation reference." })
     });
   } catch (globalErr) {
     console.error("Global /api/enquiry Handler Error:", globalErr);

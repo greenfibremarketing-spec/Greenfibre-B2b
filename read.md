@@ -179,3 +179,19 @@ Production uses MongoDB collections `seo_settings` and `seo_images`. Development
 | Google or social previews still show old text | Verify the live source first, then allow recrawling or refresh the relevant service's cached preview. |
 
 Production deployment follows the repository's `main` branch on Vercel. The editor and administrator sign-in fix are already deployed; routine SEO saves do not require another deployment.
+
+## Quotation PDF emails
+
+The order enquiry generates a quotation PDF before sending the customer and internal team emails. Both messages include `GreenFibre_Quotation.pdf` as an attachment. If PDF generation fails, submission reports an error and retains the quote basket instead of sending an email without its attachment. If email sending fails after the enquiry is received, the confirmation shows a delivery warning and retains the quotation reference.
+
+PDFKit is configured as a server external package, with its runtime files and standard fonts explicitly included in the deployment. PDF amounts use `INR` so currency remains readable with the standard font.
+
+Developer verification:
+
+```text
+node --test tests/quotation-email.test.mjs
+npm run build
+node tests/quotation-production.mjs
+```
+
+The production test starts a local build and a loopback SMTP capture server. It checks both email attachments and the failure response without sending messages to real inboxes. Its sample PDF and logs are stored under Git-ignored `tmp/pdfs/`.
