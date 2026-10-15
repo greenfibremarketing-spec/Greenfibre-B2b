@@ -139,8 +139,15 @@ try {
   const image = await request(upload.url);
   assert.equal(image.headers.get("content-type"), "image/png");
   assert.deepEqual(Buffer.from(await image.arrayBuffer()), png);
+  const robots = await (await request("/robots.txt")).text();
+  assert.ok(robots.includes("Allow: /api/seo/image/"), "public uploaded share images are crawlable");
+  assert.ok(robots.includes("Disallow: /api/"), "other API routes remain excluded");
   const catalog = await (await request("/api/seo?path=/products", { headers: { Cookie: cookie } })).json();
-  await request("/api/seo", bodyOptions({ path: "/products", settings: { ...catalog.settings, noindex: false } }, cookie));
+  assert.equal(catalog.defaults.socialImage, "https://trade.greenfibre.org/images/hero.jpg", "catalog shares the mock catalog product photo, not the decorative default");
+  await assertPublishedMetadata("/products", catalog.effective);
+  const catalogSaved = await (await request("/api/seo", bodyOptions({ path: "/products", settings: { ...catalog.settings, noindex: false, socialImage: upload.url } }, cookie))).json();
+  assert.equal(catalogSaved.effective.socialImage, `https://trade.greenfibre.org${upload.url}`, "an uploaded SEO image takes priority over the catalog default");
+  await assertPublishedMetadata("/products", catalogSaved.effective);
   const filtered = await (await request("/products?q=mug")).text();
   assert.ok(filtered.includes('name="robots" content="noindex, follow"'));
   const category = await (await request("/api/seo?path=/category/drinkware", { headers: { Cookie: cookie } })).json();

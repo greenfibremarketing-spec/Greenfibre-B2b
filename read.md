@@ -112,6 +112,8 @@ Enter appropriate Open Graph and Twitter descriptions too, then click **Save SEO
 
 ## 6. Upload a social image
 
+For the `/products` link, select **Product Catalog** in **Page to edit** first. Its default share image is a real photo from the first catalog product with an image. A saved Social Share Image overrides that default, so you can upload your preferred product photo or catalog cover without changing code.
+
 1. Click **Choose File** under **Upload a social share image**.
 2. Select a PNG, JPEG or WebP image, up to 5 MB.
 3. A recommended image size is **1200 x 630 pixels**.
