@@ -18,17 +18,18 @@ export default function HeroSwiper() {
   const [src, setSrc] = useState(heroSlide.image);
 
   return (
-    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none h-[58vh] min-h-[350px] sm:h-[70vh] md:h-[82vh] lg:h-[96vh] max-h-[96vh]">
+    <div className="w-full max-w-full bg-stone-100 select-none">
       <Link
         href={heroSlide.link}
-        className="relative w-full h-full block cursor-pointer overflow-hidden group/slide"
+        className="block w-full cursor-pointer"
         aria-label={heroSlide.title}
       >
-        {/* Full Cover Static Banner with next/image priority */}
+        {/* Preserve the original aspect ratio so the entire banner stays visible. */}
         <Image
           src={src}
           alt={heroSlide.title}
-          fill
+          width={1672}
+          height={941}
           priority
           sizes="100vw"
           onError={() => {
@@ -36,7 +37,7 @@ export default function HeroSwiper() {
               setSrc(heroSlide.localFallback);
             }
           }}
-          className="object-cover object-left sm:object-center transition-transform duration-700 ease-out group-hover/slide:scale-[1.01]"
+          className="block w-full h-auto"
         />
       </Link>
     </div>
