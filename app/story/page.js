@@ -24,6 +24,8 @@ import {
   Mail
 } from "lucide-react";
 
+export const revalidate = 300;
+
 export async function generateMetadata() {
   return applySeoSettings("/story", staticSeoDefaults["/story"]);
 }

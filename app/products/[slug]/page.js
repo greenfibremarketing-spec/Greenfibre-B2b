@@ -9,6 +9,8 @@ import { getProduct, getProducts } from "@/lib/products";
 import { resolveCategorySlug } from "@/lib/categories";
 import { ChevronRight, ArrowRight, Layers } from "lucide-react";
 
+export const revalidate = 300;
+
 export async function generateStaticParams() {
   const ps = await getProducts();
   return ps.map((p) => ({ slug: p.slug }));
@@ -71,7 +73,7 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
 
   const hasPrice = typeof p.price === "number" && p.price > 0;
   const isAvailable = (typeof p.totalStock === "number" && p.totalStock > 0) ||
-                      (typeof p.stockQuantity === "number" && p.stockQuantity > 0);
+    (typeof p.stockQuantity === "number" && p.stockQuantity > 0);
   const descriptionText = p.desc || p.description || p.shortDescription || null;
 
   // STEP 2: Product JSON-LD schema

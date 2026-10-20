@@ -3,6 +3,8 @@ import { staticSeoDefaults } from "@/lib/seo-defaults";
 import ContactClient from "@/components/ContactClient";
 import JsonLd from "@/components/JsonLd";
 
+export const revalidate = 300; // Background revalidation every 5 minutes
+
 export async function generateMetadata() {
   return applySeoSettings("/contact", staticSeoDefaults["/contact"]);
 }

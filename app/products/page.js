@@ -4,6 +4,8 @@ import { getProducts, normalizeContextKey } from "@/lib/products";
 import ProductsCatalogView from "@/components/ProductsCatalogView";
 import JsonLd from "@/components/JsonLd";
 
+export const revalidate = 300;
+
 export async function generateMetadata({ searchParams = {} }) {
   return applySeoSettings("/products", await catalogMetadata({ searchParams }));
 }

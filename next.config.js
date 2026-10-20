@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
+    cpus: 1,
+    workerThreads: false,
     // PDFKit loads standard fonts using Node package imports. Keep the package
     // intact and explicitly include those dynamically loaded files on Vercel.
     serverComponentsExternalPackages: ["pdfkit"],

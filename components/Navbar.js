@@ -26,13 +26,14 @@ import UserNav from "./UserNav";
 import { Count, useQuote } from "./Quote";
 import { useAuth } from "./AuthContext";
 
-function NavbarInner({ canManageSeo }) {
+function NavbarInner({ canManageSeo = false }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth() || {};
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const isSeoAdmin = canManageSeo || Boolean(user?.email && (user.email.toLowerCase() === "greenfibre.marketing@gmail.com" || user.role === "admin"));
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -158,7 +159,7 @@ function NavbarInner({ canManageSeo }) {
               >
                 <span className="relative z-10">Our Story</span>
               </Link>
-              {canManageSeo && <Link href="/status" aria-current={pathname === "/status" ? "page" : undefined} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-semibold ${pathname === "/status" ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-100"}`}>Status</Link>}
+              {isSeoAdmin && <Link href="/status" aria-current={pathname === "/status" ? "page" : undefined} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-semibold ${pathname === "/status" ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-100"}`}>Status</Link>}
             </nav>
           </div>
 
@@ -323,7 +324,7 @@ function NavbarInner({ canManageSeo }) {
                   Menu Navigation
                 </div>
 
-                {canManageSeo && <Link href="/status" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-900 font-semibold">Status <ChevronRight className="w-4 h-4" /></Link>}
+                {isSeoAdmin && <Link href="/status" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-900 font-semibold">Status <ChevronRight className="w-4 h-4" /></Link>}
                 {/* All Products */}
                 <Link
                   href="/products"

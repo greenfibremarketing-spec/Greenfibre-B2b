@@ -8,6 +8,8 @@ import Card from "@/components/Card";
 import JsonLd from "@/components/JsonLd";
 import { ChevronRight, Home as HomeIcon, Package } from "lucide-react";
 
+export const revalidate = 300;
+
 export async function generateStaticParams() {
   return categories.map((c) => ({ slug: c.slug }));
 }

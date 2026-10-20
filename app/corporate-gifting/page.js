@@ -17,6 +17,8 @@ import {
   Layers
 } from "lucide-react";
 
+export const revalidate = 300;
+
 export async function generateMetadata() {
   return applySeoSettings("/corporate-gifting", staticSeoDefaults["/corporate-gifting"]);
 }

@@ -16,6 +16,8 @@ import {
   CheckCircle2
 } from "lucide-react";
 
+export const revalidate = 300;
+
 export async function generateMetadata() {
   return applySeoSettings("/diwali-corporate-gifts", staticSeoDefaults["/diwali-corporate-gifts"]);
 }

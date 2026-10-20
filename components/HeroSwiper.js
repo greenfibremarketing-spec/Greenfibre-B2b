@@ -18,7 +18,7 @@ export default function HeroSwiper() {
   const srcSet = getImageSrcSet(heroSlide.image, [480, 768, 1200, 1600, 1920]);
 
   return (
-    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none h-[42vh] min-h-[260px] sm:h-[55vh] md:h-[66vh] lg:h-[76vh] xl:h-[82vh] max-h-[720px]">
+    <div className="relative w-full max-w-full overflow-hidden bg-stone-100 group select-none aspect-[1672/941] sm:aspect-auto sm:h-[55vh] md:h-[66vh] lg:h-[76vh] xl:h-[82vh] max-h-[720px]">
       <Link
         href={heroSlide.link}
         className="relative w-full h-full block cursor-pointer overflow-hidden group/slide"

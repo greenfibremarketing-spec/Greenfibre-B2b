@@ -1,4 +1,3 @@
-import { getSeoAdmin } from "@/lib/seo-admin";
 import { SITE_KEYWORDS, SITE_TITLE_TEMPLATE } from "@/lib/seo-config";
 import "./globals.css";
 import Link from "next/link";
@@ -18,8 +17,6 @@ const corporateFont = Plus_Jakarta_Sans({
   variable: "--font-corporate",
   display: "swap"
 });
-
-export const dynamic = "force-dynamic";
 
 const organizationAndWebsiteSchema = {
   "@context": "https://schema.org",
@@ -122,9 +119,7 @@ export const metadata = {
   }
 };
 
-export default async function RootLayout({ children }) {
-  let canManageSeo = false;
-  try { canManageSeo = Boolean(await getSeoAdmin()); } catch { /* Public navigation remains available during database outages. */ }
+export default function RootLayout({ children }) {
   return (
     <html lang="en" className={corporateFont.variable}>
       <head>
@@ -147,7 +142,7 @@ export default async function RootLayout({ children }) {
         <AuthProvider>
           <QuoteProvider>
             {/* Executive B2B Navigation Header */}
-            <Navbar canManageSeo={canManageSeo} />
+            <Navbar />
 
             <main className="flex-1">{children}</main>
 
