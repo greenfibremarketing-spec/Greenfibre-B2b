@@ -24,7 +24,9 @@ export async function GET(req) {
       const verified = await jwtVerify(token, secret);
       payload = verified.payload;
     } catch {
-      return NextResponse.json({ success: false, message: "Invalid or expired token" }, { status: 401 });
+      const res = NextResponse.json({ success: false, message: "Invalid or expired token" }, { status: 401 });
+      res.cookies.delete("b2b_token");
+      return res;
     }
 
     // Look up user in MongoDB
@@ -45,7 +47,9 @@ export async function GET(req) {
     }
 
     if (!user) {
-      return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+      const res = NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
+      res.cookies.delete("b2b_token");
+      return res;
     }
 
     const safeUser = {

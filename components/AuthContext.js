@@ -38,17 +38,24 @@ export function AuthProvider({ children }) {
 
       if (storedToken) {
         setToken(storedToken);
-        if (storedUser) {
-          setUser(storedUser);
-        }
         try {
           const freshUser = await fetchB2BProfile(storedToken);
           if (freshUser) {
             setUser(freshUser);
+          } else {
+            clearAuthSession();
+            setToken(null);
+            setUser(null);
           }
         } catch (err) {
           console.warn("[Auth] Initial profile verification failed:", err);
+          clearAuthSession();
+          setToken(null);
+          setUser(null);
         }
+      } else {
+        setToken(null);
+        setUser(null);
       }
       setIsLoading(false);
     }

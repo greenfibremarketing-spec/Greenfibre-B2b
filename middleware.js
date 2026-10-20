@@ -86,12 +86,6 @@ export function middleware(request) {
     return NextResponse.redirect(signupUrl);
   }
 
-  // If user IS authenticated and visits /login or /signup, redirect them to Home
-  if (isAuthenticated && isAuthPage) {
-    const homeUrl = new URL("/", request.url);
-    return NextResponse.redirect(homeUrl);
-  }
-
   return NextResponse.next();
 }
 
