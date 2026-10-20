@@ -18,6 +18,15 @@ export async function generateMetadata({ params }) {
   return applySeoSettings(`/category/${params.slug}`, await categoryMetadata({ params }));
 }
 
+const CATEGORY_SHORT_DESCRIPTIONS = {
+  "gift-boxes-hampers": "Curated eco-friendly gift hampers and custom-branded sets crafted from upcycled crop waste for every occasion.",
+  "drinkware": "Lightweight, unbreakable, and heat-resistant drinkware made with rice husk and bamboo fibers for daily enterprise use.",
+  "tableware": "Microwave and dishwasher-safe dining essentials, bowls, plates, and platters crafted from natural crop biocomposite.",
+  "kitchen-dining": "Bento lunchboxes, airtight canisters, and daily kitchen essentials made from durable agricultural rice husk composite.",
+  "home-living": "Eco-friendly tabletop planters, organizers, and home decor pieces crafted with agricultural crop-waste composite.",
+  "storage-organizers": "Durable multipurpose storage caddies, organizers, and baskets made with natural biocomposite materials."
+};
+
 export default async function CategoryPage({ params }) {
   const category = getCategoryBySlug(params.slug);
   if (!category) {
@@ -116,8 +125,8 @@ export default async function CategoryPage({ params }) {
               {category.h1 || category.name}
             </h1>
 
-            <p className="text-[11px] sm:text-xs md:text-sm text-emerald-50/90 leading-snug sm:leading-relaxed font-normal max-w-2xl line-clamp-2 sm:line-clamp-none">
-              {category.intro || category.metaDescription}
+            <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-normal max-w-2xl">
+              {CATEGORY_SHORT_DESCRIPTIONS[category.slug] || category.metaDescription || category.intro}
             </p>
           </div>
         </header>
