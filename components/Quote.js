@@ -14,12 +14,21 @@ export const useQuote = () => useContext(QuoteContext);
 // Tier 3: 201+ units    -> 25% enterprise bulk discount
 // Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are in basket.
 export const BUNDLE_BONUS_PCT = 5;
+// Navratri Special extra discount (5%) applied on all primary products.
+export const NAVRATRI_SPECIAL_EXTRA_PCT = 5;
 
-export function getItemDiscountPct(qty) {
+export function getItemDiscountPct(qty, isPrimary = true) {
   const q = Number(qty) || 1;
-  if (q >= 201 || q >= 200) return 25; // Tier 3: 200+ units -> 25% off
-  if (q >= 101) return 20;  // Tier 2: 101–200 units -> 20% off
-  return 15;                // Tier 1: 1–100 units -> 15% off
+  let baseDiscount = 15;
+  if (q >= 201 || q >= 200) baseDiscount = 25; // Tier 3: 200+ units -> 25% off
+  else if (q >= 101) baseDiscount = 20;  // Tier 2: 101–200 units -> 20% off
+  else baseDiscount = 15;                // Tier 1: 1–100 units -> 15% off
+
+  // Navratri Special: 5% extra discount on all primary products
+  if (isPrimary) {
+    return baseDiscount + NAVRATRI_SPECIAL_EXTRA_PCT;
+  }
+  return baseDiscount;
 }
 
 export function getItemTierNumber(qty) {
@@ -29,23 +38,23 @@ export function getItemTierNumber(qty) {
   return 1;
 }
 
-export function getItemTierLabel(qty) {
+export function getItemTierLabel(qty, isPrimary = true) {
   const q = Number(qty) || 1;
-  if (q >= 201 || q >= 200) return "Tier 3 (200+ units • 25% Off)";
-  if (q >= 101) return "Tier 2 (101–200 units • 20% Off)";
-  return "Tier 1 (Wholesale 1–100 • 15% Off)";
+  const navratriExtra = isPrimary ? ` + ${NAVRATRI_SPECIAL_EXTRA_PCT}% Navratri Special` : "";
+  if (q >= 201 || q >= 200) return `Tier 3 (200+ units • 25%${navratriExtra} = 30% Off)`;
+  if (q >= 101) return `Tier 2 (101–200 units • 20%${navratriExtra} = 25% Off)`;
+  return `Tier 1 (1–100 units • 15%${navratriExtra} = 20% Off)`;
 }
 
-// Safely resolve the original MRP — NEVER from an already-discounted price
+// Safely resolve the base reference MRP — NEVER from an already-discounted price
 function resolveMRP(product) {
+  if (product.mrp > 0) return product.mrp;
+  if (product.retailMrp > 0) return product.retailMrp;
+  if (product.retailPrice > 0) return product.retailPrice;
+  if (product.originalPrice > 0) return product.originalPrice;
   if (product.wholesalePrice > 0) return product.wholesalePrice;
   if (product.originalBasePrice > 0) return product.originalBasePrice;
-  if (product.retailPrice > 0) return product.retailPrice;
-  if (product.mrp > 0) return product.mrp;
-  if (product.price > 0) {
-    const discount = product.discountPct || getItemDiscountPct(product.qty || 1);
-    return Math.round(product.price / (1 - discount / 100));
-  }
+  if (product.price > 0) return product.price;
   return 500;
 }
 
@@ -55,27 +64,32 @@ export function computeLineItem(item) {
   const isPrimary = !isPair;
   const minQty = isPair ? 1 : Math.max(10, Number(item.moq) || 10);
   const qty = Math.max(minQty, Number(item.qty) || minQty);
-  const mrp = Number(item.wholesalePrice || item.originalBasePrice || item.mrp || item.price || 0);
+  const basePrice = Number(
+    item.mrp || item.retailMrp || item.retailPrice || item.originalPrice || item.wholesalePrice || item.originalBasePrice || item.price || 0
+  );
+  const retailMrp = Number(item.retailMrp || item.mrp || item.retailPrice || item.originalPrice || basePrice);
 
-  // Real-time dynamic volume tier discount
-  const discountPct = getItemDiscountPct(qty);
+  // Real-time dynamic volume tier discount + 5% Extra Navratri Special on primary products
+  const discountPct = getItemDiscountPct(qty, isPrimary);
   const tierNumber = getItemTierNumber(qty);
-  const tierLabel = getItemTierLabel(qty);
+  const tierLabel = getItemTierLabel(qty, isPrimary);
 
-  const lineGross = mrp * qty;
+  const lineGross = basePrice * qty;
   const lineDiscount = Math.round(lineGross * (discountPct / 100));
   const lineNet = lineGross - lineDiscount;
-  const unitPrice = Math.round(mrp * (1 - discountPct / 100));
+  const unitPrice = Math.round(basePrice * (1 - discountPct / 100));
 
   return {
     ...item,
     qty,
-    mrp,
-    wholesalePrice: mrp,
-    originalBasePrice: mrp,
-    retailPrice: mrp,
+    mrp: basePrice,
+    retailMrp,
+    wholesalePrice: basePrice,
+    originalBasePrice: basePrice,
+    retailPrice: retailMrp,
     price: unitPrice,
     discountPct,
+    navratriDiscountPct: isPrimary ? NAVRATRI_SPECIAL_EXTRA_PCT : 0,
     tierNumber,
     tierLabel,
     isPair,

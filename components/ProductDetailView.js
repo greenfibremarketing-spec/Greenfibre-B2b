@@ -733,22 +733,35 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const activeOccasion =
     B2B_OCCASIONS.find((o) => o.key === resolvedOccasionKey) || B2B_OCCASIONS[0];
 
-  const productBasePrice = typeof product.price === "number" ? product.price : 0;
-  const currentCustomizations = activeOccasion.customizations;
-  const wholesaleUnitPrice = productBasePrice;
+  const mrp =
+    typeof product.mrp === "number" && product.mrp > 0
+      ? product.mrp
+      : typeof product.retailPrice === "number" && product.retailPrice > 0
+        ? product.retailPrice
+        : typeof product.originalPrice === "number" && product.originalPrice > 0
+          ? product.originalPrice
+          : (typeof product.price === "number" ? product.price : 0);
 
-  // Tiers: same discount percentages but now just for unlocking perks / displaying the tier.
-  // The actual final price = wholesaleUnitPrice × qty × (1 - discountPct/100)
+  // The base reference price is the MRP (user gives 20% off MRP per piece for Tier 1)
+  const basePrice = mrp > 0 ? mrp : (typeof product.price === "number" ? product.price : 0);
+  const wholesaleUnitPrice = basePrice;
+  const currentCustomizations = activeOccasion.customizations;
+
+  // Tiers: base discount percentages + 5% Extra Navratri Special discount for primary products.
+  // Tier 1: 15% base + 5% Navratri = 20% off MRP (e.g. ₹799 - 20% = ₹639/piece)
+  // Tier 2: 20% base + 5% Navratri = 25% off MRP (e.g. ₹799 - 25% = ₹599/piece)
+  // Tier 3: 25% base + 5% Navratri = 30% off MRP (e.g. ₹799 - 30% = ₹559/piece)
   const currentTiers = activeOccasion.tiers.map((t) => {
-    const discountPct = t.tierNumber === 1 ? 15 : t.tierNumber === 2 ? 20 : 25;
-    // Effective per-unit after discount (for display in tier chips)
-    const effectivePricePerUnit = wholesaleUnitPrice > 0
-      ? Math.round(wholesaleUnitPrice * (1 - discountPct / 100))
-      : t.price;
+    const baseDiscount = t.tierNumber === 1 ? 15 : t.tierNumber === 2 ? 20 : 25;
+    const discountPct = baseDiscount + 5; // 20%, 25%, 30%
+    const effectivePricePerUnit = basePrice > 0
+      ? Math.round(basePrice * (1 - discountPct / 100))
+      : Math.round(t.price * 0.95);
     return {
       ...t,
+      badge: `-${discountPct}%`,
       savingsPct: discountPct,
-      price: effectivePricePerUnit // shown in tier chips as "after discount" per unit
+      price: effectivePricePerUnit
     };
   });
   const currentMoq = activeOccasion.moq;
@@ -888,8 +901,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     });
   };
 
-  // Pricing breakdown:
-  const activeTierDiscountPct = activeTierObj.tierNumber === 1 ? 15 : activeTierObj.tierNumber === 2 ? 20 : 25;
+  // Pricing breakdown with 5% Extra Navratri Special discount:
+  const baseTierDiscountPct = activeTierObj.tierNumber === 1 ? 15 : activeTierObj.tierNumber === 2 ? 20 : 25;
+  const activeTierDiscountPct = baseTierDiscountPct + 5; // 15%+5%=20%, 20%+5%=25%, 25%+5%=30%
   // Gross wholesale subtotal before discount
   const grossWholesaleSubtotal = wholesaleUnitPrice * qty;
   // Discount amount on the total
@@ -986,11 +1000,13 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       selectedColour: selectedColour,
       color: selectedColour,
       price: effectiveUnitPrice,                   // after-discount per-unit price
-      wholesalePrice: wholesaleUnitPrice,           // original wholesale unit price
+      wholesalePrice: wholesaleUnitPrice,           // original base unit price (MRP)
       discountPct: activeTierDiscountPct,           // tier discount applied on total
-      grossTotal: grossWholesaleSubtotal,           // qty × wholesale (before discount)
+      grossTotal: grossWholesaleSubtotal,           // qty × base price (before discount)
       discountAmount: mainDiscountAmount,           // discount deducted from gross
       originalBasePrice: wholesaleUnitPrice,        // for quote page calculations
+      retailMrp: mrp,
+      mrp: mrp,
       customBranding: selectedCustomizations.length > 0,
       selectedCustomizations: selectedCustomizationObjs.map((c) => c.name),
       customizationCount: selectedCustomizations.length,
@@ -1286,6 +1302,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   <CheckCheck className="w-3 h-3 text-emerald-600" />
                   <span>{activeOccasion.subtitle}</span>
                 </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs">
+                  <span>🪔</span>
+                  <span>Extra 5% OFF Navratri Special</span>
+                </span>
               </div>
 
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">
@@ -1296,19 +1316,24 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 {product.shortDescription || product.tagline || product.desc}
               </p>
 
-              {/* Wholesale Price + Tier Discount Callout */}
+              {/* MRP + Price + Tier Discount Callout */}
               <div className="pt-1 space-y-1.5">
+                {mrp > effectiveUnitPrice && (
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
+                    <span>MRP:</span>
+                    <span className="line-through text-slate-400 font-semibold">₹{mrp.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+
                 <div className="flex items-baseline gap-3 flex-wrap">
                   <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                    ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice : activeTierObj.price}
-                    <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel} (B2B Wholesale Price)</span>
+                    ₹{effectiveUnitPrice.toLocaleString("en-IN")}
+                    <span className="text-xs font-normal text-slate-500 ml-1">/{unitLabel}</span>
                   </div>
-                  {wholesaleUnitPrice > 0 && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
-                      <Percent className="w-3 h-3" />
-                      {activeTierDiscountPct}% Bulk Discount Applied on Total
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                    <Percent className="w-3 h-3" />
+                    {activeTierDiscountPct}% OFF ({activeTierDiscountPct - 5}% Bulk + 5% Navratri Special)
+                  </span>
                 </div>
               </div>
             </div>
@@ -1417,11 +1442,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                 key={c.name || idx}
                                 type="button"
                                 onClick={() => handleSelectColor(c.name)}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
-                                  isSelected
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${isSelected
                                     ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
                                     : "bg-white/80 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"
-                                }`}
+                                  }`}
                                 title={`Select ${c.name} shade`}
                               >
                                 <span
@@ -1452,73 +1476,73 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         </span>
                       </label>
 
-                    {/* Stepper + Free Typing Input + Quick Addons */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <div className="inline-flex items-center bg-white rounded-xl p-1 border border-slate-200 shadow-xs focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-200 transition-all">
-                        <button
-                          type="button"
-                          onClick={() => handleAdjustQty(-1)}
-                          disabled={qty <= (currentMoq || 10)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                          title="Decrease quantity by 1"
-                          aria-label="Decrease quantity by 1"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={qtyInput}
-                          onChange={(e) => handleQtyInputChange(e.target.value)}
-                          onBlur={handleQtyInputBlur}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleQtyInputBlur();
-                          }}
-                          className="w-16 bg-transparent text-center font-extrabold text-slate-900 text-sm sm:text-base focus:outline-none select-all"
-                          aria-label={`Order quantity in ${unitLabelPlural}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleAdjustQty(1)}
-                          className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                          title="Increase quantity by 1"
-                          aria-label="Increase quantity by 1"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {/* Stepper + Free Typing Input + Quick Addons */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <div className="inline-flex items-center bg-white rounded-xl p-1 border border-slate-200 shadow-xs focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-200 transition-all">
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(-1)}
+                            disabled={qty <= (currentMoq || 10)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            title="Decrease quantity by 1"
+                            aria-label="Decrease quantity by 1"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={qtyInput}
+                            onChange={(e) => handleQtyInputChange(e.target.value)}
+                            onBlur={handleQtyInputBlur}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleQtyInputBlur();
+                            }}
+                            className="w-16 bg-transparent text-center font-extrabold text-slate-900 text-sm sm:text-base focus:outline-none select-all"
+                            aria-label={`Order quantity in ${unitLabelPlural}`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(1)}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                            title="Increase quantity by 1"
+                            aria-label="Increase quantity by 1"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
 
-                      {/* Quick Add-ons (+10, +50, +100) */}
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleAdjustQty(10)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                          title="Add 10 more sets"
-                        >
-                          +10
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAdjustQty(50)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                          title="Add 50 more sets"
-                        >
-                          +50
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAdjustQty(100)}
-                          className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                          title="Add 100 more sets"
-                        >
-                          +100
-                        </button>
+                        {/* Quick Add-ons (+10, +50, +100) */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(10)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                            title="Add 10 more sets"
+                          >
+                            +10
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(50)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                            title="Add 50 more sets"
+                          >
+                            +50
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleAdjustQty(100)}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
+                            title="Add 100 more sets"
+                          >
+                            +100
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
                   {/* Price Breakdown: Gross → Discount → Net */}
                   <div className="text-left sm:text-right pt-2 sm:pt-0 min-w-[220px] sm:pl-4 space-y-1">
@@ -2206,19 +2230,25 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           </p>
         </div>
 
-        {/* 5. Wholesale Price + Bulk Discount Callout */}
-        <div className="flex items-center gap-2 flex-wrap pt-0.5">
-          <span className="text-2xl font-black text-slate-900">
-            ₹{wholesaleUnitPrice > 0 ? wholesaleUnitPrice.toLocaleString("en-IN") : activeTierObj.price.toLocaleString("en-IN")}
-          </span>
-          <span className="text-xs text-slate-500">
-            /{unitLabel} · B2B wholesale
-          </span>
-          {wholesaleUnitPrice > 0 && (
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              {activeTierDiscountPct}% bulk discount applied
-            </span>
+        {/* 5. MRP + Price + Bulk Discount Callout */}
+        <div className="space-y-1 pt-0.5">
+          {mrp > effectiveUnitPrice && (
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span>MRP:</span>
+              <span className="line-through text-slate-400 font-medium">₹{mrp.toLocaleString("en-IN")}</span>
+            </div>
           )}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-2xl font-black text-slate-900">
+              ₹{effectiveUnitPrice.toLocaleString("en-IN")}
+            </span>
+            <span className="text-xs text-slate-500">
+              /{unitLabel}
+            </span>
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {activeTierDiscountPct}% OFF (incl. 5% Navratri Special)
+            </span>
+          </div>
         </div>
 
         {/* 6. Volume Pricing 3 Tiers Grid */}
@@ -2277,11 +2307,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     key={c.name || idx}
                     type="button"
                     onClick={() => handleSelectColor(c.name)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${
-                      isSelected
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${isSelected
                         ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
                         : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-                    }`}
+                      }`}
                   >
                     <span
                       className="w-3.5 h-3.5 rounded-full border border-black/15 flex-shrink-0 flex items-center justify-center"
@@ -2716,9 +2745,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     key={dotIdx}
                     type="button"
                     onClick={() => setActiveImageIndex(dotIdx)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      dotIdx === activeImageIndex ? "w-6 bg-emerald-400" : "w-2 bg-white/40 hover:bg-white/70"
-                    }`}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${dotIdx === activeImageIndex ? "w-6 bg-emerald-400" : "w-2 bg-white/40 hover:bg-white/70"
+                      }`}
                     aria-label={`View image ${dotIdx + 1}`}
                   />
                 ))}

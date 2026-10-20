@@ -1211,11 +1211,10 @@ export default function QuotePage() {
                         type="button"
                         disabled={item.qty <= item.minQty}
                         onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || item.minQty) - 1))}
-                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${
-                          item.qty <= item.minQty
+                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${item.qty <= item.minQty
                             ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed opacity-50"
                             : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
-                        }`}
+                          }`}
                         title={item.qty <= item.minQty ? (item.isPair ? "Minimum quantity is 1" : "Minimum wholesale quantity is 10") : "Decrease quantity"}
                         aria-label="Decrease quantity"
                       >

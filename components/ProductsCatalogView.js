@@ -370,7 +370,7 @@ export default function ProductsCatalogView({
   return (
     <div className="w-full max-w-full overflow-hidden pt-3 sm:pt-6 pb-10 sm:pb-16">
       <div id="products-catalog" className="max-w-[1400px] mx-auto px-3.5 sm:px-6 lg:px-8 space-y-4 sm:space-y-6 lg:space-y-8">
-        
+
         {/* Dynamic Premium Green Page Header (Compact & Mobile-Optimized) */}
         <div className="relative overflow-hidden bg-gradient-to-br from-[#1b7a4b] via-[#15803d] to-[#0f5c35] text-white rounded-xl sm:rounded-2xl md:rounded-3xl px-3.5 py-3 sm:px-6 sm:py-5 md:px-8 md:py-7 lg:px-9 lg:py-8 shadow-md shadow-emerald-950/10 border border-emerald-400/30">
           {/* Subtle Eco Ambient Radial Overlays */}
@@ -397,7 +397,7 @@ export default function ProductsCatalogView({
         {/* Filter and Search Bar with Categorization Tabs */}
         <div className="bg-white border border-slate-200 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xs space-y-3 sm:space-y-4">
           <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
-            
+
             {/* Category Navigation Pills with Icons */}
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 lg:pb-0 no-scrollbar touch-pan-x">
               {ALL_CATEGORIES.map((c) => {
@@ -430,11 +430,10 @@ export default function ProductsCatalogView({
                     key={c}
                     type="button"
                     onClick={() => handleCategorySelect(c)}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer active:scale-95 flex-shrink-0 ${
-                      isActive
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold whitespace-nowrap transition-all duration-150 cursor-pointer active:scale-95 flex-shrink-0 ${isActive
                         ? "bg-[#15803d] text-white shadow-xs ring-2 ring-[#15803d]/30"
                         : "bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/90 shadow-2xs"
-                    }`}
+                      }`}
                   >
                     <IconComponent className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isActive ? "text-white" : "text-slate-500"}`} />
                     <span>{c}</span>
