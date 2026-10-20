@@ -99,31 +99,26 @@ export default async function CategoryPage({ params }) {
           </span>
         </nav>
 
-        {/* Category Header & Editorial Intro */}
-        <header className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 md:p-10 shadow-2xs space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="badge-green text-xs font-bold uppercase tracking-wider">
-              {category.name}
-            </span>
-            <span className="text-xs text-slate-400">·</span>
-            <span className="text-xs font-semibold text-slate-500">
-              {categoryProducts.length} Wholesale {categoryProducts.length === 1 ? "Product" : "Products"}
-            </span>
-          </div>
+        {/* Dynamic Compact Green Category Header */}
+        <header className="relative overflow-hidden bg-gradient-to-br from-[#1b7a4b] via-[#15803d] to-[#0f5c35] text-white rounded-xl sm:rounded-2xl md:rounded-3xl px-3.5 py-3 sm:px-6 sm:py-5 md:px-8 md:py-7 lg:px-9 lg:py-8 shadow-md shadow-emerald-950/10 border border-emerald-400/30">
+          {/* Subtle Eco Ambient Radial Overlays */}
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(110,231,183,0.2),transparent_60%)]" />
+          <div className="pointer-events-none absolute -right-8 -top-8 sm:-right-16 sm:-top-16 h-36 sm:h-72 w-36 sm:w-72 rounded-full bg-emerald-300/20 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-12 -left-6 sm:-bottom-20 sm:-left-12 h-36 sm:h-64 w-36 sm:w-64 rounded-full bg-lime-300/15 blur-2xl" />
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            {category.h1}
-          </h1>
+          <div className="relative z-10 max-w-3xl space-y-1.5 sm:space-y-2.5">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-white/20 text-white border border-white/30 backdrop-blur-xs shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+              <span>{category.name} · {categoryProducts.length} Wholesale {categoryProducts.length === 1 ? "Product" : "Products"}</span>
+            </div>
 
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-4xl">
-            {category.intro}
-          </p>
+            <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-white leading-tight sm:leading-snug drop-shadow-2xs">
+              {category.h1 || category.name}
+            </h1>
 
-          <div className="pt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500 border-t border-slate-100">
-            <span className="badge-slate">100% Upcycled Crop Stubble</span>
-            <span className="badge-slate">Zero Melamine &amp; BPA-Free</span>
-            <span className="badge-slate">Custom Laser Logo Branding</span>
-            <span className="badge-slate">Pan-India Freight Dispatch</span>
+            <p className="text-[11px] sm:text-xs md:text-sm text-emerald-50/90 leading-snug sm:leading-relaxed font-normal max-w-2xl line-clamp-2 sm:line-clamp-none">
+              {category.intro || category.metaDescription}
+            </p>
           </div>
         </header>
 
