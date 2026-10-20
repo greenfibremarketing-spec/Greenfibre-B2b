@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ShieldCheck, Mail, Phone, MapPin, FileText, CheckCircle2 } from "lucide-react";
+import { categories } from "@/lib/categories";
 
 export default function Footer() {
   const pathname = usePathname();
 
   // Hide footer on auth pages
-  if (pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
+  if (pathname === "/status/login" || pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
     return null;
   }
 
@@ -19,9 +21,11 @@ export default function Footer() {
           {/* Column 1: Brand info */}
           <div className="space-y-3.5">
             <Link href="/" className="flex items-center">
-              <img
+              <Image
                 src="/images/logo.png"
                 alt="Green Fibre Logo"
+                width={190}
+                height={56}
                 className="h-12 sm:h-14 w-auto max-w-[190px] object-contain flex-shrink-0"
               />
             </Link>
@@ -40,44 +44,44 @@ export default function Footer() {
 
           {/* Column 2: Product Collections */}
           <div className="space-y-3.5">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               Product Collections
-            </h4>
+            </h3>
             <ul className="space-y-2.5 text-xs text-slate-600">
-              <li>
-                <Link href="/products?category=Drinkware" className="hover:text-brand-700 transition-colors">
-                  Eco Tumblers &amp; Coffee Mugs
-                </Link>
-              </li>
-              <li>
-                <Link href="/products?category=Gift+Boxes+%26+Hampers" className="hover:text-brand-700 transition-colors">
-                  Corporate Gift Sets &amp; Hampers
-                </Link>
-              </li>
-              <li>
-                <Link href="/products?category=Kitchen+%26+Dining" className="hover:text-brand-700 transition-colors">
-                  Dining Bowls &amp; Bento Lunchboxes
-                </Link>
-              </li>
-              <li>
-                <Link href="/products?category=Home+%26+Living" className="hover:text-brand-700 transition-colors">
-                  Tabletop Planters &amp; Accessories
-                </Link>
-              </li>
-              <li>
-                <Link href="/products?category=Storage+%26+Baskets" className="hover:text-brand-700 transition-colors">
-                  Desk Organizers &amp; Caddies
-                </Link>
-              </li>
+              {categories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link
+                    href={`/products?category=${encodeURIComponent(cat.name)}`}
+                    className="hover:text-brand-700 transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Column 3: Company & Policies */}
+          {/* Column 3: Corporate Solutions & Legal */}
           <div className="space-y-3.5">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Company &amp; Legal
-            </h4>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Corporate Solutions
+            </h3>
             <ul className="space-y-2.5 text-xs text-slate-600">
+              <li>
+                <Link href="/corporate-gifting" className="hover:text-brand-700 transition-colors">
+                  Corporate Gifts Bulk India
+                </Link>
+              </li>
+              <li>
+                <Link href="/custom-branded-water-bottles" className="hover:text-brand-700 transition-colors">
+                  Custom Branded Water Bottles
+                </Link>
+              </li>
+              <li>
+                <Link href="/diwali-corporate-gifts" className="hover:text-brand-700 transition-colors">
+                  Sustainable Diwali Hampers
+                </Link>
+              </li>
               <li>
                 <Link href="/story" className="hover:text-brand-700 transition-colors flex items-center gap-1.5">
                   <span>Our Story</span>
@@ -103,9 +107,9 @@ export default function Footer() {
 
           {/* Column 4: Direct B2B Sales Desk */}
           <div className="space-y-3.5">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
               Direct B2B Sales Desk
-            </h4>
+            </h3>
             <div className="space-y-2.5 text-xs text-slate-600 leading-relaxed">
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />

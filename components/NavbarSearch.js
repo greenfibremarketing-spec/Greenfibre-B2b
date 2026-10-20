@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, X, ArrowRight, Package } from "lucide-react";
 import { optimizeImageUrl } from "@/lib/imageOptimization";
 export default function NavbarSearch() {
@@ -164,14 +165,20 @@ export default function NavbarSearch() {
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-3 p-2 rounded-xl hover:bg-brand-50/70 border border-transparent hover:border-brand-200 transition-all group"
                   >
-                    <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">
-                      <img
-                        src={optimizeImageUrl(item.image, { width: 96, height: 96, crop: "fill", quality: "auto" })}
-                        alt={item.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
+                    <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
+                      {item.image ? (
+                        <img
+                          src={optimizeImageUrl(item.image, { width: 96, height: 96, crop: "fill", quality: "auto" })}
+                          alt={item.name}
+                          loading="lazy"
+                          decoding="async"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 text-xs font-bold">
+                          {item.name ? item.name[0] : "P"}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-slate-900 truncate group-hover:text-brand-800">

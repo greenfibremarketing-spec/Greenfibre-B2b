@@ -1,17 +1,38 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
 import HeroSwiper from "@/components/HeroSwiper";
 import BottleModelViewer from "@/components/BottleModelViewer";
+import JsonLd from "@/components/JsonLd";
 import { categories, getProducts } from "@/lib/products";
 import { ArrowRight } from "lucide-react";
+
+export async function generateMetadata() {
+  return applySeoSettings("/", staticSeoDefaults["/"]);
+}
 
 export default async function Home() {
   const allProducts = await getProducts();
   const featuredProducts = allProducts.slice(0, 8);
 
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Featured Sustainable B2B Products",
+    itemListElement: featuredProducts.map((p, idx) => ({
+      "@type": "ListItem",
+      position: idx + 1,
+      url: `https://trade.greenfibre.org/products/${p.slug}`,
+      name: p.name
+    }))
+  };
+
   return (
-    <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
+    <>
+      <JsonLd data={itemListSchema} />
+      <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
       {/* Full Width Hero Swiper */}
       <section className="w-full max-w-full overflow-hidden max-h-[96vh]">
         <HeroSwiper />
@@ -24,9 +45,9 @@ export default async function Home() {
             <div className="badge-green mb-1.5 sm:mb-2">
               Wholesale Catalog
             </div>
-            <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
               Featured Products for Bulk Orders
-            </h2>
+            </h1>
           </div>
           <Link
             href="/products"
@@ -114,7 +135,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   01
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Upcycled Rice Husk Shell</h4>
+                <h3 className="text-sm font-bold text-slate-900">Upcycled Rice Husk Shell</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 65% natural agricultural crop stubble composite diverts open-field burning and replaces single-use plastics.
@@ -126,7 +147,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   02
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Double-Wall Thermal Insulation</h4>
+                <h3 className="text-sm font-bold text-slate-900">Double-Wall Thermal Insulation</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Maintains beverage heat for 4+ hours and keeps cold drinks chilled for 8+ hours with zero exterior condensation.
@@ -138,7 +159,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   03
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">100% Food-Safe & BPA-Free</h4>
+                <h3 className="text-sm font-bold text-slate-900">100% Food-Safe & BPA-Free</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 US FDA 21 CFR and LFGB certified. Odor-resistant, non-leaching, and safe for hot tea, coffee, and water.
@@ -161,7 +182,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   04
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">360° Fiber Laser Etching</h4>
+                <h3 className="text-sm font-bold text-slate-900">360° Fiber Laser Etching</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Permanent micrometric corporate logos and personalized employee names that never peel or wash off.
@@ -173,7 +194,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   05
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Leak-Proof Cap & Jute Loop</h4>
+                <h3 className="text-sm font-bold text-slate-900">Leak-Proof Cap & Jute Loop</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Precision threaded airtight silicone seal with durable natural jute carrying strap for daily commutes.
@@ -185,7 +206,7 @@ export default async function Home() {
                 <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                   06
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">Custom Packaging & 4h Proof</h4>
+                <h3 className="text-sm font-bold text-slate-900">Custom Packaging & 4h Proof</h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Recycled FSC kraft gift box with debossed wrap. Free 3D visual proof in 4 hours and Pan-India dispatch.
@@ -196,6 +217,7 @@ export default async function Home() {
       </section>
 
 
-    </div>
+      </div>
+    </>
   );
 }

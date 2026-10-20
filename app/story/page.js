@@ -1,4 +1,8 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
+import Image from "next/image";
+import JsonLd from "@/components/JsonLd";
 import {
   Sprout,
   ShieldCheck,
@@ -20,11 +24,9 @@ import {
   Mail
 } from "lucide-react";
 
-export const metadata = {
-  title: "Our Story • Engineering Green Products From Rice Husk | Green Fibre",
-  description:
-    "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials for modern homes."
-};
+export async function generateMetadata() {
+  return applySeoSettings("/story", staticSeoDefaults["/story"]);
+}
 
 const stats = [
   { value: "100k+", label: "Happy Customers", icon: Users },
@@ -157,8 +159,44 @@ const commitmentsList = [
 ];
 
 export default function StoryPage() {
+  const siteUrl = "https://trade.greenfibre.org";
+
+  const aboutPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${siteUrl}/story#aboutpage`,
+    name: "Our Story - Green Fibre",
+    description:
+      "Green Fibre blends agricultural rice husk with recyclable polymers to replace virgin plastic, prevent stubble burning, and craft durable everyday essentials.",
+    url: `${siteUrl}/story`,
+    mainEntity: {
+      "@id": `${siteUrl}/#organization`
+    }
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: siteUrl
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Our Story",
+        item: `${siteUrl}/story`
+      }
+    ]
+  };
+
   return (
     <div className="space-y-16 sm:space-y-24 py-8 sm:py-12 bg-white">
+      <JsonLd data={aboutPageSchema} />
+      <JsonLd data={breadcrumbSchema} />
       {/* ── 1. Hero Section ──────────────────────────────────────────────── */}
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center bg-gradient-to-br from-[#ebf7ee] via-[#f4faf5] to-[#f0fdf4] border border-[#cbebd4] rounded-3xl p-6 sm:p-10 lg:p-14 shadow-xs">
@@ -195,10 +233,12 @@ export default function StoryPage() {
 
           <div className="lg:col-span-5">
             <div className="rounded-2xl overflow-hidden shadow-md aspect-[4/3] bg-slate-100 border border-[#bbf7d0] relative">
-              <img
+              <Image
                 src="/images/green-farmland.jpg"
-                alt="Green Fibre - Sustainable Living"
-                className="w-full h-full object-cover"
+                alt="Green Fibre - Sustainable Rice Husk Agricultural Composite"
+                fill
+                sizes="(max-width: 1024px) 100vw, 42vw"
+                className="object-cover"
               />
               <div className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/40 shadow-xs flex items-center justify-between text-xs">
                 <span className="font-bold text-[#0f3428]">Natural Rice Husk Composite</span>
@@ -269,11 +309,13 @@ export default function StoryPage() {
 
           <div className="lg:col-span-5 grid grid-cols-2 gap-4">
             <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200">
-                <img
+              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200 relative">
+                <Image
                   src="/images/green-paddy.jpg"
-                  alt="Organic paddy farm"
-                  className="w-full h-full object-cover"
+                  alt="Organic paddy farm supporting zero crop burning"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 20vw"
+                  className="object-cover"
                 />
               </div>
               <div className="p-4 rounded-2xl bg-[#ebf7ee] border border-[#cbebd4] text-center">
@@ -286,11 +328,13 @@ export default function StoryPage() {
                 <div className="text-2xl font-black text-emerald-400">100%</div>
                 <div className="text-[11px] font-medium text-emerald-100 mt-0.5">Food-Safe & BPA-Free</div>
               </div>
-              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200">
-                <img
+              <div className="rounded-2xl overflow-hidden shadow-xs aspect-[4/5] bg-slate-100 border border-slate-200 relative">
+                <Image
                   src="/images/green-dining-nature.jpg"
-                  alt="Sustainable dining tableware"
-                  className="w-full h-full object-cover"
+                  alt="Sustainable dining tableware made from upcycled crop stubble"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 20vw"
+                  className="object-cover"
                 />
               </div>
             </div>

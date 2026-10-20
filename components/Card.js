@@ -1,24 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AddToQuote } from "./Quote";
 import { optimizeImageUrl, getImageSrcSet, IMAGE_SIZES } from "@/lib/imageOptimization";
 
 export default function Card({ p, context }) {
-  const targetContext =
-    context ||
-    p.activeContext?.key ||
-    (p.category === "Corporate"
-      ? "corporate"
-      : p.category === "Anniversary"
-        ? "anniversary"
-        : p.category === "Wedding"
-          ? "wedding"
-          : null);
+  const [imgError, setImgError] = useState(false);
 
-  const productHref = targetContext
-    ? `/products/${p.slug}?context=${encodeURIComponent(targetContext)}`
-    : `/products/${p.slug}`;
+  // Always use the clean canonical URL for internal links (no ?context= query param)
+  const productHref = `/products/${p.slug}`;
+
+  // Descriptive alt text: "<product name> - <short material descriptor>"
+  const materialDescriptor =
+    p.material ||
+    "Upcycled Rice-Husk Biocomposite Tableware";
+  const imageAlt = `${p.name} - ${materialDescriptor}`;
+  const showImage = Boolean(p.image && !imgError);
 
   const optimizedImgSrc = p.image ? optimizeImageUrl(p.image, { width: 500, quality: "auto" }) : "";
   const srcSet = p.image ? getImageSrcSet(p.image, [280, 420, 600, 800]) : "";
@@ -53,15 +52,13 @@ export default function Card({ p, context }) {
               }}
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ease-out"
             />
-          ) : null}
-          <div
-            className="img-fallback-badge w-full h-full flex flex-col items-center justify-center bg-slate-50 text-emerald-800 p-4"
-            style={{ display: p.image ? "none" : "flex" }}
-          >
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-xl font-black shadow-2xs">
-              {p.name ? p.name[0].toUpperCase() : "G"}
+          ) : (
+            <div className="img-fallback-badge w-full h-full flex flex-col items-center justify-center bg-slate-50 text-emerald-800 p-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-900 border border-emerald-200 flex items-center justify-center text-xl font-black shadow-2xs">
+                {p.name ? p.name[0].toUpperCase() : "G"}
+              </div>
             </div>
-          </div>
+          )}
         </Link>
       </div>
 

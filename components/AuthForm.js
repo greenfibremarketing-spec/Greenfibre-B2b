@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "./AuthContext";
 import {
@@ -166,6 +167,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
   // If already logged in, redirect
   useEffect(() => {
     if (isAuthenticated && user && !isLoading && !successMessage) {
+      router.refresh();
       router.push(redirectTarget);
     }
   }, [isAuthenticated, user, isLoading, redirectTarget, router, successMessage]);
@@ -263,6 +265,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
       setSuccessMessage("Welcome back! Taking you to Home...");
       setTimeout(() => {
         router.push(redirectTarget);
+        router.refresh();
       }, 750);
     } catch (err) {
       setErrorMessage(err.message || "Invalid work email or password. Please try again.");
@@ -408,6 +411,7 @@ export default function AuthForm({ defaultMode = "signin" }) {
       setSuccessMessage("Account verified and created! Taking you to Home...");
       setTimeout(() => {
         router.push(redirectTarget);
+        router.refresh();
       }, 850);
     } catch (err) {
       setErrorMessage(err.message || "Verification failed. Please check the code and try again.");
@@ -561,10 +565,12 @@ export default function AuthForm({ defaultMode = "signin" }) {
         <div className="lg:col-span-5 relative overflow-hidden bg-slate-950 flex flex-col justify-between p-4 sm:p-5 lg:p-6 text-white min-h-[175px] sm:min-h-[220px] lg:h-full">
           {/* Background Image with Natural Overlay */}
           <div className="absolute inset-0 w-full h-full pointer-events-none">
-            <img
+            <Image
               src="/images/b2b-auth-showcase.jpg"
               alt="Green Fibre Sustainable B2B Tableware & Packaging"
-              className="w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out"
+              fill
+              sizes="(max-width: 1024px) 100vw, 42vw"
+              className="object-cover object-center scale-105 transition-transform duration-1000 ease-out"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/30 to-slate-950/10" />
             <div className="absolute inset-0 bg-gradient-to-r from-slate-950/40 via-transparent to-transparent" />
@@ -573,9 +579,11 @@ export default function AuthForm({ defaultMode = "signin" }) {
           {/* Top Brand Header */}
           <div className="relative z-10 space-y-1.5 sm:space-y-2.5">
             <Link href="/" className="inline-block group">
-              <img
+              <Image
                 src="/images/logo.png"
                 alt="Green Fibre Logo"
+                width={180}
+                height={48}
                 className="h-8 sm:h-11 lg:h-12 w-auto max-w-[150px] sm:max-w-[180px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
               />
             </Link>

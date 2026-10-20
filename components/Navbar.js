@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   Menu,
@@ -10,6 +11,7 @@ import {
   Package,
   Sprout,
   ShoppingBag,
+  Sparkles,
   ArrowRight,
   Phone,
   ShieldCheck,
@@ -24,7 +26,7 @@ import UserNav from "./UserNav";
 import { Count, useQuote } from "./Quote";
 import { useAuth } from "./AuthContext";
 
-function NavbarInner() {
+function NavbarInner({ canManageSeo }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -58,7 +60,7 @@ function NavbarInner() {
     }
   };
 
-  if (pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
+  if (pathname === "/status/login" || pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
     return null;
   }
 
@@ -75,7 +77,9 @@ function NavbarInner() {
   const isAllProductsActive =
     pathname === "/products" && !categoryParam && !typeParam;
   const isGiftingActive =
-    pathname.startsWith("/products") && isGiftingCategory;
+    pathname === "/category/gift-boxes-hampers" ||
+    (pathname.startsWith("/products") && isGiftingCategory);
+  const isCorporateGiftingActive = pathname === "/corporate-gifting";
   const isStoryActive = pathname === "/story";
 
   const displayName =
@@ -97,10 +101,13 @@ function NavbarInner() {
               className="flex items-center h-full group select-none flex-shrink-0 py-1"
               aria-label="Green Fibre Home"
             >
-              <img
+              <Image
                 src="/images/logo.png"
                 alt="Green Fibre Sustainable Living Logo"
+                width={175}
+                height={36}
                 className="h-[36px] sm:h-8 md:h-9 w-auto max-w-[145px] sm:max-w-[175px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
+                priority
               />
             </Link>
 
@@ -130,6 +137,17 @@ function NavbarInner() {
                 <span className="relative z-10">Gifts &amp; Hampers</span>
               </Link>
 
+              {/* Corporate Gifting */}
+              <Link
+                href="/corporate-gifting"
+                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isCorporateGiftingActive
+                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
+                  }`}
+              >
+                <span className="relative z-10">Corporate Gifting</span>
+              </Link>
+
               {/* Our Story */}
               <Link
                 href="/story"
@@ -140,6 +158,7 @@ function NavbarInner() {
               >
                 <span className="relative z-10">Our Story</span>
               </Link>
+              {canManageSeo && <Link href="/status" aria-current={pathname === "/status" ? "page" : undefined} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-semibold ${pathname === "/status" ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-100"}`}>Status</Link>}
             </nav>
           </div>
 
@@ -190,9 +209,11 @@ function NavbarInner() {
             <div>
               {/* Drawer Header with Logo & Close Button */}
               <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-2">
-                <img
+                <Image
                   src="/images/logo.png"
                   alt="Green Fibre Logo"
+                  width={140}
+                  height={28}
                   className="h-7 w-auto object-contain flex-shrink-0"
                 />
                 <button
@@ -302,6 +323,7 @@ function NavbarInner() {
                   Menu Navigation
                 </div>
 
+                {canManageSeo && <Link href="/status" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-900 font-semibold">Status <ChevronRight className="w-4 h-4" /></Link>}
                 {/* All Products */}
                 <Link
                   href="/products"
@@ -334,6 +356,24 @@ function NavbarInner() {
                       <Gift className="w-4 h-4" />
                     </div>
                     <span className="text-sm font-semibold">Gifts &amp; Hampers</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                </Link>
+
+                {/* Corporate Gifting Solutions */}
+                <Link
+                  href="/corporate-gifting"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isCorporateGiftingActive
+                    ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
+                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCorporateGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <span className="text-sm font-semibold">Corporate Gifting</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>
@@ -426,10 +466,10 @@ function NavbarInner() {
   );
 }
 
-export default function Navbar() {
+export default function Navbar({ canManageSeo = false }) {
   return (
     <Suspense fallback={<div className="h-18 sm:h-20 bg-white border-b border-slate-200" />}>
-      <NavbarInner />
+      <NavbarInner canManageSeo={canManageSeo} />
     </Suspense>
   );
 }

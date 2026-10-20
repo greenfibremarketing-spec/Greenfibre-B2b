@@ -4,12 +4,14 @@ import AuthSkeleton from "@/components/AuthSkeleton";
 
 export const metadata = {
   title: "B2B Enterprise Portal Sign In",
-  description: "Sign in to your Green Fibre B2B corporate account to manage bulk quotes, volume tier pricing, and laser branding orders."
+  description: "Sign in to your Green Fibre B2B corporate account to manage bulk quotes, volume tier pricing, and laser branding orders.",
+  robots: { index: false, follow: false }
 };
 
 export default function LoginPage() {
   return (
     <div className="bg-slate-100 min-h-screen lg:h-screen lg:overflow-hidden flex items-center justify-center p-0 sm:p-4 lg:p-6">
+      <h1 className="sr-only">Sign In to Green Fibre B2B Corporate Portal</h1>
       <Suspense fallback={<AuthSkeleton />}>
         <AuthForm key="signin" defaultMode="signin" />
       </Suspense>

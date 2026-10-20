@@ -1,3 +1,5 @@
+import { applySeoSettings } from "@/lib/seo";
+import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import {
   FileText,
@@ -16,11 +18,9 @@ import {
   Ban
 } from "lucide-react";
 
-export const metadata = {
-  title: "Terms & Conditions • B2B Wholesale Supply | Green Fibre",
-  description:
-    "Official Terms and Conditions governing B2B wholesale orders, custom corporate branding, purchase order finalization, inventory locking, and replacement policies for Green Fibre products."
-};
+export async function generateMetadata() {
+  return applySeoSettings("/terms", staticSeoDefaults["/terms"]);
+}
 
 export default function TermsPage() {
   return (
