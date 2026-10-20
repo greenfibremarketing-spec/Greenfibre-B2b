@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useQuote } from "./Quote";
+import { optimizeImageUrl, getImageSrcSet, IMAGE_SIZES } from "@/lib/imageOptimization";
 import {
   Zap,
   ShieldCheck,
@@ -1120,8 +1121,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                         aria-label={`View angle ${idx + 1}`}
                       >
                         <img
-                          src={img}
+                          src={optimizeImageUrl(img, { width: 140, height: 140, crop: "fill", quality: "auto" })}
                           alt={`Thumbnail ${idx + 1}`}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover object-center"
                           onError={(e) => {
                             e.currentTarget.src = "/images/placeholder.jpg";
@@ -1141,8 +1144,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               {/* Main Stage Image Frame */}
               <div className="relative aspect-square max-h-[460px] w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-sm flex items-center justify-center group flex-1 min-w-0">
                 <img
-                  src={activeImage}
+                  src={optimizeImageUrl(activeImage, { width: 900, quality: "auto" })}
+                  srcSet={getImageSrcSet(activeImage, [480, 720, 960, 1200]) || undefined}
+                  sizes={IMAGE_SIZES.detail}
                   alt={`${product.name} - ${selectedColour}`}
+                  loading="eager"
+                  decoding="async"
                   className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-103"
                   onError={(e) => {
                     e.currentTarget.src = "/images/placeholder.jpg";
@@ -2119,8 +2126,12 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         {/* 1. Main Stage Image with Gift Set Pill Badge */}
         <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-slate-200/90 shadow-2xs flex items-center justify-center">
           <img
-            src={activeImage}
+            src={optimizeImageUrl(activeImage, { width: 700, quality: "auto" })}
+            srcSet={getImageSrcSet(activeImage, [360, 540, 720]) || undefined}
+            sizes={IMAGE_SIZES.detail}
             alt={`${product.name} - ${selectedColour}`}
+            loading="eager"
+            decoding="async"
             className="w-full h-full object-cover object-center"
             onError={(e) => {
               e.currentTarget.src = "/images/placeholder.jpg";
@@ -2538,8 +2549,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-1">
                   {primaryAddon.image ? (
                     <img
-                      src={primaryAddon.image}
+                      src={optimizeImageUrl(primaryAddon.image, { width: 160, height: 160, crop: "fill", quality: "auto" })}
                       alt={primaryAddon.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-contain"
                       onError={(e) => {
                         e.currentTarget.style.display = "none";
@@ -2665,7 +2678,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             {/* High-Res Full-screen Image */}
             <div className="relative max-h-full max-w-full flex items-center justify-center">
               <img
-                src={activeImage}
+                src={optimizeImageUrl(activeImage, { width: 1600, quality: "auto" })}
                 alt={`${product.name} Fullscreen Inspection`}
                 className="max-h-[75vh] sm:max-h-[82vh] max-w-[95vw] sm:max-w-[85vw] object-contain rounded-xl sm:rounded-2xl shadow-2xl"
                 onError={(e) => {
@@ -2844,8 +2857,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                               <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden flex-shrink-0 p-0.5 sm:p-1 relative">
                                 {rel.image ? (
                                   <img
-                                    src={rel.image}
+                                    src={optimizeImageUrl(rel.image, { width: 160, height: 160, crop: "fill", quality: "auto" })}
                                     alt={rel.name}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full object-contain"
                                     onError={(e) => {
                                       e.currentTarget.style.display = "none";

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, X, ArrowRight, Package } from "lucide-react";
+import { optimizeImageUrl } from "@/lib/imageOptimization";
 export default function NavbarSearch() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -165,8 +166,10 @@ export default function NavbarSearch() {
                   >
                     <div className="w-12 h-12 rounded-lg bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0">
                       <img
-                        src={item.image}
+                        src={optimizeImageUrl(item.image, { width: 96, height: 96, crop: "fill", quality: "auto" })}
                         alt={item.name}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

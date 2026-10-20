@@ -10,6 +10,7 @@ import {
   Clock, Copy, Check, ArrowRight, Leaf, ChevronDown
 } from "lucide-react";
 import GreenyLoader from "@/components/GreenyLoader";
+import { optimizeImageUrl } from "@/lib/imageOptimization";
 import {
   validateEmail,
   validateIndianPhone,
@@ -1141,8 +1142,10 @@ export default function QuotePage() {
                     <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg sm:rounded-xl border border-slate-200 bg-slate-50 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-2xs">
                       {item.image ? (
                         <img
-                          src={item.image}
+                          src={optimizeImageUrl(item.image, { width: 140, height: 140, crop: "fill", quality: "auto" })}
                           alt={item.name}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";

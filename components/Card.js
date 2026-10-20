@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AddToQuote } from "./Quote";
+import { optimizeImageUrl, getImageSrcSet, IMAGE_SIZES } from "@/lib/imageOptimization";
 
 export default function Card({ p, context }) {
   const targetContext =
@@ -19,10 +20,13 @@ export default function Card({ p, context }) {
     ? `/products/${p.slug}?context=${encodeURIComponent(targetContext)}`
     : `/products/${p.slug}`;
 
+  const optimizedImgSrc = p.image ? optimizeImageUrl(p.image, { width: 500, quality: "auto" }) : "";
+  const srcSet = p.image ? getImageSrcSet(p.image, [280, 420, 600, 800]) : "";
+
   return (
     <article className="group bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-2xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col overflow-hidden">
       {/* Media & Badges */}
-      <div className="relative aspect-square bg-slate-50 overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-square w-full bg-slate-50 overflow-hidden flex items-center justify-center">
         {/* Category Badge - floating top-left */}
         {p.category && (
           <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
@@ -35,9 +39,12 @@ export default function Card({ p, context }) {
         <Link href={productHref} className="block w-full h-full relative" aria-label={`View ${p.name}`}>
           {p.image ? (
             <img
-              src={p.image}
+              src={optimizedImgSrc}
+              srcSet={srcSet || undefined}
+              sizes={IMAGE_SIZES.card}
               alt={p.name}
               loading="lazy"
+              decoding="async"
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.style.display = "none";
