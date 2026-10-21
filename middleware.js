@@ -30,7 +30,8 @@ export function middleware(request) {
     pathname.startsWith("/images") ||
     pathname.startsWith("/favicon.ico") ||
     pathname.startsWith("/robots.txt") ||
-    pathname.startsWith("/sitemap.xml");
+    pathname.startsWith("/sitemap.xml") ||
+    pathname.endsWith(".html");
 
   if (isPublicAsset) {
     return NextResponse.next();
@@ -91,6 +92,6 @@ export function middleware(request) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|images|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|webp|svg|gif|ico|txt|xml|woff2?)$).*)"
+    "/((?!api|_next/static|_next/image|images|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:png|jpg|jpeg|webp|svg|gif|ico|txt|xml|woff2?|html)$).*)"
   ]
 };
