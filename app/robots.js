@@ -13,7 +13,8 @@ export default function robots() {
         "/status"
       ]
     },
-    sitemap: "https://trade.greenfibre.org/sitemap.xml"
+    sitemap: "https://trade.greenfibre.org/sitemap.xml",
+    host: "https://trade.greenfibre.org"
   };
 }
 

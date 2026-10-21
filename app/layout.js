@@ -91,9 +91,9 @@ export const metadata = {
       "max-snippet": -1
     }
   },
-  ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION
-    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION } }
-    : {}),
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || "google6f4fda1812e3eef1"
+  },
   category: "B2B Wholesale",
   openGraph: {
     type: "website",

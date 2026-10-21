@@ -129,7 +129,7 @@ function NavbarInner({ canManageSeo = false }) {
 
               {/* Gifts & Hampers */}
               <Link
-                href="/products?category=Gift+Hampers"
+                href="/category/gift-boxes-hampers"
                 className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
                   ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
@@ -345,7 +345,7 @@ function NavbarInner({ canManageSeo = false }) {
 
                 {/* Gifts & Hampers */}
                 <Link
-                  href="/products?category=Gift+Hampers"
+                  href="/category/gift-boxes-hampers"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center justify-between p-3 rounded-xl transition-all ${isGiftingActive
                     ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
