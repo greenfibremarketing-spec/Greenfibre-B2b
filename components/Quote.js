@@ -14,8 +14,8 @@ export const useQuote = () => useContext(QuoteContext);
 // Tier 3: 201+ units    -> 25% enterprise bulk discount
 // Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are in basket.
 export const BUNDLE_BONUS_PCT = 5;
-// Navratri Special extra discount (5%) applied on all primary products.
-export const NAVRATRI_SPECIAL_EXTRA_PCT = 5;
+// Diwali Special extra discount (5%) applied on all primary products.
+export const DIWALI_SPECIAL_EXTRA_PCT = 5;
 
 export function getItemDiscountPct(qty, isPrimary = true) {
   const q = Number(qty) || 1;
@@ -24,9 +24,9 @@ export function getItemDiscountPct(qty, isPrimary = true) {
   else if (q >= 101) baseDiscount = 20;  // Tier 2: 101–200 units -> 20% off
   else baseDiscount = 15;                // Tier 1: 1–100 units -> 15% off
 
-  // Navratri Special: 5% extra discount on all primary products
+  // Diwali Special: 5% extra discount on all primary products
   if (isPrimary) {
-    return baseDiscount + NAVRATRI_SPECIAL_EXTRA_PCT;
+    return baseDiscount + DIWALI_SPECIAL_EXTRA_PCT;
   }
   return baseDiscount;
 }
@@ -40,10 +40,10 @@ export function getItemTierNumber(qty) {
 
 export function getItemTierLabel(qty, isPrimary = true) {
   const q = Number(qty) || 1;
-  const navratriExtra = isPrimary ? ` + ${NAVRATRI_SPECIAL_EXTRA_PCT}% Navratri Special` : "";
-  if (q >= 201 || q >= 200) return `Tier 3 (200+ units • 25%${navratriExtra} = 30% Off)`;
-  if (q >= 101) return `Tier 2 (101–200 units • 20%${navratriExtra} = 25% Off)`;
-  return `Tier 1 (1–100 units • 15%${navratriExtra} = 20% Off)`;
+  const diwaliExtra = isPrimary ? ` + ${DIWALI_SPECIAL_EXTRA_PCT}% Diwali Special` : "";
+  if (q >= 201 || q >= 200) return `Tier 3 (200+ units • 25%${diwaliExtra} = 30% Off)`;
+  if (q >= 101) return `Tier 2 (101–200 units • 20%${diwaliExtra} = 25% Off)`;
+  return `Tier 1 (1–100 units • 15%${diwaliExtra} = 20% Off)`;
 }
 
 // Safely resolve the base reference MRP — NEVER from an already-discounted price
@@ -69,7 +69,7 @@ export function computeLineItem(item) {
   );
   const retailMrp = Number(item.retailMrp || item.mrp || item.retailPrice || item.originalPrice || basePrice);
 
-  // Real-time dynamic volume tier discount + 5% Extra Navratri Special on primary products
+  // Real-time dynamic volume tier discount + 5% Extra Diwali Special on primary products
   const discountPct = getItemDiscountPct(qty, isPrimary);
   const tierNumber = getItemTierNumber(qty);
   const tierLabel = getItemTierLabel(qty, isPrimary);
@@ -89,7 +89,7 @@ export function computeLineItem(item) {
     retailPrice: retailMrp,
     price: unitPrice,
     discountPct,
-    navratriDiscountPct: isPrimary ? NAVRATRI_SPECIAL_EXTRA_PCT : 0,
+    diwaliDiscountPct: isPrimary ? DIWALI_SPECIAL_EXTRA_PCT : 0,
     tierNumber,
     tierLabel,
     isPair,
@@ -155,13 +155,16 @@ export function QuoteProvider({ children }) {
     // Lock the MRP on first add — this value never changes regardless of qty updates
     const mrp = resolveMRP(product);
     const minAllowed = isPair ? 1 : Math.max(10, Number(product.moq) || 10);
-    const validQty = Math.max(minAllowed, parseInt(qty, 10) || minAllowed);
+    const maxStock = typeof product.totalStock === "number" && product.totalStock > 0
+      ? product.totalStock
+      : (typeof product.stockQuantity === "number" && product.stockQuantity > 0 ? product.stockQuantity : 999999);
+    const validQty = Math.min(maxStock, Math.max(minAllowed, parseInt(qty, 10) || minAllowed));
 
     const existing = items.find((x) => x.key === key);
     let updated;
 
     if (existing) {
-      const newQty = existing.qty + validQty;
+      const newQty = Math.min(maxStock, existing.qty + validQty);
       const lockedMRP = existing.wholesalePrice || existing.originalBasePrice || mrp;
 
       updated = items.map((x) =>
@@ -202,6 +205,8 @@ export function QuoteProvider({ children }) {
           slug: product.slug,
           sku: product.sku || "GF-B2B",
           name: product.name,
+          totalStock: product.totalStock,
+          stockQuantity: product.stockQuantity,
           unit: product.unit || (/\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.name || "") ? "set" : "piece"),
           wholesalePrice: mrp,           // LOCKED MRP — never recalculated
           originalBasePrice: mrp,
@@ -244,7 +249,10 @@ export function QuoteProvider({ children }) {
       if (x.key !== key) return x;
       const isPair = Boolean(x.isPairItem === true || x.isPair === true);
       const minAllowed = isPair ? 1 : Math.max(10, Number(x.moq) || 10);
-      const validQty = Math.max(minAllowed, isNaN(parsed) ? minAllowed : parsed);
+      const maxStock = typeof x.totalStock === "number" && x.totalStock > 0
+        ? x.totalStock
+        : (typeof x.stockQuantity === "number" && x.stockQuantity > 0 ? x.stockQuantity : 999999);
+      const validQty = Math.min(maxStock, Math.max(minAllowed, isNaN(parsed) ? minAllowed : parsed));
       return computeLineItem({ ...x, qty: validQty, moq: minAllowed });
     });
     saveItems(updated);

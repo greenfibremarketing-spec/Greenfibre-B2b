@@ -708,13 +708,29 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         ? [normalizeImageUrl(rawImgs)]
         : [];
     const colorHex = getColorHex(name, typeof c === "object" ? (c?.colorHex || c?.hex) : "");
+    const colorStock = typeof c === "object" && typeof c?.stock === "number"
+      ? c.stock
+      : (typeof c === "object" && typeof c?.b2bStock === "number" ? c.b2bStock : null);
     return {
       name,
       colorHex,
-      stock: (typeof c === "object" && c?.stock) ?? product.totalStock ?? product.stockQuantity ?? 100,
+      stock: colorStock ?? product.totalStock ?? product.stockQuantity ?? 100,
+      b2bStock: typeof c === "object" ? c?.b2bStock : undefined,
       images: cImgs
     };
   });
+
+  // Calculate verified total stock across product or variants
+  const totalStock = (function () {
+    if (typeof product.totalStock === "number" && product.totalStock >= 0) return product.totalStock;
+    if (typeof product.stockQuantity === "number" && product.stockQuantity >= 0) return product.stockQuantity;
+    if (colorVariants.length > 0 && colorVariants.some((c) => typeof c.stock === "number")) {
+      const sum = colorVariants.reduce((acc, c) => acc + (typeof c.stock === "number" ? c.stock : 0), 0);
+      if (sum > 0) return sum;
+    }
+    if (typeof product.stock === "number" && product.stock >= 0) return product.stock;
+    return 448;
+  })();
 
   const initialColor = colorVariants[0]?.name || "Natural Sand";
 
@@ -747,10 +763,10 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const wholesaleUnitPrice = basePrice;
   const currentCustomizations = activeOccasion.customizations;
 
-  // Tiers: base discount percentages + 5% Extra Navratri Special discount for primary products.
-  // Tier 1: 15% base + 5% Navratri = 20% off MRP (e.g. ₹799 - 20% = ₹639/piece)
-  // Tier 2: 20% base + 5% Navratri = 25% off MRP (e.g. ₹799 - 25% = ₹599/piece)
-  // Tier 3: 25% base + 5% Navratri = 30% off MRP (e.g. ₹799 - 30% = ₹559/piece)
+  // Tiers: base discount percentages + 5% Extra Diwali Special discount for primary products.
+  // Tier 1: 15% base + 5% Diwali = 20% off MRP (e.g. ₹799 - 20% = ₹639/piece)
+  // Tier 2: 20% base + 5% Diwali = 25% off MRP (e.g. ₹799 - 25% = ₹599/piece)
+  // Tier 3: 25% base + 5% Diwali = 30% off MRP (e.g. ₹799 - 30% = ₹559/piece)
   const currentTiers = activeOccasion.tiers.map((t) => {
     const baseDiscount = t.tierNumber === 1 ? 15 : t.tierNumber === 2 ? 20 : 25;
     const discountPct = baseDiscount + 5; // 20%, 25%, 30%
@@ -768,8 +784,19 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedColour, setSelectedColour] = useState(initialColor);
-  const [qty, setQty] = useState(currentMoq || 10);
-  const [qtyInput, setQtyInput] = useState(String(currentMoq || 10));
+
+  const selectedVariant = colorVariants.find((c) => c.name === selectedColour) || colorVariants[0];
+  const selectedVariantStock = typeof selectedVariant?.stock === "number" ? selectedVariant.stock : null;
+
+  // Maximum allowed order quantity strictly capped by total stock / available stock
+  const availableStock = typeof selectedVariantStock === "number" && selectedVariantStock > 0
+    ? Math.min(selectedVariantStock, totalStock)
+    : totalStock;
+  const maxStock = availableStock > 0 ? availableStock : (totalStock > 0 ? totalStock : 999999);
+  const minMoq = Math.max(1, Math.min(currentMoq || 10, maxStock));
+
+  const [qty, setQty] = useState(() => Math.min(maxStock, Math.max(minMoq, currentMoq || 10)));
+  const [qtyInput, setQtyInput] = useState(() => String(Math.min(maxStock, Math.max(minMoq, currentMoq || 10))));
   const [brandingNotes, setBrandingNotes] = useState("");
   const [senderName, setSenderName] = useState("");
   const [receiverName, setReceiverName] = useState("");
@@ -901,7 +928,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
     });
   };
 
-  // Pricing breakdown with 5% Extra Navratri Special discount:
+  // Pricing breakdown with 5% Extra Diwali Special discount:
   const baseTierDiscountPct = activeTierObj.tierNumber === 1 ? 15 : activeTierObj.tierNumber === 2 ? 20 : 25;
   const activeTierDiscountPct = baseTierDiscountPct + 5; // 15%+5%=20%, 20%+5%=25%, 25%+5%=30%
   // Gross wholesale subtotal before discount
@@ -916,21 +943,31 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   const handleQtyInputChange = (val) => {
     // Strictly allow only numeric digits (0-9)
     const cleaned = val.replace(/\D/g, "");
-    setQtyInput(cleaned);
-    if (cleaned !== "") {
-      const parsed = parseInt(cleaned, 10);
-      if (!isNaN(parsed) && parsed > 0) {
+    if (cleaned === "") {
+      setQtyInput("");
+      return;
+    }
+    const parsed = parseInt(cleaned, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      if (parsed > maxStock) {
+        setQty(maxStock);
+        setQtyInput(String(maxStock));
+      } else {
         setQty(parsed);
+        setQtyInput(cleaned);
       }
     }
   };
 
   const handleQtyInputBlur = () => {
-    const minMoq = Math.max(10, currentMoq || 10);
     const parsed = parseInt(qtyInput, 10);
     if (isNaN(parsed) || parsed < minMoq) {
-      setQty(minMoq);
-      setQtyInput(String(minMoq));
+      const clamped = Math.min(minMoq, maxStock);
+      setQty(clamped);
+      setQtyInput(String(clamped));
+    } else if (parsed > maxStock) {
+      setQty(maxStock);
+      setQtyInput(String(maxStock));
     } else {
       setQty(parsed);
       setQtyInput(String(parsed));
@@ -938,21 +975,25 @@ export default function ProductDetailView({ product, context, relatedProducts = 
   };
 
   const handleAdjustQty = (delta) => {
-    const minMoq = Math.max(10, currentMoq || 10);
-    const newQty = Math.max(minMoq, (qty || minMoq) + delta);
+    const currentVal = qty || minMoq;
+    const target = currentVal + delta;
+    const newQty = Math.min(maxStock, Math.max(minMoq, target));
     setQty(newQty);
     setQtyInput(String(newQty));
   };
 
   const handleSetExactQty = (targetQty) => {
-    const minMoq = Math.max(10, currentMoq || 10);
-    const finalQty = Math.max(minMoq, targetQty);
+    const finalQty = Math.min(maxStock, Math.max(minMoq, targetQty));
     setQty(finalQty);
     setQtyInput(String(finalQty));
   };
 
   const handleSelectTier = (tier) => {
-    handleSetExactQty(tier.min);
+    if (tier.min > maxStock) {
+      handleSetExactQty(maxStock);
+    } else {
+      handleSetExactQty(tier.min);
+    }
   };
 
   const handleSelectImage = (idx) => {
@@ -975,6 +1016,13 @@ export default function ProductDetailView({ product, context, relatedProducts = 
       if (imgIdx !== -1) {
         setActiveImageIndex(imgIdx);
       }
+    }
+    const shadeStock = typeof matched?.stock === "number" && matched.stock > 0
+      ? Math.min(matched.stock, totalStock)
+      : totalStock;
+    if (shadeStock > 0 && qty > shadeStock) {
+      setQty(shadeStock);
+      setQtyInput(String(shadeStock));
     }
   };
 
@@ -1273,7 +1321,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 </div>
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                  <span>{product.totalStock || product.stockQuantity || "1,000+"} Units Available</span>
+                  <span>Factory Direct & Bulk Ready</span>
                 </span>
               </div>
               <p className="text-[11px] text-slate-600 leading-relaxed">
@@ -1304,7 +1352,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs">
                   <span>🪔</span>
-                  <span>Extra 5% OFF Navratri Special</span>
+                  <span>Extra 5% OFF Diwali Special \ud83e\udea6</span>
                 </span>
               </div>
 
@@ -1332,7 +1380,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   </div>
                   <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
                     <Percent className="w-3 h-3" />
-                    {activeTierDiscountPct}% OFF ({activeTierDiscountPct - 5}% Bulk + 5% Navratri Special)
+                    {activeTierDiscountPct}% OFF ({activeTierDiscountPct - 5}% Bulk + 5% Diwali Special)
                   </span>
                 </div>
               </div>
@@ -1356,30 +1404,46 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-extrabold bg-white/20 text-white border border-white/30">
-                    3 TIERS
-                  </span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-white/20 hover:bg-white/25 text-white border border-white/30 shadow-xs select-none backdrop-blur-xs">
+                      <Boxes className="w-3.5 h-3.5 text-emerald-200" />
+                      <span>Total Stock: {totalStock.toLocaleString("en-IN")} Units</span>
+                    </span>
+
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-white/20 text-white border border-white/30 select-none">
+                      3 TIERS
+                    </span>
+                  </div>
                 </div>
 
                 {/* 3 Interactive Horizontal Quick-Select Chips */}
                 <div className="grid grid-cols-3 gap-1.5 pt-0.5">
                   {currentTiers.map((tier) => {
                     const isActive = activeTierObj.id === tier.id;
+                    const exceedsStock = maxStock > 0 && tier.min > maxStock;
                     return (
                       <button
                         key={tier.id}
                         type="button"
                         onClick={() => handleSelectTier(tier)}
-                        className={`p-2 rounded-xl text-left transition-all relative border cursor-pointer ${isActive
-                          ? "bg-white text-slate-900 border-white shadow-xl ring-2 ring-emerald-300 scale-[1.02]"
-                          : "bg-brand-700/40 hover:bg-brand-700/60 text-white border-white/25 hover:border-white/40 shadow-xs"
+                        disabled={exceedsStock}
+                        className={`p-2 rounded-xl text-left transition-all relative border ${exceedsStock
+                          ? "bg-brand-900/30 text-emerald-200/40 border-white/10 opacity-50 cursor-not-allowed"
+                          : isActive
+                            ? "bg-white text-slate-900 border-white shadow-xl ring-2 ring-emerald-300 scale-[1.02] cursor-pointer"
+                            : "bg-brand-700/40 hover:bg-brand-700/60 text-white border-white/25 hover:border-white/40 shadow-xs cursor-pointer"
                           }`}
+                        title={exceedsStock ? `Requires ${tier.min}+ units. Current stock is ${maxStock} units.` : undefined}
                       >
                         <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? "text-brand-800" : "text-emerald-100"}`}>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${exceedsStock ? "text-emerald-300/40" : isActive ? "text-brand-800" : "text-emerald-100"}`}>
                             Tier {tier.tierNumber}
                           </span>
-                          {tier.isPopular ? (
+                          {exceedsStock ? (
+                            <span className="text-[7.5px] font-bold px-1 py-0.2 rounded bg-amber-400/20 text-amber-200 border border-amber-300/30">
+                              Max {maxStock}
+                            </span>
+                          ) : tier.isPopular ? (
                             <span className="text-[8px] font-extrabold uppercase bg-amber-400 text-amber-950 px-1 py-0.2 rounded font-mono shadow-xs">
                               ★ POPULAR
                             </span>
@@ -1390,15 +1454,15 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           ) : null}
                         </div>
 
-                        <div className={`text-xs sm:text-sm font-black tracking-tight ${isActive ? "text-slate-900" : "text-white"}`}>
+                        <div className={`text-xs sm:text-sm font-black tracking-tight ${exceedsStock ? "text-white/40" : isActive ? "text-slate-900" : "text-white"}`}>
                           ₹{tier.price}
                           <span className={`text-[10px] font-normal ${isActive ? "text-slate-500" : "text-emerald-100/70"}`}>/{unitLabel}</span>
                         </div>
 
-                        <div className={`text-[10px] truncate ${isActive ? "text-brand-900 font-bold" : "text-emerald-100/90 font-medium"}`}>
+                        <div className={`text-[10px] truncate ${exceedsStock ? "text-emerald-200/40" : isActive ? "text-brand-900 font-bold" : "text-emerald-100/90 font-medium"}`}>
                           {tier.rangeLabel}
                         </div>
-                        {isActive && wholesaleUnitPrice > 0 && (
+                        {isActive && wholesaleUnitPrice > 0 && !exceedsStock && (
                           <div className="text-[9px] text-brand-600 font-semibold mt-0.5">
                             Save {tier.savingsPct}% on total
                           </div>
@@ -1443,8 +1507,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                                 type="button"
                                 onClick={() => handleSelectColor(c.name)}
                                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${isSelected
-                                    ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
-                                    : "bg-white/80 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"
+                                  ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
+                                  : "bg-white/80 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"
                                   }`}
                                 title={`Select ${c.name} shade`}
                               >
@@ -1469,11 +1533,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                     {/* Order Quantity Stepper */}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
-                        <span>Order Quantity ({unitLabelPlural}):</span>
-                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
-                          MOQ: {currentMoq} {unitLabelPlural}
+                      <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block flex items-center justify-between gap-1.5 flex-wrap">
+                        <span className="flex items-center gap-1.5">
+                          <span>Order Quantity ({unitLabelPlural}):</span>
+                          <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200">
+                            MOQ: {minMoq} {unitLabelPlural}
+                          </span>
                         </span>
+                        {totalStock > 0 && (
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${qty >= maxStock
+                            ? "bg-amber-50 text-amber-900 border-amber-200"
+                            : "bg-slate-100 text-slate-600 border-slate-200"
+                            }`}>
+                            Max: {maxStock} {unitLabelPlural}
+                          </span>
+                        )}
                       </label>
 
                       {/* Stepper + Free Typing Input + Quick Addons */}
@@ -1482,7 +1556,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           <button
                             type="button"
                             onClick={() => handleAdjustQty(-1)}
-                            disabled={qty <= (currentMoq || 10)}
+                            disabled={qty <= minMoq}
                             className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                             title="Decrease quantity by 1"
                             aria-label="Decrease quantity by 1"
@@ -1494,6 +1568,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                             inputMode="numeric"
                             pattern="[0-9]*"
                             value={qtyInput}
+                            max={maxStock}
                             onChange={(e) => handleQtyInputChange(e.target.value)}
                             onBlur={handleQtyInputBlur}
                             onKeyDown={(e) => {
@@ -1505,8 +1580,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                           <button
                             type="button"
                             onClick={() => handleAdjustQty(1)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                            title="Increase quantity by 1"
+                            disabled={qty >= maxStock}
+                            className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                            title={qty >= maxStock ? `Cannot exceed total stock of ${maxStock}` : "Increase quantity by 1"}
                             aria-label="Increase quantity by 1"
                           >
                             <Plus className="w-4 h-4" />
@@ -1515,30 +1591,21 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
                         {/* Quick Add-ons (+10, +50, +100) */}
                         <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustQty(10)}
-                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                            title="Add 10 more sets"
-                          >
-                            +10
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustQty(50)}
-                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                            title="Add 50 more sets"
-                          >
-                            +50
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleAdjustQty(100)}
-                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer"
-                            title="Add 100 more sets"
-                          >
-                            +100
-                          </button>
+                          {[10, 50, 100].map((addAmount) => {
+                            const isAtMax = qty >= maxStock;
+                            return (
+                              <button
+                                key={addAmount}
+                                type="button"
+                                disabled={isAtMax}
+                                onClick={() => handleAdjustQty(addAmount)}
+                                className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 shadow-2xs transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={isAtMax ? `Max stock limit (${maxStock}) reached` : `Add ${addAmount} more`}
+                              >
+                                +{addAmount}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -2220,6 +2287,26 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           </div>
         </div>
 
+        {/* 3b. Occasion / Category / Diwali Badges */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="badge-green text-[10px] py-0.5 px-2 inline-flex items-center gap-1">
+            <Package className="w-3 h-3 text-emerald-800" />
+            <span>{typeof product.category === "string" ? product.category : product.category?.name || "Gifting"}</span>
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-brand-700 text-white shadow-xs">
+            <Gift className="w-3 h-3" />
+            <span>{activeOccasion.label}</span>
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            <CheckCheck className="w-3 h-3 text-emerald-600" />
+            <span>{activeOccasion.subtitle}</span>
+          </span>
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs">
+            <span>&#x1FA94;</span>
+            <span>Extra 5% OFF Diwali Special</span>
+          </span>
+        </div>
+
         {/* 4. Product Name & Short Description */}
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -2246,7 +2333,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               /{unitLabel}
             </span>
             <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              {activeTierDiscountPct}% OFF (incl. 5% Navratri Special)
+              {activeTierDiscountPct}% OFF (incl. 5% Diwali Special)
             </span>
           </div>
         </div>
@@ -2260,18 +2347,29 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           <div className="grid grid-cols-3 gap-2">
             {currentTiers.map((tier) => {
               const isActive = activeTierObj.id === tier.id;
+              const exceedsStock = maxStock > 0 && tier.min > maxStock;
               return (
                 <button
                   key={tier.id}
                   type="button"
                   onClick={() => handleSelectTier(tier)}
-                  className={`p-2.5 rounded-xl text-left transition-all border cursor-pointer ${isActive
-                    ? "border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500 shadow-2xs"
-                    : "border-slate-200 bg-white hover:border-slate-300"
+                  disabled={exceedsStock}
+                  className={`p-2.5 rounded-xl text-left transition-all border ${exceedsStock
+                    ? "border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed"
+                    : isActive
+                      ? "border-emerald-600 bg-emerald-50/60 ring-1 ring-emerald-500 shadow-2xs cursor-pointer"
+                      : "border-slate-200 bg-white hover:border-slate-300 cursor-pointer"
                     }`}
                 >
-                  <div className={`text-[11px] font-bold ${isActive ? "text-emerald-800" : "text-slate-500"}`}>
-                    {tier.rangeLabel}
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[11px] font-bold ${isActive ? "text-emerald-800" : "text-slate-500"}`}>
+                      {tier.rangeLabel}
+                    </span>
+                    {exceedsStock && (
+                      <span className="text-[8px] font-bold text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200">
+                        Max {maxStock}
+                      </span>
+                    )}
                   </div>
                   <div className={`text-sm font-black tracking-tight my-0.5 ${isActive ? "text-slate-900" : "text-slate-700"}`}>
                     ₹{tier.price.toLocaleString("en-IN")}
@@ -2308,8 +2406,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     type="button"
                     onClick={() => handleSelectColor(c.name)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer select-none active:scale-95 ${isSelected
-                        ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                      ? "bg-white border-brand-600 text-brand-950 ring-2 ring-brand-500/20 shadow-xs"
+                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                       }`}
                   >
                     <span
@@ -2335,17 +2433,27 @@ export default function ProductDetailView({ product, context, relatedProducts = 
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800">Order quantity</span>
-            <span className="font-bold text-emerald-800">
-              MOQ {currentMoq} {unitLabelPlural.toLowerCase()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-emerald-800">
+                MOQ {minMoq} {unitLabelPlural.toLowerCase()}
+              </span>
+              {totalStock > 0 && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${qty >= maxStock
+                  ? "bg-amber-50 text-amber-900 border-amber-200"
+                  : "bg-slate-100 text-slate-600 border-slate-200"
+                  }`}>
+                  Max: {maxStock}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
               <button
                 type="button"
                 onClick={() => handleAdjustQty(-1)}
-                disabled={qty <= (currentMoq || 10)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 cursor-pointer"
+                disabled={qty <= minMoq}
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 aria-label="Decrease quantity"
               >
                 <Minus className="w-3.5 h-3.5" />
@@ -2363,7 +2471,8 @@ export default function ProductDetailView({ product, context, relatedProducts = 
               <button
                 type="button"
                 onClick={() => handleAdjustQty(1)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
+                disabled={qty >= maxStock}
+                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 aria-label="Increase quantity"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -2375,8 +2484,9 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <button
                   key={addAmount}
                   type="button"
+                  disabled={qty >= maxStock}
                   onClick={() => handleAdjustQty(addAmount)}
-                  className="px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs cursor-pointer flex-1 text-center"
+                  className="px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-2xs cursor-pointer flex-1 text-center disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   +{addAmount}
                 </button>
@@ -2515,6 +2625,34 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                 <p>• Custom laser logo engraving on products for corporate branding.</p>
                 <p>• Custom printed belly bands and personalized message inserts.</p>
                 <p>• Multi-location Pan-India direct drop-shipping for distributed teams.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Gifting classification (dynamic from occasion) */}
+          <div>
+            <button
+              type="button"
+              onClick={() => toggleMobileAccordion("occasion")}
+              className="w-full px-4 py-3.5 flex items-center justify-between text-left cursor-pointer"
+            >
+              <span className="text-sm font-bold text-slate-900">Gifting occasion</span>
+              <span className="text-slate-500 font-bold text-lg leading-none">
+                {mobileAccordion === "occasion" ? "×" : "+"}
+              </span>
+            </button>
+            {mobileAccordion === "occasion" && (
+              <div className="px-4 pb-4 pt-1 space-y-2 text-xs text-slate-600 leading-relaxed">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-700 text-white">{activeOccasion.label}</span>
+                  <span className="text-slate-400">{activeOccasion.subtitle}</span>
+                </div>
+                <p>{activeOccasion.plainExplanation}</p>
+                <div className="pt-1.5 space-y-1">
+                  <div><span className="font-semibold text-slate-700">Best for:</span> {activeOccasion.bestSuitedFor}</div>
+                  <div><span className="font-semibold text-slate-700">Packaging:</span> {activeOccasion.packagingDetails}</div>
+                  <div><span className="font-semibold text-slate-700">MOQ:</span> {currentMoq} {unitLabelPlural} · <span className="font-semibold text-slate-700">Lead time:</span> {activeOccasion.leadTime || "5–7 Days"}</div>
+                </div>
               </div>
             )}
           </div>

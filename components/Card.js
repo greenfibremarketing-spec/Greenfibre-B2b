@@ -22,7 +22,7 @@ export default function Card({ p, context }) {
   const optimizedImgSrc = p.image ? optimizeImageUrl(p.image, { width: 500, quality: "auto" }) : "";
   const srcSet = p.image ? getImageSrcSet(p.image, [280, 420, 600, 800]) : "";
 
-  // MRP and 20% off per piece discount (15% bulk + 5% Navratri special)
+  // MRP and 20% off per piece discount (15% bulk + 5% Diwali Special)
   const mrp = Number(p.mrp || p.retailPrice || p.originalPrice || 0);
   const basePrice = mrp > 0 ? mrp : Number(p.wholesalePrice || p.price || 0);
   const offerPrice = p.offerPrice || (basePrice > 0 ? Math.round(basePrice * 0.80) : 0);
@@ -81,11 +81,11 @@ export default function Card({ p, context }) {
             {p.tagline || p.desc}
           </p>
 
-          {/* Navratri Special Offer Tag */}
+          {/* Diwali Special Offer Tag */}
           <div className="mt-1.5">
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 shadow-2xs">
               <span>🪔</span>
-              <span>Extra 5% Off Navratri Special</span>
+              <span>Extra 5% Off Diwali Special 🪔</span>
             </span>
           </div>
 
