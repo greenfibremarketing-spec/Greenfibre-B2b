@@ -3,7 +3,7 @@ import { productMetadata } from "@/lib/seo-defaults";
 import { notFound } from "next/navigation";
 import JsonLd from "@/components/JsonLd";
 import ProductDetailView from "@/components/ProductDetailView";
-import { getProduct, getProducts } from "@/lib/products";
+import { getProduct, getProducts, isExcludedProduct } from "@/lib/products";
 import { resolveCategorySlug } from "@/lib/categories";
 
 export const revalidate = 300;
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
 export default async function ProductDetailPage({ params, searchParams = {} }) {
   const rawContext = searchParams.context || searchParams.type || searchParams.category || searchParams.event || null;
   const p = await getProduct(params.slug, rawContext);
-  if (!p) notFound();
+  if (!p || isExcludedProduct(p)) notFound();
 
   const allProducts = await getProducts(rawContext);
   // Prefer backend-provided companion products (additionalProducts from B2BProductConfig).
@@ -28,6 +28,7 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
   let relatedProducts = [];
   if (Array.isArray(p.additionalProducts) && p.additionalProducts.length > 0) {
     relatedProducts = p.additionalProducts
+      .filter((addon) => !isExcludedProduct(addon))
       .map((addon) => {
         const fullProd = allProducts.find(
           (x) =>
@@ -49,12 +50,13 @@ export default async function ProductDetailPage({ params, searchParams = {} }) {
         }
         return addon;
       })
+      .filter((addon) => !isExcludedProduct(addon))
       .slice(0, 4);
   }
 
   if (relatedProducts.length === 0) {
     relatedProducts = allProducts
-      .filter((x) => x.slug !== p.slug && (x.category === p.category || x.popular))
+      .filter((x) => x.slug !== p.slug && !isExcludedProduct(x) && (x.category === p.category || x.popular))
       .slice(0, 4);
   }
 

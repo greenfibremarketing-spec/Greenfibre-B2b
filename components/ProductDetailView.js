@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useQuote } from "./Quote";
@@ -13,6 +13,8 @@ import {
   Flame,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Maximize2,
   X,
   PackageCheck,
@@ -637,7 +639,10 @@ function normalizeImageUrl(img) {
   return `${apiBase}/${img.replace(/^\/+/, "")}`;
 }
 
-export default function ProductDetailView({ product, context, relatedProducts = [] }) {
+export default function ProductDetailView({ product, context, relatedProducts: rawRelated = [] }) {
+  const relatedProducts = (rawRelated || []).filter(
+    (rel) => rel && !String(rel.slug || rel.name || "").toLowerCase().includes("tulsi")
+  );
   const { add, addBatch, updateCustomizations, items } = useQuote() || {};
   const [mounted, setMounted] = useState(false);
 
@@ -874,6 +879,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
   const [modalStep, setModalStep] = useState(1);
   const [activeTab, setActiveTab] = useState("set_contents");
+  const [showAllSpecs, setShowAllSpecs] = useState(false);
 
   const [pairQtys, setPairQtys] = useState({});
   const [pairAdded, setPairAdded] = useState({});
@@ -1242,6 +1248,65 @@ export default function ProductDetailView({ product, context, relatedProducts = 
 
   const combinedSpecs = { ...extraSpecs, ...rawSpecs };
 
+  const technicalSpecsList = useMemo(() => {
+    const list = [
+      { key: "material", label: "Material", value: product.material || "Rice husk biocomposite" },
+      { key: "colour", label: "Colour", value: colorVariants.map((c) => c.name).join(" / ") || selectedColour },
+    ];
+
+    if (product.specs?.Capacity || product.specs?.capacity || product.size) {
+      list.push({ key: "capacity", label: "Capacity", value: product.specs?.Capacity || product.specs?.capacity || product.size });
+    }
+
+    if (product.productWeight?.value || product.specs?.Weight || product.specs?.weight) {
+      list.push({
+        key: "weight",
+        label: "Product Weight",
+        value: product.productWeight?.value
+          ? `${product.productWeight.value} ${product.productWeight.unit || "gm"}`
+          : (product.specs?.Weight || product.specs?.weight || "240 gm")
+      });
+    }
+
+    if (product.dimensions?.length || product.specs?.Length || product.specs?.length) {
+      list.push({
+        key: "length",
+        label: "Product Length",
+        value: product.dimensions?.length ? `${product.dimensions.length} cm` : (product.specs?.Length || product.specs?.length || "16 cm")
+      });
+    }
+
+    if (product.dimensions?.width || product.specs?.Width || product.specs?.width) {
+      list.push({
+        key: "width",
+        label: "Product Width",
+        value: product.dimensions?.width ? `${product.dimensions.width} cm` : (product.specs?.Width || product.specs?.width || "16 cm")
+      });
+    }
+
+    if (product.dimensions?.height || product.specs?.Height || product.specs?.height) {
+      list.push({
+        key: "height",
+        label: "Product Height",
+        value: product.dimensions?.height ? `${product.dimensions.height} cm` : (product.specs?.Height || product.specs?.height || "6.5 cm")
+      });
+    }
+
+    if (setContentsText) {
+      list.push({ key: "setContents", label: "Set Contents", value: setContentsText });
+    }
+
+    Object.entries(rawSpecs)
+      .filter(([k]) => !/capacity|weight|material|contents|length|width|height/i.test(k))
+      .forEach(([k, v]) => {
+        list.push({ key: k, label: k, value: typeof v === "object" ? JSON.stringify(v) : String(v) });
+      });
+
+    return list;
+  }, [product, colorVariants, selectedColour, setContentsText, rawSpecs]);
+
+  const visibleSpecs = showAllSpecs ? technicalSpecsList : technicalSpecsList.slice(0, 4);
+
   const giftItems =
     Array.isArray(product.giftSetContents?.products) && product.giftSetContents.products.length > 0
       ? product.giftSetContents.products
@@ -1411,7 +1476,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
           )}
 
           {/* Compact Packaging & Presentation Card in Left Column */}
-          <div className="bg-white border border-slate-200/90 rounded-xl p-2.5 sm:p-3 shadow-2xs flex items-center justify-between gap-3 mt-1.5">
+          <div className="hidden sm:flex bg-white border border-slate-200/90 rounded-xl p-2.5 sm:p-3 shadow-2xs items-center justify-between gap-3 mt-1.5">
             <div className="space-y-0.5 min-w-0">
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
                 <Box className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -1488,10 +1553,11 @@ export default function ProductDetailView({ product, context, relatedProducts = 
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-900 uppercase tracking-wide">
                 <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-700" />
-                <span>VOLUME PRICING (ACTIVE TIER)</span>
+                <span>VOLUME PRICING<span className="hidden sm:inline"> (ACTIVE TIER)</span></span>
               </div>
-              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-full">
-                Total Stock: {totalStock.toLocaleString("en-IN")} Units
+              <span className="text-[10.5px] sm:text-[11px] font-semibold text-emerald-800 bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-full whitespace-nowrap">
+                <span className="sm:hidden">Live Avail: {totalStock.toLocaleString("en-IN")}</span>
+                <span className="hidden sm:inline">Total Stock: {totalStock.toLocaleString("en-IN")} Units</span>
               </span>
             </div>
 
@@ -1531,7 +1597,7 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                     </div>
 
                     <div className="text-[10px] sm:text-[11px] font-bold text-emerald-700 mt-0.5">
-                      Save {tier.savingsPct}% vs MRP
+                      Save {tier.savingsPct}%<span className="hidden sm:inline"> vs MRP</span>
                     </div>
                   </button>
                 );
@@ -1845,63 +1911,38 @@ export default function ProductDetailView({ product, context, relatedProducts = 
                   <div className="border border-slate-200/90 rounded-xl overflow-hidden">
                     <table className="w-full text-xs sm:text-sm">
                       <tbody className="divide-y divide-slate-100">
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60 w-2/5">Material</td>
-                          <td className="py-2 px-3.5 text-slate-900 font-medium">{product.material || "Rice husk biocomposite"}</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Colour</td>
-                          <td className="py-2 px-3.5 text-slate-900 font-medium">
-                            {colorVariants.map((c) => c.name).join(" / ") || selectedColour}
-                          </td>
-                        </tr>
-                        {Boolean(product.specs?.Capacity || product.specs?.capacity || product.size) && (
-                          <tr className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Capacity</td>
-                            <td className="py-2 px-3.5 text-slate-900 font-medium">{product.specs?.Capacity || product.specs?.capacity || product.size}</td>
-                          </tr>
-                        )}
-                        {Boolean(product.productWeight?.value || product.specs?.Weight || product.specs?.weight) && (
-                          <tr className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Product Weight</td>
+                        {visibleSpecs.map((spec) => (
+                          <tr key={spec.key} className="hover:bg-slate-50/50">
+                            <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60 w-2/5">
+                              {spec.label}
+                            </td>
                             <td className="py-2 px-3.5 text-slate-900 font-medium">
-                              {product.productWeight?.value ? `${product.productWeight.value} ${product.productWeight.unit || "gm"}` : (product.specs?.Weight || product.specs?.weight || "240 gm")}
+                              {spec.value}
                             </td>
                           </tr>
-                        )}
-                        {Boolean(product.dimensions?.length || product.specs?.Length || product.specs?.length) && (
-                          <tr className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Product Length</td>
-                            <td className="py-2 px-3.5 text-slate-900 font-medium">{product.dimensions?.length ? `${product.dimensions.length} cm` : (product.specs?.Length || product.specs?.length || "16 cm")}</td>
-                          </tr>
-                        )}
-                        {Boolean(product.dimensions?.width || product.specs?.Width || product.specs?.width) && (
-                          <tr className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Product Width</td>
-                            <td className="py-2 px-3.5 text-slate-900 font-medium">{product.dimensions?.width ? `${product.dimensions.width} cm` : (product.specs?.Width || product.specs?.width || "16 cm")}</td>
-                          </tr>
-                        )}
-                        {Boolean(product.dimensions?.height || product.specs?.Height || product.specs?.height) && (
-                          <tr className="hover:bg-slate-50/50">
-                            <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Product Height</td>
-                            <td className="py-2 px-3.5 text-slate-900 font-medium">{product.dimensions?.height ? `${product.dimensions.height} cm` : (product.specs?.Height || product.specs?.height || "6.5 cm")}</td>
-                          </tr>
-                        )}
-                        <tr className="hover:bg-slate-50/50">
-                          <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">Set Contents</td>
-                          <td className="py-2 px-3.5 text-slate-900 font-medium">{setContentsText}</td>
-                        </tr>
-                        {Object.entries(rawSpecs)
-                          .filter(([k]) => !/capacity|weight|material|contents|length|width|height/i.test(k))
-                          .map(([k, v]) => (
-                            <tr key={k} className="hover:bg-slate-50/50">
-                              <td className="py-2 px-3.5 font-semibold text-slate-600 bg-slate-50/60">{k}</td>
-                              <td className="py-2 px-3.5 text-slate-900 font-medium">{typeof v === "object" ? JSON.stringify(v) : String(v)}</td>
-                            </tr>
-                          ))}
+                        ))}
                       </tbody>
                     </table>
                   </div>
+
+                  {technicalSpecsList.length > 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllSpecs((prev) => !prev)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100/80 border border-green-200/80 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                    >
+                      <span>
+                        {showAllSpecs
+                          ? "View Less"
+                          : `View All Specifications (${technicalSpecsList.length})`}
+                      </span>
+                      {showAllSpecs ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 {/* Right Column: Key Features & Gifting Occasions */}

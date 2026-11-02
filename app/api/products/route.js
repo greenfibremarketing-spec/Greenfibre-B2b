@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getProducts } from "@/lib/products";
+import { getProducts, isExcludedProduct } from "@/lib/products";
 
 export async function GET(request) {
   try {
@@ -16,6 +16,7 @@ export async function GET(request) {
     const searchTokens = q ? q.split(/\s+/).filter(Boolean) : [];
 
     const filtered = allProducts.filter((p) => {
+      if (isExcludedProduct(p)) return false;
       const matchesCategory = !category || category === "All Products" || p.category === category;
       if (!matchesCategory) return false;
 
