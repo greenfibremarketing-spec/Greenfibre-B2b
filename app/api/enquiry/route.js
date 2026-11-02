@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, mainDb } from "@/lib/db";
 import { getProduct } from "@/lib/products";
 import { generateQuotationPdf } from "@/lib/quotationPdf";
 import { quotationAttachments } from "@/lib/quotationAttachment";
 import { sendQuotationEmail } from "@/lib/email";
+import { deductInventoryForOrder } from "@/lib/inventory";
+import { validateCartLine } from "@/lib/cartModel";
 import {
   validateEmail,
   validateIndianPhone,
@@ -102,6 +104,8 @@ export async function POST(req) {
     }
 
     const items = [];
+    const productPrimaryTotals = {};
+
     for (const i of rawItems) {
       let p = null;
       try {
@@ -112,39 +116,90 @@ export async function POST(req) {
         console.warn("getProduct warning:", prodErr.message);
       }
 
-      const qty = Math.max(1, Math.floor(+i.qty || 1));
-      const isPairItem = Boolean(i.isPairItem === true || i.isPair === true);
-      const minRequired = isPairItem ? 1 : Math.max(10, Number(p?.moq) || 10);
-
-      if (p && !(qty >= minRequired)) {
+      // ── Strict validation: Require productId, variantId, color, qty, addOn on every line ──
+      const lineValidation = validateCartLine({
+        ...i,
+        productId: i.productId || p?._id || p?.id
+      });
+      if (!lineValidation.valid) {
         return NextResponse.json(
-          { error: `${p.name}: Minimum wholesale order quantity is ${minRequired} ${p.unit || "pc"}.` },
-          { status: 422 }
+          { error: lineValidation.error },
+          { status: 400 }
         );
+      }
+
+      const productId = lineValidation.productId;
+      const rawColor = lineValidation.color;
+      const qty = lineValidation.qty;
+      const isAddon = lineValidation.addOn;
+
+      let variantId = String(i.variantId || "").trim();
+      if (!variantId && p && Array.isArray(p.colors) && p.colors.length > 0) {
+        const matchedColor = p.colors.find(
+          (c) => c && c.name && c.name.trim().toLowerCase() === rawColor.toLowerCase()
+        );
+        if (matchedColor) {
+          variantId = String(matchedColor._id || matchedColor.id || `var-${rawColor}`);
+        }
+      }
+      if (!variantId && p && Array.isArray(p.colors) && p.colors.length > 0) {
+        return NextResponse.json(
+          { error: `Missing variantId on line item "${i.name || i.slug || 'unknown'}".` },
+          { status: 400 }
+        );
+      }
+      if (!variantId) {
+        variantId = `var-${rawColor.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+      }
+
+      // Track product-level primary totals for MOQ validation
+      if (!isAddon) {
+        const prodKey = p?.slug || i.slug || productId;
+        const minMoq = Math.max(10, Number(p?.moq) || 10);
+        if (!productPrimaryTotals[prodKey]) {
+          productPrimaryTotals[prodKey] = {
+            name: p?.name || i.name || prodKey,
+            totalQty: 0,
+            requiredMoq: minMoq,
+            unit: p?.unit || i.unit || "piece"
+          };
+        }
+        productPrimaryTotals[prodKey].totalQty += qty;
       }
 
       const mrp = +(i.mrp || p?.price || 0);
       const lineGross = mrp * qty;
-      // Dynamic Volume Tier Discount: Tier 1 (<=100): 15%, Tier 2 (101–200): 20%, Tier 3 (201+): 25%
       const discountPct = Number(i.discountPct) || (qty >= 201 ? 25 : qty >= 101 ? 20 : 15);
       const tierNumber = Number(i.tierNumber) || (qty >= 201 ? 3 : qty >= 101 ? 2 : 1);
       const lineDiscount = Math.round(lineGross * (discountPct / 100));
       const lineNet = lineGross - lineDiscount;
+      const unitPrice = Math.round(mrp * (1 - discountPct / 100));
 
+      const rawImage = i.image || p?.image || (Array.isArray(p?.images) ? p.images[0] : "") || "";
       items.push({
         slug: p?.slug || i.slug || "custom",
-        sku: p?.sku || i.sku || "",
+        sku: p?.sku || i.raw_sku || i.sku || "GF-B2B",
+        raw_sku: i.raw_sku || p?.sku || i.sku || "GF-B2B",
         name: p?.name || i.name || "Green Fibre Eco Product",
+        image: rawImage,
+        productId,
+        variantId,
+        channel: "b2b",
+        addOn: isAddon,
         unit: p?.unit || i.unit || "piece",
-        colour: String(i.colour || "Standard").slice(0, 40),
+        colour: rawColor,
+        color: rawColor,
+        colorName: rawColor,
         qty,
         mrp,
+        unitPrice,
+        price: unitPrice,
         lineGross,
         discountPct,
         tierNumber,
         lineDiscount,
         lineNet,
-        isPairItem,
+        isPairItem: isAddon,
         senderName: String(i.senderName || "").slice(0, 100),
         receiverName: String(i.receiverName || "").slice(0, 100),
         giftMessage: String(i.giftMessage || "").slice(0, 500),
@@ -154,6 +209,17 @@ export async function POST(req) {
         brandingNotes: String(i.brandingNotes || "").slice(0, 500),
         selectedCustomizations: Array.isArray(i.selectedCustomizations) ? i.selectedCustomizations : []
       });
+    }
+
+    // Verify MOQ across product lines (sum of variant quantities >= MOQ)
+    for (const key of Object.keys(productPrimaryTotals)) {
+      const pTotal = productPrimaryTotals[key];
+      if (pTotal.totalQty < pTotal.requiredMoq) {
+        return NextResponse.json(
+          { error: `${pTotal.name}: Minimum wholesale order quantity is ${pTotal.requiredMoq} ${pTotal.unit} (you have selected ${pTotal.totalQty}).` },
+          { status: 422 }
+        );
+      }
     }
 
     if (!items.length) {
@@ -210,8 +276,141 @@ export async function POST(req) {
       return NextResponse.json({ error: "Could not generate the quotation PDF. Your basket has been kept; please try again." }, { status: 503 });
     }
 
+    // 1. Allocate sequential orderNumber matching the main store's order counter sequence
+    let orderNumber = reference;
+    try {
+      const mainDatabase = await mainDb();
+      if (mainDatabase && typeof mainDatabase.collection === "function") {
+        const currentYear = new Date().getFullYear();
+        const counterResult = await mainDatabase.collection("counters").findOneAndUpdate(
+          { _id: `orderNumber_${currentYear}` },
+          { $inc: { seq: 1 } },
+          { returnDocument: "after", upsert: true }
+        );
+        const nextSeq = counterResult?.value?.seq || counterResult?.seq;
+        if (nextSeq) {
+          orderNumber = `GF-${currentYear}-${String(nextSeq).padStart(6, "0")}`;
+        }
+      }
+    } catch (counterErr) {
+      console.warn("[Order Counter] Could not increment counter, using reference as orderNumber:", counterErr.message);
+    }
+
+    // 2. Build full order document matching greenfibre.orders schema
+    const orderDocument = {
+      orderNumber,
+      reference,
+      b2bReference: reference,
+      user: b.userId || null,
+      orderChannel: "b2b", // Schema field where b2b or b2c is written so dashboard identifies B2B orders
+      orderType: "b2b",
+      channel: "b2b",
+      type: "b2b",
+      isB2B: true,
+      isB2BOrder: true,
+      orderStatus: "pending",
+      paymentStatus: "pending",
+      paymentMethod: "B2B Purchase Order / Bank Transfer",
+      shippingAddress: {
+        fullName: client.name,
+        companyName: client.company,
+        streetAddress: client.city || "Not Provided",
+        landmark: client.pin || "",
+        city: client.city || "Not Provided",
+        state: "",
+        pincode: client.pin || "",
+        phone: client.phone || "",
+        email: client.email || ""
+      },
+      billingAddress: {
+        fullName: client.name,
+        companyName: client.company,
+        streetAddress: client.city || "Not Provided",
+        city: client.city || "Not Provided",
+        state: "",
+        pincode: client.pin || "",
+        phone: client.phone || "",
+        email: client.email || "",
+        gstin: client.gstin || ""
+      },
+      totalAmount: pricing.totalGross,
+      discountAmount: pricing.totalItemDiscount + (pricing.bundleBonusAmount || 0),
+      finalAmount: pricing.totalWithGST,
+      estimatedTax: pricing.estimatedGST,
+      items: items.map((it) => ({
+        product: it.productId || it.slug,
+        productId: it.productId,
+        variantId: it.variantId,
+        slug: it.slug,
+        sku: it.raw_sku || it.sku || "GF-B2B",
+        raw_sku: it.raw_sku || it.sku || "GF-B2B",
+        channel: "b2b",
+        addOn: it.addOn,
+        name: it.name,
+        image: it.image || "",
+        colorIndex: 0,
+        color: it.colour,
+        colour: it.colour,
+        colorName: it.colour,
+        colorHex: "",
+        quantity: it.qty,
+        qty: it.qty,
+        shippedQuantity: 0,
+        price: it.unitPrice || it.price || it.mrp,
+        unitPrice: it.unitPrice || it.price || it.mrp,
+        mrp: it.mrp,
+        discountPct: it.discountPct,
+        tierNumber: it.tierNumber,
+        discountAmount: it.lineDiscount,
+        lineDiscount: it.lineDiscount,
+        finalAmount: it.lineNet,
+        lineNet: it.lineNet,
+        lineGross: it.lineGross,
+        unit: it.unit || "piece",
+        isPairItem: it.isPairItem,
+        customizations: {
+          senderName: it.senderName,
+          receiverName: it.receiverName,
+          giftMessage: it.giftMessage,
+          engravingName: it.engravingName,
+          customProductName: it.customProductName,
+          packagingOption: it.packagingOption,
+          brandingNotes: it.brandingNotes,
+          selectedCustomizations: it.selectedCustomizations
+        }
+      })),
+      b2bDetails: {
+        company: client.company,
+        gstin: client.gstin,
+        buyerType: client.buyerType,
+        requiredBy: client.date,
+        notes: client.notes,
+        isB2BVerified: Boolean(b.isB2BVerified),
+        pdfGenerated: Boolean(pdfBuffer),
+        reference
+      },
+      statusHistory: [
+        {
+          status: "pending",
+          timestamp: new Date().toISOString(),
+          note: `B2B Wholesale Order created with PO reference ${reference}`
+        }
+      ],
+      hasStockConflict: false,
+      stockDeducted: true,
+      stockRestored: false,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
     const enquiryDocument = {
       reference,
+      orderNumber,
+      orderChannel: "b2b",
+      orderType: "b2b",
+      channel: "b2b",
+      type: "b2b",
+      isB2B: true,
       client,
       items,
       pricing,
@@ -219,27 +418,60 @@ export async function POST(req) {
       isB2BVerified: Boolean(b.isB2BVerified),
       pdfGenerated: Boolean(pdfBuffer),
       status: "New",
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
-    // Attempt to save to MongoDB
+    // 3. Persist order & enquiry to databases
+    let createdOrderId = null;
+    let mainDatabase = null;
     try {
-      if (process.env.MONGODB_URI) {
-        const database = await db();
-        await database.collection("enquiries").insertOne(enquiryDocument);
-      } else {
-        console.log("[DEV MODE] Enquiry received (MONGODB_URI not set):", JSON.stringify(enquiryDocument, null, 2));
+      mainDatabase = await mainDb();
+      if (mainDatabase && typeof mainDatabase.collection === "function") {
+        const orderInsertRes = await mainDatabase.collection("orders").insertOne(orderDocument);
+        createdOrderId = orderInsertRes?.insertedId?.toString() || null;
+        console.log(`[Order Backend] Saved B2B order to mainDb.orders: ${orderNumber} (${reference})`);
       }
-    } catch (err) {
-      console.error("MongoDB Save Error (non-fatal):", err);
+    } catch (orderErr) {
+      console.error("[Order Backend] Failed to write order to mainDb.orders (non-fatal):", orderErr);
     }
 
-    // Attempt to send email with quotation summary & PDF attachment
+    try {
+      // Save order & enquiry to b2b database (greenfibre_b2b.orders and greenfibre_b2b.enquiries)
+      const b2bDatabase = await db();
+      if (b2bDatabase && typeof b2bDatabase.collection === "function") {
+        await Promise.allSettled([
+          b2bDatabase.collection("orders").insertOne(orderDocument),
+          b2bDatabase.collection("enquiries").insertOne(enquiryDocument)
+        ]);
+        console.log(`[Order Backend] Saved B2B order & enquiry in b2bDatabase: ${reference}`);
+      }
+    } catch (b2bErr) {
+      console.error("[Order Backend] Failed to write to b2bDatabase (non-fatal):", b2bErr);
+    }
+
+    // 4. Deduct ordered item quantities from inventory (product stock & variant stock)
+    try {
+      if (mainDatabase && typeof mainDatabase.collection === "function") {
+        await deductInventoryForOrder({
+          mainDatabase,
+          items,
+          orderId: createdOrderId,
+          orderNumber,
+          reference
+        });
+      }
+    } catch (deductErr) {
+      console.error("[Inventory] Error deducting stock for order (non-fatal):", deductErr.message);
+    }
+
+    // 4. Send email to client (thank you for ordering) and admin ("me") with attached PO PDF
     let emailSent = false;
     try {
       const emailResult = await sendQuotationEmail({
         to: client.email,
         reference,
+        orderNumber,
         client,
         items,
         pricing,
@@ -253,6 +485,8 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       reference,
+      orderNumber,
+      orderId: createdOrderId,
       pdfGenerated: true,
       emailSent,
       ...(!emailSent && { warning: "Your quotation was received, but the email could not be sent. Please contact our team with your quotation reference." })

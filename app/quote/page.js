@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useQuote } from "@/components/Quote";
+import { useQuote, moqErrors } from "@/components/Quote";
 import { useAuth } from "@/components/AuthContext";
 import {
   CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
@@ -72,6 +72,67 @@ export default function QuotePage() {
   const [fieldErrors, setFieldErrors] = useState({
     name: "", company: "", email: "", phone: "", city: "", pin: ""
   });
+
+  const [catalogProducts, setCatalogProducts] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetch("/api/products")
+      .then((res) => res.json())
+      .then((data) => {
+        if (mounted && Array.isArray(data?.products)) {
+          setCatalogProducts(data.products);
+        }
+      })
+      .catch((err) => console.warn("Failed to load catalog products for live stock:", err));
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Compute live available stock per line item
+  const getStockInfo = (item) => {
+    const itemColor = (item.colour || item.color || "").trim().toLowerCase();
+    const prod = catalogProducts.find(
+      (p) =>
+        p.slug === item.slug ||
+        p._id === item.productId ||
+        (p.name && item.name && p.name.trim().toLowerCase() === item.name.trim().toLowerCase())
+    );
+
+    let available = null;
+    if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
+      const matched = prod.colors.find(
+        (c) => c && c.name && c.name.trim().toLowerCase() === itemColor
+      );
+      if (matched) {
+        if (typeof matched.b2bStock === "number") available = matched.b2bStock;
+        else if (typeof matched.stock === "number") available = matched.stock;
+      }
+    }
+
+    if (available === null && prod) {
+      if (typeof prod.b2bStock === "number") available = prod.b2bStock;
+      else if (typeof prod.stockQuantity === "number") available = prod.stockQuantity;
+      else if (typeof prod.totalStock === "number") available = prod.totalStock;
+    }
+
+    if (available === null) {
+      available = typeof item.totalStock === "number" ? item.totalStock : (item.stockQuantity ?? 9999);
+    }
+
+    const isExceeded = typeof available === "number" && item.qty > available;
+    return {
+      available,
+      isExceeded,
+      message: isExceeded ? `Only ${available} ${item.colour || item.color} available` : null
+    };
+  };
+
+  const currentMoqErrors = moqErrors(lineItems);
+  const stockErrors = lineItems.map((it) => ({ item: it, ...getStockInfo(it) })).filter((s) => s.isExceeded);
+  const missingColors = lineItems.filter((it) => !(it.colour || it.color)?.trim());
+  const canSubmit = lineItems.length > 0 && currentMoqErrors.length === 0 && stockErrors.length === 0 && missingColors.length === 0;
 
   // Close order purpose dropdown on outside click
   useEffect(() => {
@@ -223,6 +284,33 @@ export default function QuotePage() {
       return;
     }
 
+    if (missingColors.length > 0) {
+      setState({
+        busy: false,
+        error: `Item "${missingColors[0].name}" is missing a color selection. Color is required.`,
+        ref: null
+      });
+      return;
+    }
+
+    if (currentMoqErrors.length > 0) {
+      setState({
+        busy: false,
+        error: currentMoqErrors[0].message,
+        ref: null
+      });
+      return;
+    }
+
+    if (stockErrors.length > 0) {
+      setState({
+        busy: false,
+        error: stockErrors[0].message,
+        ref: null
+      });
+      return;
+    }
+
     setFieldErrors({ name: "", company: "", email: "", phone: "", city: "", pin: "" });
     setState({ busy: true, error: null, ref: null });
     try {
@@ -246,18 +334,27 @@ export default function QuotePage() {
             estimatedGST,
             totalWithGST,
             items: lineItems.map((it) => ({
+              productId: it.productId || it.product || it._id || it.id || it.slug,
+              variantId: it.variantId || null,
+              raw_sku: it.raw_sku || it.sku || "GF-B2B",
+              channel: "b2b",
+              addOn: Boolean(it.addOn === true || it.isPairItem === true || it.isPair === true),
               slug: it.slug,
               name: it.name,
-              colour: it.colour || "Standard",
+              colour: (it.colour || it.color || "").trim(),
+              color: (it.colour || it.color || "").trim(),
               qty: it.qty,
               unit: it.unit || "piece",
               mrp: it.mrp,
+              unitPrice: it.unitPrice || it.price || it.mrp,
+              price: it.unitPrice || it.price || it.mrp,
+              image: it.image || "",
               lineGross: it.lineGross,
               discountPct: it.discountPct,
               tierNumber: it.tierNumber,
               lineDiscount: it.lineDiscount,
               lineNet: it.lineNet,
-              isPairItem: it.isPair,
+              isPairItem: Boolean(it.addOn === true || it.isPairItem === true || it.isPair === true),
               senderName: it.senderName || "",
               receiverName: it.receiverName || "",
               giftMessage: it.giftMessage || "",
@@ -600,62 +697,91 @@ export default function QuotePage() {
 
                 {/* Products List */}
                 <div className="space-y-3 sm:space-y-4">
-                  {lineItems.map((item) => (
-                    <div key={item.key} className="space-y-1">
-                      <div className="flex items-start justify-between gap-2.5 sm:gap-3">
-                        {/* Left Column: Name, Pair Badge, Details & Discount */}
-                        <div className="min-w-0 flex-1 space-y-0.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-bold text-slate-900 text-xs sm:text-[15px] leading-snug">
-                              {item.name}
-                            </h4>
-                            {item.isPair ? (
-                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded">
-                                Pair{item.parentName ? ` with ${item.parentName}` : ""}
+                  {lineItems.map((item) => {
+                    const stockInfo = getStockInfo(item);
+                    const colorDisplay = (item.colour || item.color || "").trim();
+                    const isAddon = Boolean(item.addOn || item.isPair || item.isPairItem);
+
+                    return (
+                      <div key={item.key} className="space-y-1">
+                        <div className="flex items-start justify-between gap-2.5 sm:gap-3">
+                          {/* Left Column: Name, Add-on/Primary Badge, Color Details & Discount */}
+                          <div className="min-w-0 flex-1 space-y-0.5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="font-bold text-slate-900 text-xs sm:text-[15px] leading-snug">
+                                {item.name}
+                              </h4>
+                              {isAddon ? (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded">
+                                  Add-on{item.parentName ? ` with ${item.parentName}` : ""}
+                                </span>
+                              ) : (
+                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded">
+                                  Primary
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-slate-500 flex-wrap">
+                              {colorDisplay ? (
+                                <span className="font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                  {colorDisplay}
+                                </span>
+                              ) : (
+                                <span className="font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                  Color required
+                                </span>
+                              )}
+                              <span className="text-slate-300">·</span>
+                              <span>
+                                {item.qty} {
+                                  (item.unit === "set" || /\b(set|storage bowl)\b/i.test(item.name || ""))
+                                    ? (item.qty > 1 ? "sets" : "set")
+                                    : item.unit === "piece"
+                                      ? (item.qty > 1 ? "pieces" : "piece")
+                                      : item.unit === "box"
+                                        ? (item.qty > 1 ? "boxes" : "box")
+                                        : item.unit === "pack"
+                                          ? (item.qty > 1 ? "packs" : "pack")
+                                          : (item.unit ? (item.qty > 1 ? `${item.unit}s` : item.unit) : (item.qty > 1 ? "pieces" : "piece"))
+                                } × ₹{item.mrp.toLocaleString("en-IN")}
                               </span>
-                            ) : (
-                              <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded">
-                                Primary
-                              </span>
+                              {item.discountPct > 0 && (
+                                <span className="text-[9.5px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-0.5">
+                                  {item.discountPct}% off
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Per-color stock check from product's colors[].b2bStock: Never silently move qty to another color */}
+                            {stockInfo.isExceeded && (
+                              <div className="flex items-center gap-2 pt-1 text-[11px] sm:text-xs text-rose-600 font-bold">
+                                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span>Only {stockInfo.available} {colorDisplay} available</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setQty(item.key, Math.max(1, stockInfo.available))}
+                                  className="ml-1 px-1.5 py-0.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded font-semibold text-[10px] transition-colors cursor-pointer"
+                                >
+                                  Adjust to {stockInfo.available}
+                                </button>
+                              </div>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-slate-500 flex-wrap">
-                            <span>{item.colour && item.colour !== "Standard" ? item.colour : "Standard"}</span>
-                            <span className="text-slate-300">·</span>
-                            <span>
-                              {item.qty} {
-                                (item.unit === "set" || /\b(set|storage bowl)\b/i.test(item.name || ""))
-                                  ? (item.qty > 1 ? "sets" : "set")
-                                  : item.unit === "piece"
-                                    ? (item.qty > 1 ? "pieces" : "piece")
-                                    : item.unit === "box"
-                                      ? (item.qty > 1 ? "boxes" : "box")
-                                      : item.unit === "pack"
-                                        ? (item.qty > 1 ? "packs" : "pack")
-                                        : (item.unit ? (item.qty > 1 ? `${item.unit}s` : item.unit) : (item.qty > 1 ? "pieces" : "piece"))
-                              } × ₹{item.mrp.toLocaleString("en-IN")}
-                            </span>
-                            {item.discountPct > 0 && (
-                              <span className="text-[9.5px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-0.5">
-                                {item.discountPct}% off
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Right Column: Net Price + Strikethrough Gross */}
-                        <div className="text-right flex-shrink-0">
-                          <div className="text-sm sm:text-lg font-black text-slate-900">
-                            ₹{item.lineNet.toLocaleString("en-IN")}
-                          </div>
-                          <div className="text-[10.5px] sm:text-xs text-slate-400 line-through">
-                            ₹{item.lineGross.toLocaleString("en-IN")}
+                          {/* Right Column: Net Price + Strikethrough Gross */}
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-sm sm:text-lg font-black text-slate-900">
+                              ₹{item.lineNet.toLocaleString("en-IN")}
+                            </div>
+                            <div className="text-[10.5px] sm:text-xs text-slate-400 line-through">
+                              ₹{item.lineGross.toLocaleString("en-IN")}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Dashed Separator */}
@@ -1027,9 +1153,39 @@ export default function QuotePage() {
             {/* Anti-spam honeypot */}
             <input name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999, opacity: 0 }} aria-hidden="true" />
 
+            {currentMoqErrors.map((err, i) => (
+              <div key={`moq-${i}`} className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-800 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span>{err.message}</span>
+              </div>
+            ))}
+
+            {stockErrors.map((err, i) => (
+              <div key={`stock-${i}`} className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                  <span>{err.message}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setQty(err.item.key, Math.max(1, err.available))}
+                  className="text-xs font-bold text-rose-800 underline cursor-pointer"
+                >
+                  Adjust to {err.available}
+                </button>
+              </div>
+            ))}
+
+            {missingColors.map((it, i) => (
+              <div key={`col-${i}`} className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>Line item "{it.name}" requires a color selection.</span>
+              </div>
+            ))}
+
             {state.error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600" />
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
                 <span>{state.error}</span>
               </div>
             )}
@@ -1047,7 +1203,7 @@ export default function QuotePage() {
               ) : (
                 <button
                   type="submit"
-                  disabled={state.busy || items.length === 0}
+                  disabled={state.busy || items.length === 0 || !canSubmit}
                   className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${state.busy
                     ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
                     : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
@@ -1162,9 +1318,9 @@ export default function QuotePage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate leading-snug">{item.name}</h4>
-                        {item.isPair ? (
+                        {item.addOn || item.isPair || item.isPairItem ? (
                           <span className="text-[9px] sm:text-[10px] font-extrabold text-emerald-900 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
-                            <span>🔗</span> Pair{item.parentName ? ` with ${item.parentName}` : ""}
+                            <span>🔗</span> Add-on{item.parentName ? ` with ${item.parentName}` : ""}
                           </span>
                         ) : (
                           <span className="text-[9px] sm:text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
@@ -1173,19 +1329,18 @@ export default function QuotePage() {
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5 sm:mt-1 text-[10.5px] sm:text-xs text-slate-500">
-                        {item.colour && item.colour !== "Standard" && (
-                          <span className="text-[10px] sm:text-[11px] font-medium text-slate-600 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
-                            {item.colour}
+                        {(item.colour || item.color) ? (
+                          <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 bg-slate-100 px-1.5 py-0.2 rounded border border-slate-200">
+                            {item.colour || item.color}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] sm:text-[11px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                            Color required
                           </span>
                         )}
                         <span>
                           ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
                         </span>
-                        {!item.isPair && (
-                          <span className="text-[9.5px] sm:text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-md">
-                            MOQ: {item.minQty}
-                          </span>
-                        )}
                         <span className={`text-[10px] sm:text-[11px] font-bold px-1.5 py-0.2 rounded border transition-colors ${item.tierNumber === 3
                           ? "text-emerald-900 bg-emerald-100 border-emerald-300"
                           : item.tierNumber === 2
@@ -1209,13 +1364,13 @@ export default function QuotePage() {
                     <div className="inline-flex items-center bg-slate-50 border border-slate-200 rounded-lg sm:rounded-xl p-0.5 sm:p-1 shadow-2xs">
                       <button
                         type="button"
-                        disabled={item.qty <= item.minQty}
-                        onClick={() => setQty(item.key, Math.max(item.minQty, (item.qty || item.minQty) - 1))}
-                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${item.qty <= item.minQty
+                        disabled={item.qty <= 1}
+                        onClick={() => setQty(item.key, Math.max(1, (item.qty || 1) - 1))}
+                        className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${item.qty <= 1
                             ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed opacity-50"
                             : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
                           }`}
-                        title={item.qty <= item.minQty ? (item.isPair ? "Minimum quantity is 1" : "Minimum wholesale quantity is 10") : "Decrease quantity"}
+                        title={item.qty <= 1 ? "Minimum line quantity is 1" : "Decrease quantity"}
                         aria-label="Decrease quantity"
                       >
                         <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
@@ -1228,12 +1383,12 @@ export default function QuotePage() {
                         value={item.qty}
                         onChange={(e) => {
                           const c = e.target.value.replace(/\D/g, "");
-                          setQty(item.key, c ? parseInt(c, 10) : item.minQty);
+                          setQty(item.key, c ? parseInt(c, 10) : 1);
                         }}
                         onBlur={(e) => {
                           const c = parseInt(e.target.value, 10);
-                          if (isNaN(c) || c < item.minQty) {
-                            setQty(item.key, item.minQty);
+                          if (isNaN(c) || c < 1) {
+                            setQty(item.key, 1);
                           }
                         }}
                         className="w-9 sm:w-12 text-center text-xs font-bold text-slate-900 bg-transparent outline-none select-all"

@@ -8,43 +8,26 @@ const QuoteContext = createContext(null);
 
 export const useQuote = () => useContext(QuoteContext);
 
-// ── Pricing constants & Dynamic Volume Tier Rules ────────────────────────────
-// Tier 1: 1–100 units   -> 15% wholesale discount
-// Tier 2: 101–200 units -> 20% volume discount
-// Tier 3: 201+ units    -> 25% enterprise bulk discount
-// Bundle bonus (5%) applied on overall net subtotal when 2+ distinct products are in basket.
-export const BUNDLE_BONUS_PCT = 5;
-// Diwali Special extra discount (5%) applied on all primary products.
-export const DIWALI_SPECIAL_EXTRA_PCT = 5;
-
-export function getItemDiscountPct(qty, isPrimary = true) {
-  const q = Number(qty) || 1;
-  let baseDiscount = 15;
-  if (q >= 201 || q >= 200) baseDiscount = 25; // Tier 3: 200+ units -> 25% off
-  else if (q >= 101) baseDiscount = 20;  // Tier 2: 101–200 units -> 20% off
-  else baseDiscount = 15;                // Tier 1: 1–100 units -> 15% off
-
-  // Diwali Special: 5% extra discount on all primary products
-  if (isPrimary) {
-    return baseDiscount + DIWALI_SPECIAL_EXTRA_PCT;
-  }
-  return baseDiscount;
-}
-
-export function getItemTierNumber(qty) {
-  const q = Number(qty) || 1;
-  if (q >= 201 || q >= 200) return 3;
-  if (q >= 101) return 2;
-  return 1;
-}
-
-export function getItemTierLabel(qty, isPrimary = true) {
-  const q = Number(qty) || 1;
-  const diwaliExtra = isPrimary ? ` + ${DIWALI_SPECIAL_EXTRA_PCT}% Diwali Special` : "";
-  if (q >= 201 || q >= 200) return `Tier 3 (200+ units • 25%${diwaliExtra} = 30% Off)`;
-  if (q >= 101) return `Tier 2 (101–200 units • 20%${diwaliExtra} = 25% Off)`;
-  return `Tier 1 (1–100 units • 15%${diwaliExtra} = 20% Off)`;
-}
+export {
+  BUNDLE_BONUS_PCT,
+  DIWALI_SPECIAL_EXTRA_PCT,
+  getItemDiscountPct,
+  getItemTierNumber,
+  getItemTierLabel,
+  computeLineItem,
+  moqErrors,
+  sanitizeCustomizationPayload
+} from "@/lib/cartModel";
+import {
+  BUNDLE_BONUS_PCT,
+  DIWALI_SPECIAL_EXTRA_PCT,
+  getItemDiscountPct,
+  getItemTierNumber,
+  getItemTierLabel,
+  computeLineItem,
+  moqErrors,
+  sanitizeCustomizationPayload
+} from "@/lib/cartModel";
 
 // Safely resolve the base reference MRP — NEVER from an already-discounted price
 function resolveMRP(product) {
@@ -56,50 +39,6 @@ function resolveMRP(product) {
   if (product.originalBasePrice > 0) return product.originalBasePrice;
   if (product.price > 0) return product.price;
   return 500;
-}
-
-// ── Centralized Pure Function to Compute a Line Item ───────────────────────────
-export function computeLineItem(item) {
-  const isPair = Boolean(item.isPairItem === true || item.isPair === true);
-  const isPrimary = !isPair;
-  const minQty = isPair ? 1 : Math.max(10, Number(item.moq) || 10);
-  const qty = Math.max(minQty, Number(item.qty) || minQty);
-  const basePrice = Number(
-    item.mrp || item.retailMrp || item.retailPrice || item.originalPrice || item.wholesalePrice || item.originalBasePrice || item.price || 0
-  );
-  const retailMrp = Number(item.retailMrp || item.mrp || item.retailPrice || item.originalPrice || basePrice);
-
-  // Real-time dynamic volume tier discount + 5% Extra Diwali Special on primary products
-  const discountPct = getItemDiscountPct(qty, isPrimary);
-  const tierNumber = getItemTierNumber(qty);
-  const tierLabel = getItemTierLabel(qty, isPrimary);
-
-  const lineGross = basePrice * qty;
-  const lineDiscount = Math.round(lineGross * (discountPct / 100));
-  const lineNet = lineGross - lineDiscount;
-  const unitPrice = Math.round(basePrice * (1 - discountPct / 100));
-
-  return {
-    ...item,
-    qty,
-    mrp: basePrice,
-    retailMrp,
-    wholesalePrice: basePrice,
-    originalBasePrice: basePrice,
-    retailPrice: retailMrp,
-    price: unitPrice,
-    discountPct,
-    diwaliDiscountPct: isPrimary ? DIWALI_SPECIAL_EXTRA_PCT : 0,
-    tierNumber,
-    tierLabel,
-    isPair,
-    isPairItem: isPair,
-    isPrimary,
-    minQty,
-    lineGross,
-    lineDiscount,
-    lineNet,
-  };
 }
 
 export function QuoteProvider({ children }) {
@@ -126,51 +65,62 @@ export function QuoteProvider({ children }) {
     setTimeout(() => setToast(null), 3200);
   };
 
-  const saveItems = (newItems) => {
-    const computed = newItems.map(computeLineItem);
-    setItems(computed);
-    try {
-      localStorage.setItem("gf_quote_v2", JSON.stringify(computed));
-    } catch (e) {
-      console.error("Failed to persist quote basket", e);
-    }
+  const saveItems = (newItemsOrUpdater) => {
+    setItems((prevItems) => {
+      const newItems = typeof newItemsOrUpdater === "function" ? newItemsOrUpdater(prevItems) : newItemsOrUpdater;
+      const computed = newItems.map(computeLineItem);
+      try {
+        localStorage.setItem("gf_quote_v2", JSON.stringify(computed));
+      } catch (e) {
+        console.error("Failed to persist quote basket", e);
+      }
+      return computed;
+    });
   };
 
-  // ── add ───────────────────────────────────────────────────────────────────
-  const add = (product, colour, qty) => {
-    // Explicit pair detection ONLY (never from bundle bonuses or tier titles)
-    const isPair = Boolean(product.isPairItem === true || product.isPair === true);
-    const isPrimary = !isPair;
-    const parentSlug = isPair ? (product.parentSlug || product.pairedWithSlug || null) : null;
-    const pairedWithKey = isPair ? (product.pairedWithKey || (parentSlug ? `${parentSlug}-${colour || "standard"}` : null)) : null;
-    const parentName = isPair ? (product.parentName || null) : null;
+  // ── addBatch (Atomic addition of multiple items/variants in a single pass) ──
+  const addBatch = (batchList) => {
+    if (!Array.isArray(batchList) || batchList.length === 0) return;
 
-    // Use a distinct key for paired items so they don't overwrite primary products of same slug
-    const key = isPair && parentSlug
-      ? `${product.slug}-${colour || "standard"}-pair-${parentSlug}`
-      : isPair
-        ? `${product.slug}-${colour || "standard"}-pair`
-        : `${product.slug}-${colour || "standard"}`;
+    saveItems((currentItems) => {
+      let current = [...currentItems];
 
-    // Lock the MRP on first add — this value never changes regardless of qty updates
-    const mrp = resolveMRP(product);
-    const minAllowed = isPair ? 1 : Math.max(10, Number(product.moq) || 10);
-    const maxStock = typeof product.totalStock === "number" && product.totalStock > 0
-      ? product.totalStock
-      : (typeof product.stockQuantity === "number" && product.stockQuantity > 0 ? product.stockQuantity : 999999);
-    const validQty = Math.min(maxStock, Math.max(minAllowed, parseInt(qty, 10) || minAllowed));
+      for (const { product, colour, qty } of batchList) {
+        const isPair = Boolean(product.isPairItem === true || product.isPair === true || product.addOn === true);
+        const isPrimary = !isPair;
+        const parentSlug = isPair ? (product.parentSlug || product.pairedWithSlug || null) : null;
+        const rawColor = (colour || product.colour || product.color || "").trim();
 
-    const existing = items.find((x) => x.key === key);
-    let updated;
+        if (!rawColor) {
+          console.error("Cart line rejected: missing required color for " + (product.name || product.slug));
+          continue;
+        }
 
-    if (existing) {
-      const newQty = Math.min(maxStock, existing.qty + validQty);
-      const lockedMRP = existing.wholesalePrice || existing.originalBasePrice || mrp;
+        const pairedWithKey = isPair ? (product.pairedWithKey || (parentSlug ? `${parentSlug}-${rawColor.toLowerCase()}` : null)) : null;
+        const parentName = isPair ? (product.parentName || null) : null;
 
-      updated = items.map((x) =>
-        x.key === key
-          ? computeLineItem({
-            ...x,
+        const key = isPair && parentSlug
+          ? `${product.slug}-${rawColor.toLowerCase()}-addon-${parentSlug}`
+          : isPair
+            ? `${product.slug}-${rawColor.toLowerCase()}-addon`
+            : `${product.slug}-${rawColor.toLowerCase()}`;
+
+        const mrp = resolveMRP(product);
+        const minAllowed = 1;
+        const maxStock = typeof product.totalStock === "number" && product.totalStock > 0
+          ? product.totalStock
+          : (typeof product.stockQuantity === "number" && product.stockQuantity > 0 ? product.stockQuantity : 999999);
+        const validQty = Math.min(maxStock, Math.max(minAllowed, parseInt(qty, 10) || minAllowed));
+
+        const existingIndex = current.findIndex((x) => x.key === key);
+
+        if (existingIndex !== -1) {
+          const existing = current[existingIndex];
+          const newQty = Math.min(maxStock, existing.qty + validQty);
+          const lockedMRP = existing.wholesalePrice || existing.originalBasePrice || mrp;
+
+          current[existingIndex] = computeLineItem({
+            ...existing,
             qty: newQty,
             wholesalePrice: lockedMRP,
             originalBasePrice: lockedMRP,
@@ -178,68 +128,91 @@ export function QuoteProvider({ children }) {
             isPrimary: !isPair,
             isPairItem: isPair,
             isPair: isPair,
-            parentSlug: isPair ? (parentSlug || x.parentSlug || null) : null,
-            pairedWithSlug: isPair ? (parentSlug || x.pairedWithSlug || null) : null,
-            pairedWithKey: isPair ? (pairedWithKey || x.pairedWithKey || null) : null,
-            parentName: isPair ? (parentName || x.parentName || null) : null,
-            moq: minAllowed,
-            customBranding: product.customBranding ?? x.customBranding,
-            selectedCustomizations: product.selectedCustomizations ?? x.selectedCustomizations,
-            customizationCount: product.customizationCount ?? x.customizationCount,
-            maxAllowedCustomizations: product.maxAllowedCustomizations ?? x.maxAllowedCustomizations,
-            brandingNotes: product.brandingNotes ?? x.brandingNotes,
-            packagingOption: product.packagingOption ?? x.packagingOption,
-            senderName: product.senderName ?? x.senderName,
-            receiverName: product.receiverName ?? x.receiverName,
-            giftMessage: product.giftMessage ?? x.giftMessage,
-            engravingName: product.engravingName ?? x.engravingName,
-            customProductName: product.customProductName ?? x.customProductName,
-          })
-          : x
-      );
-    } else {
-      updated = [
-        ...items,
-        computeLineItem({
-          key,
-          slug: product.slug,
-          sku: product.sku || "GF-B2B",
-          name: product.name,
-          totalStock: product.totalStock,
-          stockQuantity: product.stockQuantity,
-          unit: product.unit || (/\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.name || "") ? "set" : "piece"),
-          wholesalePrice: mrp,           // LOCKED MRP — never recalculated
-          originalBasePrice: mrp,
-          retailPrice: mrp,
-          mrp,
-          moq: minAllowed,
-          isPrimary: !isPair,
-          isPairItem: isPair,
-          isPair: isPair,
-          parentSlug,
-          pairedWithSlug: parentSlug,
-          pairedWithKey,
-          parentName,
-          image: product.image,
-          colour: colour || "Standard",
-          qty: validQty,
-          customBranding: product.customBranding,
-          selectedCustomizations: product.selectedCustomizations,
-          customizationCount: product.customizationCount,
-          maxAllowedCustomizations: product.maxAllowedCustomizations,
-          brandingNotes: product.brandingNotes,
-          packagingOption: product.packagingOption,
-          senderName: product.senderName || "",
-          receiverName: product.receiverName || "",
-          giftMessage: product.giftMessage || "",
-          engravingName: product.engravingName || "",
-          customProductName: product.customProductName || "",
-        }),
-      ];
-    }
+            addOn: isPair,
+            parentSlug: isPair ? (parentSlug || existing.parentSlug || null) : null,
+            pairedWithSlug: isPair ? (parentSlug || existing.pairedWithSlug || null) : null,
+            pairedWithKey: isPair ? (pairedWithKey || existing.pairedWithKey || null) : null,
+            parentName: isPair ? (parentName || existing.parentName || null) : null,
+            moq: product.moq || 10,
+            productId: product.productId || product._id || product.id || existing.productId,
+            variantId: product.variantId || existing.variantId || null,
+            raw_sku: product.raw_sku || product.sku || existing.raw_sku || "GF-B2B",
+            channel: "b2b",
+            colour: rawColor,
+            color: rawColor,
+            selectedColor: rawColor,
+            selectedColour: rawColor,
+            customBranding: product.customBranding ?? existing.customBranding,
+            selectedCustomizations: product.selectedCustomizations ?? existing.selectedCustomizations,
+            customizationCount: product.customizationCount ?? existing.customizationCount,
+            maxAllowedCustomizations: product.maxAllowedCustomizations ?? existing.maxAllowedCustomizations,
+            brandingNotes: product.brandingNotes ?? existing.brandingNotes,
+            packagingOption: product.packagingOption ?? existing.packagingOption,
+            senderName: product.senderName ?? existing.senderName,
+            receiverName: product.receiverName ?? existing.receiverName,
+            giftMessage: product.giftMessage ?? existing.giftMessage,
+            engravingName: product.engravingName ?? existing.engravingName,
+            customProductName: product.customProductName ?? existing.customProductName,
+          });
+        } else {
+          current.push(
+            computeLineItem({
+              key,
+              productId: product.productId || product._id || product.id,
+              variantId: product.variantId || null,
+              raw_sku: product.raw_sku || product.sku || "GF-B2B",
+              channel: "b2b",
+              slug: product.slug,
+              sku: product.sku || "GF-B2B",
+              name: product.name,
+              totalStock: product.totalStock,
+              stockQuantity: product.stockQuantity,
+              unit: product.unit || (/\b(set|sets|storage bowl|storage bowls|bowl set|bowls set|dining set|hamper|combo|pack of|gift set|kit)\b/i.test(product.name || "") ? "set" : "piece"),
+              wholesalePrice: mrp,
+              originalBasePrice: mrp,
+              retailPrice: mrp,
+              mrp,
+              moq: product.moq || 10,
+              isPrimary: !isPair,
+              isPairItem: isPair,
+              isPair: isPair,
+              addOn: isPair,
+              parentSlug,
+              pairedWithSlug: parentSlug,
+              pairedWithKey,
+              parentName,
+              image: product.image,
+              colour: rawColor,
+              color: rawColor,
+              selectedColor: rawColor,
+              selectedColour: rawColor,
+              qty: validQty,
+              customBranding: product.customBranding,
+              selectedCustomizations: product.selectedCustomizations,
+              customizationCount: product.customizationCount,
+              maxAllowedCustomizations: product.maxAllowedCustomizations,
+              brandingNotes: product.brandingNotes,
+              packagingOption: product.packagingOption,
+              senderName: product.senderName || "",
+              receiverName: product.receiverName || "",
+              giftMessage: product.giftMessage || "",
+              engravingName: product.engravingName || "",
+              customProductName: product.customProductName || "",
+            })
+          );
+        }
+      }
 
-    saveItems(updated);
-    showToast(`Added ${validQty}× ${product.name} to quote basket.`);
+      return current;
+    });
+
+    const totalAdded = batchList.reduce((sum, item) => sum + (parseInt(item.qty, 10) || 0), 0);
+    showToast(`Added ${totalAdded} pieces to quote basket.`);
+  };
+
+  // ── add ───────────────────────────────────────────────────────────────────
+  const add = (product, colour, qty) => {
+    addBatch([{ product, colour, qty }]);
   };
 
   // ── setQty (Instant Centralized Reactive Update) ───────────────────────────
@@ -247,68 +220,62 @@ export function QuoteProvider({ children }) {
     const parsed = parseInt(rawQty, 10);
     const updated = items.map((x) => {
       if (x.key !== key) return x;
-      const isPair = Boolean(x.isPairItem === true || x.isPair === true);
-      const minAllowed = isPair ? 1 : Math.max(10, Number(x.moq) || 10);
+      const minAllowed = 1;
       const maxStock = typeof x.totalStock === "number" && x.totalStock > 0
         ? x.totalStock
         : (typeof x.stockQuantity === "number" && x.stockQuantity > 0 ? x.stockQuantity : 999999);
       const validQty = Math.min(maxStock, Math.max(minAllowed, isNaN(parsed) ? minAllowed : parsed));
-      return computeLineItem({ ...x, qty: validQty, moq: minAllowed });
+      return computeLineItem({ ...x, qty: validQty, minQty: 1 });
     });
     saveItems(updated);
   };
 
   // ── remove / clear ────────────────────────────────────────────────────────
   const remove = (key) => {
-    const itemToRemove = items.find((x) => x.key === key || x.slug === key);
+    const itemToRemove = items.find((x) => x.key === key);
     if (!itemToRemove) {
       saveItems(items.filter((x) => x.key !== key));
       return;
     }
 
-    const isPrimary = !itemToRemove.isPair && !itemToRemove.isPairItem;
+    const isPrimary = !itemToRemove.isPair && !itemToRemove.isPairItem && !itemToRemove.addOn;
 
     let remaining;
     if (isPrimary) {
       // 1. Remove the primary item
-      // 2. Also remove any paired items linked to this primary item
+      // 2. Also remove any paired items linked specifically to this primary item key
       remaining = items.filter((x) => {
         if (x.key === itemToRemove.key) return false;
-        // Check if x is a pair item linked to this primary item
-        const isLinkedPair = (x.isPair || x.isPairItem) && (
-          x.parentSlug === itemToRemove.slug ||
-          x.pairedWithSlug === itemToRemove.slug ||
+        const isLinkedPair = (x.isPair || x.isPairItem || x.addOn) && (
           x.pairedWithKey === itemToRemove.key ||
-          (x.key && x.key.includes(`-pair-${itemToRemove.slug}`))
+          (x.key && x.key.includes(`-addon-${itemToRemove.slug}`))
         );
         if (isLinkedPair) return false;
         return true;
       });
 
       // 3. Find all primary items remaining in the basket
-      const remainingPrimary = remaining.filter((x) => !x.isPair && !x.isPairItem);
+      const remainingPrimary = remaining.filter((x) => !x.isPair && !x.isPairItem && !x.addOn);
 
-      // If NO primary items remain at all in the basket, purge all orphan pair items!
+      // If NO primary items remain at all in the basket, purge orphan pair items!
       if (remainingPrimary.length === 0) {
         remaining = [];
       } else {
-        // If there are pair items whose parent is no longer in the cart, clean them up
         remaining = remaining.filter((x) => {
-          if (!x.isPair && !x.isPairItem) return true;
+          if (!x.isPair && !x.isPairItem && !x.addOn) return true;
           if (x.parentSlug || x.pairedWithSlug) {
-            const parentSlug = x.parentSlug || x.pairedWithSlug;
-            return remainingPrimary.some((p) => p.slug === parentSlug);
+            const pSlug = x.parentSlug || x.pairedWithSlug;
+            return remainingPrimary.some((p) => p.slug === pSlug);
           }
-          // If pair had no explicit parentSlug (e.g. legacy), keep only while primary items exist
           return true;
         });
       }
 
-      showToast(`Removed ${itemToRemove.name}${items.length > remaining.length + 1 ? " and linked paired item" : ""}.`);
+      showToast(`Removed ${itemToRemove.name} (${itemToRemove.colour || itemToRemove.color})${items.length > remaining.length + 1 ? " and linked paired item" : ""}.`);
     } else {
-      // User is removing a pair item directly
+      // User is removing a pair/add-on item directly
       remaining = items.filter((x) => x.key !== itemToRemove.key);
-      showToast(`Removed ${itemToRemove.name} from basket.`);
+      showToast(`Removed ${itemToRemove.name} (${itemToRemove.colour || itemToRemove.color}) from basket.`);
     }
 
     saveItems(remaining);
@@ -316,8 +283,36 @@ export function QuoteProvider({ children }) {
 
   const clear = () => saveItems([]);
 
-  const updateCustomizations = (key, data) => {
-    saveItems(items.map((x) => (x.key === key ? { ...x, ...data } : x)));
+  // Strip colour/variant/identity fields so customizations never overwrite line identity
+  const sanitizeCustomizationPayload = (payload) => {
+    if (!payload || typeof payload !== "object") return {};
+    const {
+      colour,
+      color,
+      selectedColor,
+      selectedColour,
+      variantId,
+      key,
+      slug,
+      productId,
+      raw_sku,
+      channel,
+      ...safeFields
+    } = payload;
+    return safeFields;
+  };
+
+  const updateCustomizations = (keyOrUpdates, data) => {
+    saveItems((current) => {
+      if (typeof keyOrUpdates === "object" && keyOrUpdates !== null && !data) {
+        return current.map((x) => {
+          const update = keyOrUpdates[x.key];
+          if (!update) return x;
+          return { ...x, ...sanitizeCustomizationPayload(update) };
+        });
+      }
+      return current.map((x) => (x.key === keyOrUpdates ? { ...x, ...sanitizeCustomizationPayload(data) } : x));
+    });
   };
 
   // ── Derived cart-level totals with centralized reactive calculations ──────
@@ -351,6 +346,7 @@ export function QuoteProvider({ children }) {
         items,
         lineItems,
         add,
+        addBatch,
         setQty,
         remove,
         clear,
@@ -375,6 +371,8 @@ export function QuoteProvider({ children }) {
         drawerOpen,
         setDrawerOpen,
         showToast,
+        moqErrors: () => moqErrors(lineItems),
+        moqErrorList: moqErrors(lineItems),
       }}
     >
       {children}
@@ -411,94 +409,15 @@ export function Count({ className = "" }) {
 }
 
 export function AddToQuote({ p }) {
-  const { add, items, setQty, remove } = useQuote() || {};
-  const [added, setAdded] = useState(false);
-  const defaultColour = p.colours ? p.colours[0] : "Natural Sand";
-  const minQty = p.moq || 10;
-  const step = 10;
-
-  // Check if item is already added to quote basket
-  const basketItem = items?.find(
-    (x) => x.slug === p.slug || x.key?.startsWith(`${p.slug}-`)
-  );
-
-  const handleAdd = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!add) return;
-    add(p, defaultColour, minQty);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
-  };
-
-  const handleDecrease = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!basketItem) return;
-    const nextQty = basketItem.qty - step;
-    if (nextQty < minQty) {
-      if (remove) remove(basketItem.key);
-    } else if (setQty) {
-      setQty(basketItem.key, nextQty);
-    }
-  };
-
-  const handleIncrease = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!basketItem || !setQty) return;
-    setQty(basketItem.key, basketItem.qty + step);
-  };
-
-  if (basketItem) {
-    return (
-      <div className="w-full h-9 sm:h-9.5 flex items-center justify-between bg-brand-50 border border-brand-200 rounded-md p-1 shadow-2xs">
-        <button
-          type="button"
-          onClick={handleDecrease}
-          className="w-7 h-7 rounded-[4px] flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
-          title="Decrease quantity"
-          aria-label="Decrease quantity"
-        >
-          <Minus className="w-3.5 h-3.5" />
-        </button>
-        <span className="text-xs font-bold text-brand-900 px-1 truncate select-none">
-          {basketItem.qty} in Basket
-        </span>
-        <button
-          type="button"
-          onClick={handleIncrease}
-          className="w-7 h-7 rounded-[4px] flex items-center justify-center text-brand-800 hover:bg-white transition-all font-bold cursor-pointer active:scale-95"
-          title="Increase quantity"
-          aria-label="Increase quantity"
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    );
-  }
-
+  // Do not default silently to colours[0]; require explicit color pick on product page
   return (
-    <button
-      type="button"
-      onClick={handleAdd}
-      title={`Add MOQ (${minQty}) to wholesale basket`}
-      className={`w-full h-9 sm:h-9.5 px-3 text-xs sm:text-[13px] font-bold rounded-md transition-all duration-200 flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] cursor-pointer whitespace-nowrap ${added
-        ? "bg-emerald-600 text-white shadow-emerald-600/30"
-        : "bg-brand-600 hover:bg-brand-700 text-white hover:shadow-sm"
-        }`}
+    <Link
+      href={`/products/${p.slug || ""}`}
+      className="w-full h-9 sm:h-9.5 px-3 text-xs sm:text-[13px] font-bold rounded-md transition-all duration-200 flex items-center justify-center gap-2 shadow-xs active:scale-[0.98] cursor-pointer whitespace-nowrap bg-green-600 hover:bg-green-700 text-white hover:shadow-sm"
+      title={`Select color & quantity for ${p.name}`}
     >
-      {added ? (
-        <>
-          <Check className="w-4 h-4 stroke-[2.5] flex-shrink-0" />
-          <span>Added to Basket!</span>
-        </>
-      ) : (
-        <>
-          <ShoppingBag className="w-4 h-4 flex-shrink-0" />
-          <span>Add to Basket</span>
-        </>
-      )}
-    </button>
+      <ShoppingBag className="w-4 h-4 flex-shrink-0" />
+      <span>Select Options</span>
+    </Link>
   );
 }

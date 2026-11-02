@@ -71,7 +71,7 @@ export function FloatingWhatsAppQuote() {
   return (
     <aside
       aria-label="Quick WhatsApp Quote"
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center flex-row-reverse gap-2 pointer-events-auto select-none"
+      className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-30 flex items-center flex-row-reverse gap-2 pointer-events-auto select-none"
     >
       {/* Floating Action Trigger */}
       <a
