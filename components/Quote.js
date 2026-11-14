@@ -14,6 +14,7 @@ export {
   getItemDiscountPct,
   getItemTierNumber,
   getItemTierLabel,
+  getProductTier1Discount,
   computeLineItem,
   moqErrors,
   sanitizeCustomizationPayload
@@ -24,19 +25,20 @@ import {
   getItemDiscountPct,
   getItemTierNumber,
   getItemTierLabel,
+  getProductTier1Discount,
   computeLineItem,
   moqErrors,
   sanitizeCustomizationPayload
 } from "@/lib/cartModel";
 
-// Safely resolve the base reference MRP — NEVER from an already-discounted price
+// Safely resolve the base reference MRP from backend — NEVER from an already-discounted price
 function resolveMRP(product) {
   if (product.mrp > 0) return product.mrp;
-  if (product.retailMrp > 0) return product.retailMrp;
-  if (product.retailPrice > 0) return product.retailPrice;
   if (product.originalPrice > 0) return product.originalPrice;
+  if (product.retailMrp > 0) return product.retailMrp;
   if (product.wholesalePrice > 0) return product.wholesalePrice;
   if (product.originalBasePrice > 0) return product.originalBasePrice;
+  if (product.retailPrice > 0) return product.retailPrice;
   if (product.price > 0) return product.price;
   return 500;
 }
@@ -125,6 +127,7 @@ export function QuoteProvider({ children }) {
             wholesalePrice: lockedMRP,
             originalBasePrice: lockedMRP,
             retailPrice: lockedMRP,
+            tier1Discount: existing.tier1Discount || product.tier1Discount,
             isPrimary: !isPair,
             isPairItem: isPair,
             isPair: isPair,
@@ -172,6 +175,7 @@ export function QuoteProvider({ children }) {
               originalBasePrice: mrp,
               retailPrice: mrp,
               mrp,
+              tier1Discount: product.tier1Discount,
               moq: product.moq || 10,
               isPrimary: !isPair,
               isPairItem: isPair,

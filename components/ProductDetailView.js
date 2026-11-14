@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useQuote } from "./Quote";
+import { getProductTier1Discount } from "@/lib/cartModel";
 import { optimizeImageUrl, getImageSrcSet, IMAGE_SIZES } from "@/lib/imageOptimization";
 import {
   Zap,
@@ -759,24 +760,35 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   const mrp =
     typeof product.mrp === "number" && product.mrp > 0
       ? product.mrp
-      : typeof product.retailPrice === "number" && product.retailPrice > 0
-        ? product.retailPrice
-        : typeof product.originalPrice === "number" && product.originalPrice > 0
-          ? product.originalPrice
+      : typeof product.originalPrice === "number" && product.originalPrice > 0
+        ? product.originalPrice
+        : typeof product.retailMrp === "number" && product.retailMrp > 0
+          ? product.retailMrp
           : (typeof product.price === "number" ? product.price : 0);
 
-  // The base reference price is the MRP (user gives 20% off MRP per piece for Tier 1)
+  // The base reference price is the MRP from backend
   const basePrice = mrp > 0 ? mrp : (typeof product.price === "number" ? product.price : 0);
   const wholesaleUnitPrice = basePrice;
   const currentCustomizations = activeOccasion.customizations;
 
-  // Tiers: base discount percentages + 5% Extra Diwali Special discount for primary products.
+  // Dynamic Tiers: Tier 1 from backend, Tier 2 = +5%, Tier 3 = +10%
+  const tier1Discount = getProductTier1Discount(product);
+  const tier2Discount = Math.round((tier1Discount + 5) * 100) / 100;
+  const tier3Discount = Math.round((tier1Discount + 10) * 100) / 100;
+
+  // Tier 1 price from backend product (e.g. 2559 for Eco Desk Set)
+  const tier1Price =
+    Number(product.sellingPrice || product.discountedPrice || product.b2b_price || product.b2cPrice || product.offerPrice) ||
+    (basePrice > 0 ? Math.round(basePrice * (1 - tier1Discount / 100)) : 0);
+
   const currentTiers = activeOccasion.tiers.map((t) => {
-    const baseDiscount = t.tierNumber === 1 ? 15 : t.tierNumber === 2 ? 20 : 25;
-    const discountPct = baseDiscount + 5; // 20%, 25%, 30%
-    const effectivePricePerUnit = basePrice > 0
-      ? Math.round(basePrice * (1 - discountPct / 100))
-      : Math.round(t.price * 0.95);
+    const discountPct = t.tierNumber === 1 ? tier1Discount : t.tierNumber === 2 ? tier2Discount : tier3Discount;
+    const effectivePricePerUnit =
+      t.tierNumber === 1 && tier1Price > 0
+        ? tier1Price
+        : basePrice > 0
+          ? Math.round(basePrice * (1 - discountPct / 100))
+          : Math.round(t.price * (1 - discountPct / 100));
     return {
       ...t,
       badge: `-${discountPct}%`,
@@ -961,15 +973,22 @@ export default function ProductDetailView({ product, context, relatedProducts: r
     });
   }, [maxCustomizations]);
 
-  // Pricing calculations based on combined total
-  const baseTierDiscountPct = activeTierObj.tierNumber === 1 ? 15 : activeTierObj.tierNumber === 2 ? 20 : 25;
-  const activeTierDiscountPct = baseTierDiscountPct + 5; // 20%, 25%, 30%
+  // Pricing calculations based on combined total: Tier 1 from backend, Tier 2 = +5%, Tier 3 = +10%
+  const activeTierDiscountPct =
+    activeTierObj.tierNumber === 1
+      ? tier1Discount
+      : activeTierObj.tierNumber === 2
+        ? tier2Discount
+        : tier3Discount;
   const grossWholesaleSubtotal = wholesaleUnitPrice * totalCombinedQty;
   const mainDiscountAmount = Math.round(grossWholesaleSubtotal * activeTierDiscountPct / 100);
   const estimatedSubtotal = grossWholesaleSubtotal - mainDiscountAmount;
-  const effectiveUnitPrice = wholesaleUnitPrice > 0
-    ? Math.round(wholesaleUnitPrice * (1 - activeTierDiscountPct / 100))
-    : activeTierObj.price;
+  const effectiveUnitPrice =
+    activeTierObj.tierNumber === 1 && tier1Price > 0
+      ? tier1Price
+      : wholesaleUnitPrice > 0
+        ? Math.round(wholesaleUnitPrice * (1 - activeTierDiscountPct / 100))
+        : activeTierObj.price;
 
   // Independent Stepper & Input Handlers
   const handleAdjustVariantQty = (colorName, delta) => {
@@ -1109,6 +1128,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
       variantId: variant.id || variant._id || `var-${variant.name}`,
       price: effectiveUnitPrice,
       wholesalePrice: wholesaleUnitPrice,
+      tier1Discount,
       discountPct: activeTierDiscountPct,
       grossTotal: variantGross,
       discountAmount: variantDiscount,
@@ -1514,11 +1534,6 @@ export default function ProductDetailView({ product, context, relatedProducts: r
                 <span className="capitalize">
                   {typeof product.category === "string" ? product.category : product.category?.name || "Pet Care"}
                 </span>
-              </span>
-
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200/90 shadow-2xs">
-                <span>🪔</span>
-                <span>Extra 5% Off Diwali Special</span>
               </span>
             </div>
 
@@ -2145,7 +2160,9 @@ export default function ProductDetailView({ product, context, relatedProducts: r
             {relatedProducts.slice(0, 4).map((rel) => {
               const relMrp = Number(rel.mrp || rel.retailPrice || rel.originalPrice || 0);
               const relBase = relMrp > 0 ? relMrp : Number(rel.wholesalePrice || rel.price || 0);
-              const relOffer = rel.offerPrice || (relBase > 0 ? Math.round(relBase * 0.80) : 0);
+              const relTier1Disc = getProductTier1Discount(rel);
+              const relOffer = rel.offerPrice || (relBase > 0 ? (relTier1Disc > 0 ? Math.round(relBase * (1 - relTier1Disc / 100)) : Math.round(relBase * 0.80)) : 0);
+              const relDiscPct = relTier1Disc || (relMrp > 0 && relOffer > 0 ? Math.round(((relMrp - relOffer) / relMrp) * 100) : 0);
 
               return (
                 <div
@@ -2190,9 +2207,11 @@ export default function ProductDetailView({ product, context, relatedProducts: r
                             ₹{relMrp.toLocaleString("en-IN")}
                           </span>
                         )}
-                        <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded">
-                          20% OFF
-                        </span>
+                        {relDiscPct > 0 && (
+                          <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded">
+                            -{Math.round(relDiscPct)}% OFF
+                          </span>
+                        )}
                       </div>
                     </div>
 

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AddToQuote } from "./Quote";
+import { getProductTier1Discount } from "@/lib/cartModel";
 import { optimizeImageUrl, getImageSrcSet, IMAGE_SIZES } from "@/lib/imageOptimization";
 
 export default function Card({ p, context }) {
@@ -22,10 +23,12 @@ export default function Card({ p, context }) {
   const optimizedImgSrc = p.image ? optimizeImageUrl(p.image, { width: 500, quality: "auto" }) : "";
   const srcSet = p.image ? getImageSrcSet(p.image, [280, 420, 600, 800]) : "";
 
-  // MRP and 20% off per piece discount (15% bulk + 5% Diwali Special)
+  // MRP and Tier 1 per piece discount from backend
   const mrp = Number(p.mrp || p.retailPrice || p.originalPrice || 0);
   const basePrice = mrp > 0 ? mrp : Number(p.wholesalePrice || p.price || 0);
-  const offerPrice = p.offerPrice || (basePrice > 0 ? Math.round(basePrice * 0.80) : 0);
+  const tier1Discount = getProductTier1Discount(p);
+  const offerPrice = p.offerPrice || (basePrice > 0 ? Math.round(basePrice * (1 - tier1Discount / 100)) : 0);
+  const discountPct = tier1Discount || (mrp > 0 && offerPrice > 0 ? Math.round(((mrp - offerPrice) / mrp) * 100) : 0);
 
   return (
     <article className="group bg-white rounded-xl sm:rounded-2xl border border-slate-200/90 hover:border-brand-400/80 shadow-2xs hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ease-out flex flex-col overflow-hidden">
@@ -81,16 +84,8 @@ export default function Card({ p, context }) {
             {p.tagline || p.desc}
           </p>
 
-          {/* Diwali Special Offer Tag */}
-          <div className="mt-1.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 shadow-2xs">
-              <span>🪔</span>
-              <span>Extra 5% Off Diwali Special 🪔</span>
-            </span>
-          </div>
-
-          {/* Pricing with MRP & 20% Off per piece */}
-          <div className="space-y-0.5 mt-1.5">
+          {/* Pricing with MRP & Tier 1 Discount */}
+          <div className="space-y-0.5 mt-2">
             {mrp > offerPrice && (
               <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
                 <span>MRP:</span>
@@ -104,16 +99,18 @@ export default function Card({ p, context }) {
               <span className="text-[10px] text-slate-400 font-medium">
                 /{p.unit || "unit"}
               </span>
-              <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded">
-                -20% OFF
-              </span>
+              {discountPct > 0 && (
+                <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded">
+                  -{Math.round(discountPct)}% OFF
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         {/* Action Button */}
         <div className="pt-2 border-t border-slate-100">
-          <AddToQuote p={{ ...p, price: offerPrice, wholesalePrice: basePrice, basePrice, mrp, retailMrp: mrp, offerPrice }} />
+          <AddToQuote p={{ ...p, price: offerPrice, wholesalePrice: basePrice, basePrice, mrp, retailMrp: mrp, offerPrice, tier1Discount, discountPct: tier1Discount }} />
         </div>
       </div>
     </article>

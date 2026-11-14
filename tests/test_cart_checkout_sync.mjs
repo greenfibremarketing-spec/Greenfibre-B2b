@@ -298,5 +298,104 @@ test("Cart & Checkout Sync: Order API rejects line with missing or 'Standard' co
   assert.equal(res5.addOn, false);
 });
 
+test("Dynamic Tier Discounts: Tier 1 is backend 32.20%, Tier 2 is +5% (37.20%), Tier 3 is +10% (42.20%) and preserved till cart page", () => {
+  const backendProduct = {
+    _id: "prod-tulsi-1",
+    id: "prod-tulsi-1",
+    slug: "tulsi-planter",
+    name: "Tulsi Planter",
+    sku: "GF-TULSI",
+    mrp: 4838,
+    price: 3280, // (4838 - 3280) / 4838 = 32.20% discount from backend
+    colours: ["Sand Dune"],
+    colors: [{ id: "c1", name: "Sand Dune", stock: 1000 }]
+  };
+
+  // 1. Tier 1 (qty 10, within 1–100) -> discount must be exactly 32.2% from backend
+  const tier1Item = computeLineItem({
+    ...backendProduct,
+    colour: "Sand Dune",
+    qty: 10
+  });
+  assert.equal(tier1Item.tier1Discount, 32.2, "Tier 1 discount must come from backend 32.20%");
+  assert.equal(tier1Item.discountPct, 32.2, "Line discountPct for Tier 1 must be 32.2%");
+  assert.equal(tier1Item.tierNumber, 1);
+  assert.equal(tier1Item.unitPrice, 3280, "Tier 1 unit price matches backend price 3280");
+  assert.equal(tier1Item.lineGross, 48380);
+  assert.equal(tier1Item.lineNet, 32800);
+  assert.equal(tier1Item.lineDiscount, 15580);
+
+  // 2. Tier 2 (qty 150, within 101–200) -> discount must be Tier 1 + 5% = 37.2%
+  const tier2Item = computeLineItem({
+    ...backendProduct,
+    colour: "Sand Dune",
+    qty: 150
+  });
+  assert.equal(tier2Item.tier1Discount, 32.2);
+  assert.equal(tier2Item.discountPct, 37.2, "Tier 2 discount must be Tier 1 + 5% (37.2%)");
+  assert.equal(tier2Item.tierNumber, 2);
+  assert.equal(tier2Item.unitPrice, Math.round(4838 * (1 - 0.372))); // 3038
+
+  // 3. Tier 3 (qty 250, 201+) -> discount must be Tier 2 + 5% (Tier 1 + 10% = 42.2%)
+  const tier3Item = computeLineItem({
+    ...backendProduct,
+    colour: "Sand Dune",
+    qty: 250
+  });
+  assert.equal(tier3Item.tier1Discount, 32.2);
+  assert.equal(tier3Item.discountPct, 42.2, "Tier 3 discount must be Tier 2 + 5% (42.2%)");
+  assert.equal(tier3Item.tierNumber, 3);
+  assert.equal(tier3Item.unitPrice, Math.round(4838 * (1 - 0.422))); // 2796
+
+  // 4. Cart Serialization & Reload Persistence
+  // Cart items saved to localStorage and reloaded must preserve the exact discount
+  const cartJson = JSON.stringify([tier1Item]);
+  const restoredCart = JSON.parse(cartJson).map(computeLineItem);
+  assert.equal(restoredCart[0].discountPct, 32.2, "Cart page reloaded item must show same 32.2% discount");
+  assert.equal(restoredCart[0].unitPrice, 3280, "Cart page unit price must remain 3280");
+
+  // 5. Quantity Stepper in Cart updating from Tier 1 to Tier 2
+  const updatedToTier2 = computeLineItem({ ...restoredCart[0], qty: 120 });
+  assert.equal(updatedToTier2.discountPct, 37.2, "Cart page quantity change to Tier 2 must automatically show 37.2%");
+  assert.equal(updatedToTier2.tierNumber, 2);
+
+  // 6. Quantity Stepper in Cart updating to Tier 3
+  const updatedToTier3 = computeLineItem({ ...restoredCart[0], qty: 220 });
+  assert.equal(updatedToTier3.discountPct, 42.2, "Cart page quantity change to Tier 3 must automatically show 42.2%");
+  assert.equal(updatedToTier3.tierNumber, 3);
+});
+
+test("Eco Desk Set: MRP is 3775 from backend, Tier 1 is 2559 (32.2% off), Tier 2 is 2371 (+5%), Tier 3 is 2182 (+10%)", () => {
+  const ecoDeskSet = {
+    _id: "6abb9ea741c3bdffa53c2df3",
+    name: "Eco Desk Set",
+    slug: "desk-gift-set",
+    mrp: 3775,
+    sellingPrice: 2559,
+    b2bDiscountPct: 32.2,
+    colour: "Green",
+    colors: [{ name: "Green", stock: 264 }]
+  };
+
+  // Tier 1: qty 10 (1–100) -> must be exactly 2559
+  const t1 = computeLineItem({ ...ecoDeskSet, qty: 10 });
+  assert.equal(t1.mrp, 3775, "MRP must be exactly 3775 from backend");
+  assert.equal(t1.unitPrice, 2559, "Tier 1 unit price must be 2559");
+  assert.equal(t1.discountPct, 32.2, "Tier 1 discount must be 32.2%");
+  assert.equal(t1.lineNet, 25590, "Line net for 10 units must be 25590");
+
+  // Tier 2: qty 120 (101–200) -> 37.2% off MRP 3775 = 2371
+  const t2 = computeLineItem({ ...ecoDeskSet, qty: 120 });
+  assert.equal(t2.mrp, 3775);
+  assert.equal(t2.discountPct, 37.2, "Tier 2 discount must be Tier 1 + 5% (37.2%)");
+  assert.equal(t2.unitPrice, 2371, "Tier 2 unit price must be 2371");
+
+  // Tier 3: qty 220 (201+) -> 42.2% off MRP 3775 = 2182
+  const t3 = computeLineItem({ ...ecoDeskSet, qty: 220 });
+  assert.equal(t3.mrp, 3775);
+  assert.equal(t3.discountPct, 42.2, "Tier 3 discount must be Tier 1 + 10% (42.2%)");
+  assert.equal(t3.unitPrice, 2182, "Tier 3 unit price must be 2182");
+});
+
 // Auto-exit after test runner finishes
 setTimeout(() => process.exit(0), 100);
