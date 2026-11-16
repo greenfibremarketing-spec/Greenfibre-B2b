@@ -744,8 +744,13 @@ export default function QuotePage() {
                                         : item.unit === "pack"
                                           ? (item.qty > 1 ? "packs" : "pack")
                                           : (item.unit ? (item.qty > 1 ? `${item.unit}s` : item.unit) : (item.qty > 1 ? "pieces" : "piece"))
-                                } × ₹{item.mrp.toLocaleString("en-IN")}
+                                } × ₹{(item.unitPrice || item.price || item.mrp).toLocaleString("en-IN")}
                               </span>
+                              {item.mrp > (item.unitPrice || item.price) && (
+                                <span className="line-through text-slate-400 text-[10.5px]">
+                                  ₹{item.mrp.toLocaleString("en-IN")}
+                                </span>
+                              )}
                               {item.discountPct > 0 && (
                                 <span className="text-[9.5px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-0.5">
                                   {item.discountPct}% off
@@ -1338,9 +1343,14 @@ export default function QuotePage() {
                             Color required
                           </span>
                         )}
-                        <span>
-                          ₹{item.mrp.toLocaleString("en-IN")}/{item.unit || "pc"}
+                        <span className="font-semibold text-slate-800">
+                          ₹{(item.unitPrice || item.price || item.mrp).toLocaleString("en-IN")}/{item.unit || "pc"}
                         </span>
+                        {item.mrp > (item.unitPrice || item.price) && (
+                          <span className="line-through text-slate-400 text-[10px]">
+                            ₹{item.mrp.toLocaleString("en-IN")}
+                          </span>
+                        )}
                         <span className={`text-[10px] sm:text-[11px] font-bold px-1.5 py-0.2 rounded border transition-colors ${item.tierNumber === 3
                           ? "text-emerald-900 bg-emerald-100 border-emerald-300"
                           : item.tierNumber === 2
