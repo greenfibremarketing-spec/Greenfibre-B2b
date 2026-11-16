@@ -776,9 +776,11 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   const tier2Discount = Math.round((tier1Discount + 5) * 100) / 100;
   const tier3Discount = Math.round((tier1Discount + 10) * 100) / 100;
 
-  // Tier 1 price from backend product (e.g. 2559 for Eco Desk Set)
+  // Tier 1 price from backend product (e.g. b2bPrice from backend)
   const tier1Price =
-    Number(product.sellingPrice || product.discountedPrice || product.b2b_price || product.b2cPrice || product.offerPrice) ||
+    Number(product.b2bPrice || product.b2b_price) ||
+    (tier1Discount > 0 && basePrice > 0 ? Math.round(basePrice * (1 - tier1Discount / 100)) : 0) ||
+    Number(product.sellingPrice || product.discountedPrice || product.offerPrice) ||
     (basePrice > 0 ? Math.round(basePrice * (1 - tier1Discount / 100)) : 0);
 
   const currentTiers = activeOccasion.tiers.map((t) => {

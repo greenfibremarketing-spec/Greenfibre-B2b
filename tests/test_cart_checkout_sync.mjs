@@ -397,5 +397,33 @@ test("Eco Desk Set: MRP is 3775 from backend, Tier 1 is 2559 (32.2% off), Tier 2
   assert.equal(t3.unitPrice, 2182, "Tier 3 unit price must be 2182");
 });
 
+test("Dynamic B2B Discount: when B2B discount is 42% (b2bPrice 2190 on MRP 3775), it dynamically uses 42%, Tier 2 is 47%, Tier 3 is 52%", () => {
+  const b2bProduct = {
+    _id: "6abb9ea741c3bdffa53c2df3",
+    name: "Eco Desk Set",
+    slug: "desk-gift-set",
+    mrp: 3775,
+    b2bPrice: 2190, // (3775 - 2190) / 3775 = 41.99% -> 42%
+    colour: "Green",
+    colors: [{ name: "Green", stock: 264 }]
+  };
+
+  // Tier 1: qty 10 (1–100) -> 42%
+  const t1 = computeLineItem({ ...b2bProduct, qty: 10 });
+  assert.equal(t1.mrp, 3775);
+  assert.equal(t1.discountPct, 41.99, "Tier 1 must dynamically be ~42% from b2bPrice");
+  assert.equal(t1.unitPrice, 2190, "Tier 1 unit price is b2bPrice 2190");
+
+  // Tier 2: qty 120 (101–200) -> 42% + 5% = 47%
+  const t2 = computeLineItem({ ...b2bProduct, qty: 120 });
+  assert.equal(t2.discountPct, 46.99, "Tier 2 must dynamically be Tier 1 + 5% (47%)");
+  assert.equal(t2.unitPrice, Math.round(3775 * (1 - 0.4699))); // 2001
+
+  // Tier 3: qty 220 (201+) -> 42% + 10% = 52%
+  const t3 = computeLineItem({ ...b2bProduct, qty: 220 });
+  assert.equal(t3.discountPct, 51.99, "Tier 3 must dynamically be Tier 2 + 5% (52%)");
+  assert.equal(t3.unitPrice, Math.round(3775 * (1 - 0.5199))); // 1812
+});
+
 // Auto-exit after test runner finishes
 setTimeout(() => process.exit(0), 100);
