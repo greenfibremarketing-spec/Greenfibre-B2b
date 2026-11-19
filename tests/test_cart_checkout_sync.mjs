@@ -425,5 +425,36 @@ test("Dynamic B2B Discount: when B2B discount is 42% (b2bPrice 2190 on MRP 3775)
   assert.equal(t3.unitPrice, Math.round(3775 * (1 - 0.5199))); // 1812
 });
 
+test("Viora Water Bottle: MRP 1533, price 889 (B2B), discountedPrice 1039 (B2C) -> Tier 1 is 42.01% (889), Tier 2 is 47.01% (812), Tier 3 is 52.01% (736)", () => {
+  const bottle = {
+    _id: "6ad617c8b85b95b3f3b1b404",
+    name: "Viora Water Bottle - 600 ml",
+    slug: "viora-water-bottle-600ml",
+    mrp: 1533,
+    originalPrice: 1533,
+    price: 889,
+    discountedPrice: 1039,
+    retailPrice: 1039,
+    colour: "Parrot Green",
+    colors: [{ name: "Parrot Green", stock: 98 }]
+  };
+
+  // Tier 1: qty 10 (1–100) -> 42.01% (889)
+  const t1 = computeLineItem({ ...bottle, qty: 10 });
+  assert.equal(t1.mrp, 1533);
+  assert.equal(t1.discountPct, 42.01, "Tier 1 must dynamically be 42.01% from price 889 vs mrp 1533");
+  assert.equal(t1.unitPrice, 889, "Tier 1 unit price is 889");
+
+  // Tier 2: qty 120 (101–200) -> 42.01% + 5% = 47.01%
+  const t2 = computeLineItem({ ...bottle, qty: 120 });
+  assert.equal(t2.discountPct, 47.01, "Tier 2 must be 47.01%");
+  assert.equal(t2.unitPrice, 812, "Tier 2 unit price is 812 (1533 * (1 - 0.4701))");
+
+  // Tier 3: qty 220 (201+) -> 42.01% + 10% = 52.01%
+  const t3 = computeLineItem({ ...bottle, qty: 220 });
+  assert.equal(t3.discountPct, 52.01, "Tier 3 must be 52.01%");
+  assert.equal(t3.unitPrice, 736, "Tier 3 unit price is 736 (1533 * (1 - 0.5201))");
+});
+
 // Auto-exit after test runner finishes
 setTimeout(() => process.exit(0), 100);

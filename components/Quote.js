@@ -8,17 +8,6 @@ const QuoteContext = createContext(null);
 
 export const useQuote = () => useContext(QuoteContext);
 
-export {
-  BUNDLE_BONUS_PCT,
-  DIWALI_SPECIAL_EXTRA_PCT,
-  getItemDiscountPct,
-  getItemTierNumber,
-  getItemTierLabel,
-  getProductTier1Discount,
-  computeLineItem,
-  moqErrors,
-  sanitizeCustomizationPayload
-} from "@/lib/cartModel";
 import {
   BUNDLE_BONUS_PCT,
   DIWALI_SPECIAL_EXTRA_PCT,
@@ -30,6 +19,18 @@ import {
   moqErrors,
   sanitizeCustomizationPayload
 } from "@/lib/cartModel";
+
+export {
+  BUNDLE_BONUS_PCT,
+  DIWALI_SPECIAL_EXTRA_PCT,
+  getItemDiscountPct,
+  getItemTierNumber,
+  getItemTierLabel,
+  getProductTier1Discount,
+  computeLineItem,
+  moqErrors,
+  sanitizeCustomizationPayload
+};
 
 // Safely resolve the base reference MRP from backend — NEVER from an already-discounted price
 function resolveMRP(product) {

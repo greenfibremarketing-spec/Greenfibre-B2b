@@ -780,6 +780,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   const tier1Price =
     Number(product.b2bPrice || product.b2b_price) ||
     (tier1Discount > 0 && basePrice > 0 ? Math.round(basePrice * (1 - tier1Discount / 100)) : 0) ||
+    (product.price > 0 && basePrice > product.price ? product.price : 0) ||
     Number(product.sellingPrice || product.discountedPrice || product.offerPrice) ||
     (basePrice > 0 ? Math.round(basePrice * (1 - tier1Discount / 100)) : 0);
 
