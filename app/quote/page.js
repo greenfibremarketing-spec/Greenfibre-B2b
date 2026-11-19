@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthContext";
 import {
   CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
   BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal,
-  Clock, Copy, Check, ArrowRight, Leaf, ChevronDown
+  Clock, Copy, Check, ArrowRight, Leaf, ChevronDown, Download
 } from "lucide-react";
 import GreenyLoader from "@/components/GreenyLoader";
 import { optimizeImageUrl } from "@/lib/imageOptimization";
@@ -74,6 +74,18 @@ export default function QuotePage() {
   });
 
   const [catalogProducts, setCatalogProducts] = useState([]);
+  const [quotationDate, setQuotationDate] = useState("");
+  const [mobileTab, setMobileTab] = useState("invoice"); // "invoice" | "form"
+
+  useEffect(() => {
+    setQuotationDate(
+      new Date().toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      })
+    );
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -591,673 +603,746 @@ export default function QuotePage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
-      {/* Premium Leaf Loader displayed on top during quote submission */}
-      <GreenyLoader
-        loading={state.busy}
-        minDuration={4200}
-        title="Processing Wholesale Quotation"
-      />
+    <div className="min-h-screen bg-slate-50/50 flex flex-col justify-center py-2 sm:py-4">
+      <div className="w-full max-w-[1240px] mx-auto px-3 sm:px-6 h-[90dvh] max-h-[90dvh] flex flex-col">
+        {/* Premium Leaf Loader displayed on top during quote submission */}
+        <GreenyLoader
+          loading={state.busy}
+          minDuration={4200}
+          title="Processing Wholesale Quotation"
+        />
 
-      {/* Page header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
-        <p className="text-sm font-medium text-slate-600">
-          Review your order, add your details, and receive a formal GST quotation.
-        </p>
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Response within 2 business hours
-        </span>
-      </div>
+        {/* Mobile Tab Switcher (Visible on mobile < 900px, hidden on desktop >= 900px) */}
+        <div className="flex min-[900px]:hidden bg-slate-100 p-1 rounded-xl mb-2 flex-shrink-0 border border-slate-200/80">
+          <button
+            type="button"
+            onClick={() => setMobileTab("invoice")}
+            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              mobileTab === "invoice"
+                ? "bg-white text-[#1b5e3f] shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span className="w-4 h-4 rounded-full bg-[#1b5e3f] text-white text-[10px] flex items-center justify-center font-bold">1</span>
+            <span>Quotation ({count})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("form")}
+            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              mobileTab === "form"
+                ? "bg-white text-[#1b5e3f] shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <span className="w-4 h-4 rounded-full bg-[#1b5e3f] text-white text-[10px] flex items-center justify-center font-bold">2</span>
+            <span>Your Details</span>
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* ── Left: Worksheet & Summary ─────────────────────────────────────── */}
-        <div className="lg:col-span-6 space-y-5">
-          {/* Section header */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-              <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-[10.5px] sm:text-xs font-bold flex-shrink-0">1</span>
-              <h3 className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight whitespace-nowrap">Your Products</h3>
-              <span className="text-xs font-bold text-slate-400 flex-shrink-0">({count})</span>
-            </div>
-
-            {items.length > 0 && (
-              <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-                {/* Desktop: Browse more products button */}
+        <div className="grid grid-cols-1 min-[900px]:grid-cols-[1.2fr_1fr] gap-4 lg:gap-6 flex-1 min-h-0 items-stretch">
+          {/* ── Left Card: Invoice ────────────────────────────────────────── */}
+          <div className={`bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex-col h-full min-h-0 overflow-hidden ${
+            mobileTab === "invoice" ? "flex" : "hidden min-[900px]:flex"
+          }`}>
+            {/* 1. Header: "Your Products (N)" with "+ Add more products" button */}
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 min-h-[32px] mb-2 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  1
+                </span>
+                <h3 className="font-bold text-slate-900 text-base tracking-tight">
+                  Your Products ({count})
+                </h3>
+              </div>
+              <div className="flex items-center gap-2.5">
                 <Link
                   href="/products"
-                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
                   title="Browse catalog to add more products"
                 >
-                  <Plus className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Add More Products</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add more products</span>
                 </Link>
-
-                {/* Desktop: Adjust Quantities button */}
-                <button
-                  type="button"
-                  onClick={() => setIsAdjustOpen(true)}
-                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 whitespace-nowrap"
-                >
-                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Adjust Quantities</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={clear}
-                  className="text-xs font-medium text-slate-400 hover:text-red-500 transition-colors cursor-pointer px-1.5 py-1 whitespace-nowrap"
-                >
-                  Clear all
-                </button>
-              </div>
-            )}
-          </div>
-
-          {items.length === 0 ? (
-            <div className="py-12 text-center space-y-3 flex flex-col items-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
-              <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
-                <ShoppingBag className="w-5 h-5" />
-              </div>
-              <h4 className="text-sm font-bold text-slate-900">Your quote basket is empty</h4>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">Browse our wholesale catalog to add eco drinkware, tableware, and hampers.</p>
-              <div className="pt-2">
-                <Link href="/products" className="btn-primary text-xs py-2 px-4">Browse Product Catalog</Link>
+                {items.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clear}
+                    className="text-xs text-slate-400 hover:text-rose-600 transition-colors cursor-pointer px-1"
+                    title="Clear quote basket"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {/* ── Quotation Summary Card (Exact Design from Reference) ── */}
-              <div className="bg-white border border-slate-200/90 rounded-2xl sm:rounded-3xl shadow-xs sm:shadow-sm p-3.5 sm:p-6 space-y-3.5 sm:space-y-4 transition-all">
-                {/* Top Header */}
-                <div className="flex items-start justify-between gap-2.5 sm:gap-3">
-                  <div className="space-y-0.5 sm:space-y-1 min-w-0">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 inline-block flex-shrink-0" />
-                      <h3 className="font-extrabold text-slate-900 text-sm sm:text-[17px] tracking-tight truncate">
-                        Green Fibre <span className="text-slate-400 font-normal">·</span> Quotation
-                      </h3>
-                    </div>
-                    <p className="text-[10.5px] sm:text-xs text-slate-500 truncate">
-                      Direct factory wholesale rate <span className="text-slate-400">·</span> Pan-India logistics
-                    </p>
-                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setIsAdjustOpen(true)}
-                    className="inline-flex items-center justify-center px-2.5 py-1 sm:px-3 sm:py-1 bg-white hover:bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 rounded-lg shadow-2xs hover:shadow-xs transition-all cursor-pointer whitespace-nowrap active:scale-95 flex-shrink-0"
-                  >
-                    Edit qty
-                  </button>
+            {/* 2. Invoice header: "Green Fibre" (bold, brand green) + subline, Right: QUOTATION, date, Draft. 2px green line under it */}
+            <div className="flex items-start justify-between pb-2 border-b-2 border-[#16a34a] flex-shrink-0">
+              <div>
+                <div className="font-bold text-[#1b5e3f] text-lg leading-tight tracking-tight">
+                  Green Fibre
                 </div>
-
-                {/* Dashed Separator */}
-                <div className="border-t border-dashed border-slate-200" />
-
-                {/* Products List */}
-                <div className="space-y-3 sm:space-y-4">
-                  {lineItems.map((item) => {
-                    const stockInfo = getStockInfo(item);
-                    const colorDisplay = (item.colour || item.color || "").trim();
-                    const isAddon = Boolean(item.addOn || item.isPair || item.isPairItem);
-
-                    return (
-                      <div key={item.key} className="space-y-1">
-                        <div className="flex items-start justify-between gap-2.5 sm:gap-3">
-                          {/* Left Column: Name, Add-on/Primary Badge, Color Details & Discount */}
-                          <div className="min-w-0 flex-1 space-y-0.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <h4 className="font-bold text-slate-900 text-xs sm:text-[15px] leading-snug">
-                                {item.name}
-                              </h4>
-                              {isAddon ? (
-                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200/80 rounded">
-                                  Add-on{item.parentName ? ` with ${item.parentName}` : ""}
-                                </span>
-                              ) : (
-                                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-700 border border-slate-200 rounded">
-                                  Primary
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs text-slate-500 flex-wrap">
-                              {colorDisplay ? (
-                                <span className="font-semibold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                                  {colorDisplay}
-                                </span>
-                              ) : (
-                                <span className="font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                                  Color required
-                                </span>
-                              )}
-                              <span className="text-slate-300">·</span>
-                              <span>
-                                {item.qty} {
-                                  (item.unit === "set" || /\b(set|storage bowl)\b/i.test(item.name || ""))
-                                    ? (item.qty > 1 ? "sets" : "set")
-                                    : item.unit === "piece"
-                                      ? (item.qty > 1 ? "pieces" : "piece")
-                                      : item.unit === "box"
-                                        ? (item.qty > 1 ? "boxes" : "box")
-                                        : item.unit === "pack"
-                                          ? (item.qty > 1 ? "packs" : "pack")
-                                          : (item.unit ? (item.qty > 1 ? `${item.unit}s` : item.unit) : (item.qty > 1 ? "pieces" : "piece"))
-                                } × ₹{(item.unitPrice || item.price || item.mrp).toLocaleString("en-IN")}
-                              </span>
-                              {item.mrp > (item.unitPrice || item.price) && (
-                                <span className="line-through text-slate-400 text-[10.5px]">
-                                  ₹{item.mrp.toLocaleString("en-IN")}
-                                </span>
-                              )}
-                              {item.discountPct > 0 && (
-                                <span className="text-[9.5px] sm:text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded ml-0.5">
-                                  {item.discountPct}% off
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Per-color stock check from product's colors[].b2bStock: Never silently move qty to another color */}
-                            {stockInfo.isExceeded && (
-                              <div className="flex items-center gap-2 pt-1 text-[11px] sm:text-xs text-rose-600 font-bold">
-                                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span>Only {stockInfo.available} {colorDisplay} available</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setQty(item.key, Math.max(1, stockInfo.available))}
-                                  className="ml-1 px-1.5 py-0.5 bg-rose-100 hover:bg-rose-200 text-rose-800 rounded font-semibold text-[10px] transition-colors cursor-pointer"
-                                >
-                                  Adjust to {stockInfo.available}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Right Column: Net Price + Strikethrough Gross */}
-                          <div className="text-right flex-shrink-0">
-                            <div className="text-sm sm:text-lg font-black text-slate-900">
-                              ₹{item.lineNet.toLocaleString("en-IN")}
-                            </div>
-                            <div className="text-[10.5px] sm:text-xs text-slate-400 line-through">
-                              ₹{item.lineGross.toLocaleString("en-IN")}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <p className="text-xs text-slate-500 leading-normal mt-0.5">
+                  Direct factory wholesale rate · Pan-India logistics
+                </p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <div className="font-bold text-slate-800 text-sm tracking-wider uppercase">
+                  QUOTATION
                 </div>
-
-                {/* Dashed Separator */}
-                <div className="border-t border-dashed border-slate-200" />
-
-                {/* Financial Ledger Breakdown */}
-                <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm text-slate-700">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600">Catalog gross ({totalUnitsCount} units)</span>
-                    <span className="font-medium text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-emerald-700 font-medium">Volume tier discount</span>
-                    <span className="font-bold text-emerald-700">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
-                  </div>
-
-                  {hasBundleBonus && bundleBonusAmount > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-emerald-700 font-medium">Bundle pairing bonus (5%)</span>
-                      <span className="font-bold text-emerald-700">−₹{bundleBonusAmount.toLocaleString("en-IN")}</span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-0.5 sm:pt-1">
-                    <span className="font-bold text-slate-900">Net taxable subtotal</span>
-                    <span className="font-extrabold text-slate-900 text-xs sm:text-base">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
-                  </div>
+                <div className="text-xs text-slate-500 flex items-center justify-end gap-1.5 mt-0.5">
+                  <span>{quotationDate || "Draft Date"}</span>
+                  <span className="text-slate-300">·</span>
+                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[11px]">
+                    Draft
+                  </span>
                 </div>
+              </div>
+            </div>
 
-                {/* Total Savings Pill / Card */}
-                {totalSavings > 0 && (
-                  <div className="bg-[#eef8f2] border border-[#cbebd4] rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between text-xs sm:text-sm">
-                    <span className="font-bold text-[#14532d] text-[11px] sm:text-sm">
-                      You save ₹{totalSavings.toLocaleString("en-IN")} ({savingsPct}%)
-                    </span>
-                    <span className="font-semibold text-[#15803d] text-[11px] sm:text-sm">
-                      Direct factory rate
-                    </span>
-                  </div>
-                )}
+            {/* 3. One-line supplier text under it (muted), then a thin divider */}
+            <div className="py-1.5 border-b border-slate-100 text-xs text-slate-500 mb-2 flex-shrink-0">
+              <span className="font-semibold text-slate-700">Supplier: </span>
+              Green Fibre India Pvt. Ltd. · Direct factory wholesale rate · 18% GST input tax credit
+            </div>
 
-                {/* GST Row */}
-                <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600">
-                  <span>GST 18% (input tax credit eligible)</span>
-                  <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
+            {items.length === 0 ? (
+              <div className="py-8 text-center space-y-3 flex flex-col items-center justify-center flex-1">
+                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
+                  <ShoppingBag className="w-6 h-6" />
                 </div>
-
-                {/* Big Solid Green Final Quotation Banner */}
-                <div className="bg-[#16a34a] text-white rounded-xl p-3.5 sm:p-5 flex items-center justify-between shadow-xs">
-                  <div>
-                    <h4 className="text-sm sm:text-lg font-bold text-white leading-tight">
-                      Final quotation
-                    </h4>
-                    <span className="text-[10.5px] sm:text-xs text-emerald-100 font-normal block mt-0.5">
-                      Incl. GST
-                    </span>
-                  </div>
-                  <div className="text-xl sm:text-3xl font-black text-white tracking-tight">
-                    ₹{totalWithGST.toLocaleString("en-IN")}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleDownloadPdf}
-                    disabled={isDownloadingPdf}
-                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-                  >
-                    {isDownloadingPdf ? (
-                      <>
-                        <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
-                        <span>Generating PDF…</span>
-                      </>
-                    ) : (
-                      <span>Download PDF</span>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleRequestQuoteClick}
-                    className="w-full py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-[#16a34a] hover:bg-[#166534] text-white font-bold text-xs sm:text-sm transition-all duration-200 shadow-sm hover:shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Request this quote</span>
-                  </button>
-                </div>
-
-                {/* Continue Shopping / Browse More Products Banner */}
+                <h4 className="text-base font-bold text-slate-900">Your quote basket is empty</h4>
+                <p className="text-xs text-slate-500 max-w-xs">Browse our wholesale catalog to add eco drinkware, tableware, and hampers.</p>
                 <div className="pt-2">
-                  <Link
-                    href="/products"
-                    className="w-full py-2.5 sm:py-3 px-3.5 sm:px-4 rounded-xl border border-dashed border-emerald-300 hover:border-emerald-500 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-950 transition-all duration-200 flex items-center justify-between gap-2 group shadow-2xs hover:shadow-xs active:scale-[0.99]"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-800 shadow-2xs group-hover:scale-110 transition-transform flex-shrink-0">
-                        <Plus className="w-3.5 h-3.5" />
-                      </span>
-                      <span className="text-xs sm:text-sm font-bold text-slate-800 whitespace-nowrap">
-                        Add more products
-                      </span>
-                    </div>
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 group-hover:text-emerald-900 flex-shrink-0">
-                      <span>Browse Catalog</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </span>
+                  <Link href="/products" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1b5e3f] hover:bg-[#164e34] text-white text-xs font-bold transition-colors">
+                    Browse Product Catalog
                   </Link>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="flex flex-col flex-1 min-h-0">
+                {/* 4. Item table with columns #, Item, Qty, Rate, Amount */}
+                <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto pr-1">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="sticky top-0 bg-white z-10">
+                      <tr className="bg-slate-50/95 border-b border-slate-200 text-xs text-slate-500 font-semibold uppercase tracking-wider">
+                        <th className="py-2 px-2.5 w-8 text-center">#</th>
+                        <th className="py-2 px-2.5">Item</th>
+                        <th className="py-2 px-2.5 text-center w-28">Qty</th>
+                        <th className="py-2 px-2.5 text-right w-20">Rate</th>
+                        <th className="py-2 px-2.5 text-right w-24">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-sm">
+                      {lineItems.map((item, idx) => {
+                        const stockInfo = getStockInfo(item);
+                        const colorDisplay = (item.colour || item.color || "").trim();
+                        const isAddon = Boolean(item.addOn || item.isPair || item.isPairItem);
+                        const rate = item.unitPrice || item.price || item.mrp;
 
-        {/* ── Right: Your Details Form ──────────────────────────────────── */}
-        <div className="lg:col-span-6 space-y-5 lg:sticky lg:top-6 lg:self-start">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-brand-600 text-white flex items-center justify-center text-xs font-bold">2</span>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight">Your Details</h3>
-            </div>
-            {isAuthenticated && user && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                <ShieldCheck className="w-3 h-3 text-emerald-700" />
-                Logged in as {user.fullName || user.companyName}
-              </span>
+                        return (
+                          <tr key={item.key} className="hover:bg-slate-50/60 transition-colors">
+                            <td className="py-2 px-2.5 text-center text-slate-400 text-xs align-middle">
+                              {idx + 1}
+                            </td>
+                            <td className="py-2 px-2.5 align-middle">
+                              {/* Line 1: item name (bold) + tag (Primary / Add-on) */}
+                              <div className="flex items-center gap-1.5 flex-wrap leading-snug">
+                                <span className="font-bold text-slate-900 text-[13.5px]">
+                                  {item.name}
+                                </span>
+                                {isAddon ? (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/70 rounded">
+                                    Add-on
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
+                                    Primary
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Line 2 (muted): variant · struck-through catalog price · green "% off" badge */}
+                              <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap mt-0.5">
+                                {colorDisplay ? (
+                                  <span className="font-medium text-slate-600">{colorDisplay}</span>
+                                ) : (
+                                  <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                                    Color required
+                                  </span>
+                                )}
+                                {item.mrp > rate && (
+                                  <>
+                                    <span className="text-slate-300">·</span>
+                                    <span className="line-through text-slate-400 text-xs">
+                                      ₹{item.mrp.toLocaleString("en-IN")}
+                                    </span>
+                                  </>
+                                )}
+                                {item.discountPct > 0 && (
+                                  <>
+                                    <span className="text-slate-300">·</span>
+                                    <span className="text-[11px] font-bold text-[#15803d] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
+                                      {item.discountPct}% off
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Stock exceeded warning */}
+                              {stockInfo.isExceeded && (
+                                <div className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
+                                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span>Only {stockInfo.available} {colorDisplay} available</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setQty(item.key, Math.max(1, stockInfo.available))}
+                                    className="underline hover:text-rose-800 cursor-pointer font-bold ml-1"
+                                  >
+                                    Set to {stockInfo.available}
+                                  </button>
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-2 px-2.5 text-center align-middle whitespace-nowrap">
+                              {/* Qty: − / + stepper plus a small × remove button */}
+                              <div className="inline-flex items-center gap-1.5">
+                                <div className="inline-flex items-center border border-slate-200 rounded-md bg-white overflow-hidden shadow-2xs">
+                                  <button
+                                    type="button"
+                                    disabled={item.qty <= 1}
+                                    onClick={() => setQty(item.key, Math.max(1, (item.qty || 1) - 1))}
+                                    className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-xs select-none transition-colors"
+                                    aria-label="Decrease quantity"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="px-2 text-xs font-bold text-slate-800 min-w-[22px] text-center select-none">
+                                    {item.qty}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    disabled={stockInfo.available !== null && item.qty >= stockInfo.available}
+                                    onClick={() => setQty(item.key, (item.qty || 1) + 1)}
+                                    className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-xs select-none transition-colors"
+                                    aria-label="Increase quantity"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => remove(item.key)}
+                                  className="w-5 h-5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer text-xs font-bold"
+                                  title="Remove item"
+                                  aria-label="Remove item"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </td>
+                            <td className="py-2 px-2.5 text-right text-slate-700 font-medium text-xs align-middle whitespace-nowrap">
+                              ₹{rate.toLocaleString("en-IN")}
+                            </td>
+                            <td className="py-2 px-2.5 text-right font-bold text-slate-900 text-sm align-middle whitespace-nowrap">
+                              ₹{item.lineNet.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* 6. Totals, right-aligned, 72% width */}
+                <div className="flex-shrink-0 pt-2 border-t border-slate-100 bg-white">
+                  <div className="ml-auto w-full sm:w-[72%] space-y-1 text-xs">
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>Catalog gross ({totalUnitsCount} units)</span>
+                      <span className="font-medium text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    {totalItemDiscount > 0 && (
+                      <div className="flex items-center justify-between text-[#15803d]">
+                        <span>Volume tier discount</span>
+                        <span className="font-semibold">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
+
+                    {hasBundleBonus && bundleBonusAmount > 0 && (
+                      <div className="flex items-center justify-between text-[#15803d]">
+                        <span>Bundle pairing bonus (5%)</span>
+                        <span className="font-semibold">−₹{bundleBonusAmount.toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-200 font-bold text-slate-900 text-[13px]">
+                      <span>Net taxable subtotal</span>
+                      <span className="font-extrabold">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-slate-600">
+                      <span>GST 18% (ITC eligible)</span>
+                      <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
+                    </div>
+
+                    {/* Green Final quotation bar with total */}
+                    <div className="bg-[#16a34a] text-white rounded-xl py-2 px-3.5 flex items-center justify-between shadow-2xs mt-1.5">
+                      <div>
+                        <div className="text-xs font-bold leading-tight">Final quotation</div>
+                        <span className="text-[10px] text-emerald-100 font-normal">Incl. GST</span>
+                      </div>
+                      <div className="text-xl sm:text-2xl font-black text-white tracking-tight leading-none">
+                        ₹{totalWithGST.toLocaleString("en-IN")}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 7. Footer: "You save ₹X (Y%)" in green on left, "Download PDF" button on right */}
+                  <div className="flex items-center justify-between pt-2 mt-1.5 border-t border-slate-200 text-xs">
+                    {totalSavings > 0 ? (
+                      <span className="font-bold text-[#15803d]">
+                        You save ₹{totalSavings.toLocaleString("en-IN")} ({savingsPct}%)
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 text-xs">Direct factory wholesale rate</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleDownloadPdf}
+                      disabled={isDownloadingPdf}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
+                    >
+                      {isDownloadingPdf ? (
+                        <>
+                          <span className="w-3.5 h-3.5 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                          <span>Generating…</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Download PDF</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Mobile CTA: Proceed to Details */}
+                  <div className="mt-2 min-[900px]:hidden">
+                    <button
+                      type="button"
+                      onClick={() => setMobileTab("form")}
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#1b5e3f] hover:bg-[#164e34] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                    >
+                      <span>Proceed to Details & Submit</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
-          {(!isAuthenticated && !user) && (
-            <div className="p-4 bg-emerald-50/70 border border-emerald-200/90 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-              <div className="flex items-start sm:items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0 shadow-xs">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-tight">
-                    Login Required to Request Quote
-                  </h4>
-                  <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">
-                    Please log in or register before submitting your request to lock in your direct factory wholesale rate.
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/login?redirect=/quote"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-xs transition-all whitespace-nowrap cursor-pointer flex-shrink-0 active:scale-95"
-              >
-                <span>Login to Continue</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          )}
-
-          <form id="quote-details-form" onSubmit={handleSubmit} noValidate className="space-y-4 pt-1">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label htmlFor="q-name" className="text-xs font-medium text-slate-600">Your name *</label>
-                <input id="q-name" name="name" required placeholder="Rahul Sharma" value={formData.name}
-                  onChange={(e) => {
-                    setFormData({ ...formData, name: e.target.value });
-                    if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
-                  }}
-                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.name
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
-                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
-                    }`} />
-                {fieldErrors.name && (
-                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.name}</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="q-company" className="text-xs font-medium text-slate-600">Company *</label>
-                <input id="q-company" name="company" required placeholder="Freshworks India" value={formData.company}
-                  onChange={(e) => {
-                    setFormData({ ...formData, company: e.target.value });
-                    if (fieldErrors.company) setFieldErrors((prev) => ({ ...prev, company: "" }));
-                  }}
-                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.company
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
-                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
-                    }`} />
-                {fieldErrors.company && (
-                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.company}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label htmlFor="q-email" className="text-xs font-medium text-slate-600">Work email *</label>
-                <input id="q-email" name="email" type="email" required placeholder="rahul@freshworks.com" value={formData.email}
-                  onChange={(e) => {
-                    setFormData({ ...formData, email: e.target.value });
-                    if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
-                  }}
-                  onBlur={() => {
-                    if (formData.email && !validateEmail(formData.email)) {
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        email: "Please enter a valid work email (e.g. rahul@company.com)."
-                      }));
-                    }
-                  }}
-                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.email
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
-                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
-                    }`} />
-                {fieldErrors.email && (
-                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.email}</p>
-                )}
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="q-phone" className="text-xs font-medium text-slate-600">
-                  Phone / WhatsApp * <span className="text-[10px] text-slate-400 font-normal">(+91 10 digits)</span>
-                </label>
-                <input id="q-phone" name="phone" required type="tel" placeholder="+91 92173 28777" value={formData.phone}
-                  onChange={(e) => {
-                    const filtered = filterPhoneInput(e.target.value);
-                    setFormData({ ...formData, phone: filtered });
-                    if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
-                  }}
-                  onBlur={() => {
-                    if (formData.phone && !validateIndianPhone(formData.phone)) {
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        phone: "Enter a valid 10-digit mobile number starting with 6-9 (e.g. +91 98765 43210)."
-                      }));
-                    }
-                  }}
-                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.phone
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
-                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
-                    }`} />
-                {fieldErrors.phone && (
-                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.phone}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Custom Premium Order Purpose Dropdown */}
-            <div className="space-y-1 relative" ref={purposeRef}>
-              <label className="text-xs font-medium text-slate-600">Order purpose</label>
-              <button
-                type="button"
-                onClick={() => setPurposeDropdownOpen(!purposeDropdownOpen)}
-                className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-800 flex items-center justify-between transition-all cursor-pointer ${purposeDropdownOpen
-                  ? "border-[#1b5e3f] ring-2 ring-[#1b5e3f]/20 bg-white"
-                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"
-                  }`}
-              >
-                <span className="truncate text-left font-medium">
-                  {formData.buyerType || "Select order purpose"}
+          {/* ── Right Card: Details Form ────────────────────────────────────── */}
+          <div className={`bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex-col h-full min-h-0 overflow-hidden ${
+            mobileTab === "form" ? "flex" : "hidden min-[900px]:flex"
+          }`}>
+            {/* Header row: Numbered circle + title */}
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 min-h-[32px] mb-2 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  2
                 </span>
-                <ChevronDown
-                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 flex-shrink-0 ml-2 ${purposeDropdownOpen ? "rotate-180 text-[#1b5e3f]" : ""
-                    }`}
-                />
-              </button>
-
-              {/* Popover Dropdown Menu */}
-              {purposeDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-xl shadow-xl py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                  {ORDER_PURPOSE_OPTIONS.map((opt) => {
-                    const isSelected = formData.buyerType === opt;
-                    return (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => {
-                          setFormData((prev) => ({ ...prev, buyerType: opt }));
-                          setPurposeDropdownOpen(false);
-                        }}
-                        className={`w-full text-left px-3.5 py-2.5 text-xs transition-all flex items-center justify-between cursor-pointer ${isSelected
-                          ? "bg-emerald-50 text-emerald-950 font-bold border-l-3 border-[#15803d]"
-                          : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 font-normal"
-                          }`}
-                      >
-                        <span>{opt}</span>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-[#15803d] flex-shrink-0 ml-2" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label htmlFor="q-city" className="text-xs font-medium text-slate-600">Delivery city *</label>
-                <input id="q-city" name="city" required placeholder="Bengaluru" value={formData.city}
-                  onChange={(e) => {
-                    setFormData({ ...formData, city: e.target.value });
-                    if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
-                  }}
-                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.city
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
-                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
-                    }`} />
-                {fieldErrors.city && (
-                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.city}</p>
-                )}
+                <h3 className="font-bold text-slate-900 text-base tracking-tight">
+                  Your Details
+                </h3>
               </div>
-              <div className="space-y-1">
-                <label htmlFor="q-pin" className="text-xs font-medium text-slate-600">PIN code *</label>
-                <input id="q-pin" name="pin" pattern="[0-9]{6}" maxLength={6} required placeholder="560001" value={formData.pin}
-                  onChange={(e) => {
-                    const filtered = e.target.value.replace(/\D/g, "").slice(0, 6);
-                    setFormData({ ...formData, pin: filtered });
-                    if (fieldErrors.pin) setFieldErrors((prev) => ({ ...prev, pin: "" }));
-                  }}
-                  onBlur={() => {
-                    if (formData.pin && !validatePinCode(formData.pin)) {
-                      setFieldErrors((prev) => ({
-                        ...prev,
-                        pin: "Enter a valid 6-digit Indian PIN code."
-                      }));
-                    }
-                  }}
-                  className={`w-full text-xs py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 outline-none transition-all ${fieldErrors.pin
-                    ? "border-red-400 focus:ring-red-400 focus:border-red-400 bg-red-50/10"
-                    : "border-slate-200 focus:ring-[#1b5e3f] focus:border-[#1b5e3f]"
-                    }`} />
-                {fieldErrors.pin && (
-                  <p className="text-[11px] text-red-600 font-medium">{fieldErrors.pin}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label htmlFor="q-date" className="text-xs font-medium text-slate-600">Required by</label>
-                <input id="q-date" name="date" type="date" value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:ring-2 focus:ring-[#1b5e3f] outline-none" />
-              </div>
-              <div className="space-y-1">
-                <label htmlFor="q-gstin" className="text-xs font-medium text-slate-600">GSTIN (optional)</label>
-                <input id="q-gstin" name="gstin" placeholder="07AAAAA0000A1Z5" value={formData.gstin}
-                  onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                  className="w-full text-xs py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:ring-2 focus:ring-[#1b5e3f] outline-none uppercase font-mono" />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="q-notes" className="text-xs font-medium text-slate-700">
-                  Additional information <span className="text-[11px] font-normal text-slate-400">(optional)</span>
-                </label>
-                <span className="text-[10px] text-slate-400">
-                  {formData.notes?.length || 0}/2000
-                </span>
-              </div>
-              <textarea
-                id="q-notes"
-                name="notes"
-                rows={3}
-                maxLength={2000}
-                placeholder="Specify custom logo laser engraving, custom gift box sleeves, multi-location dispatch, sample kit requests, or target delivery timelines..."
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full text-xs p-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[#1b5e3f] focus:border-[#1b5e3f] outline-none transition-all resize-y min-h-[72px]"
-              />
-            </div>
-
-            {/* Anti-spam honeypot */}
-            <input name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999, opacity: 0 }} aria-hidden="true" />
-
-            {currentMoqErrors.map((err, i) => (
-              <div key={`moq-${i}`} className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-800 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                <span>{err.message}</span>
-              </div>
-            ))}
-
-            {stockErrors.map((err, i) => (
-              <div key={`stock-${i}`} className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                  <span>{err.message}</span>
-                </div>
+              <div className="flex items-center gap-2">
+                {/* On mobile: option to go back to quotation */}
                 <button
                   type="button"
-                  onClick={() => setQty(err.item.key, Math.max(1, err.available))}
-                  className="text-xs font-bold text-rose-800 underline cursor-pointer"
+                  onClick={() => setMobileTab("invoice")}
+                  className="min-[900px]:hidden text-xs text-emerald-800 font-bold hover:underline"
                 >
-                  Adjust to {err.available}
+                  ← View Quotation
                 </button>
+                {isAuthenticated && user && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>Logged in as {user.fullName || user.companyName}</span>
+                  </span>
+                )}
               </div>
-            ))}
+            </div>
 
-            {missingColors.map((it, i) => (
-              <div key={`col-${i}`} className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
-                <span>Line item "{it.name}" requires a color selection.</span>
-              </div>
-            ))}
-
-            {state.error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-                <span>{state.error}</span>
+            {/* Login banner for logged-out users */}
+            {(!isAuthenticated && !user) && (
+              <div className="p-2.5 mb-2 bg-emerald-50/80 border border-emerald-200/90 rounded-xl flex items-center justify-between gap-2 text-xs flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-emerald-800 flex-shrink-0" />
+                  <span className="text-slate-700 font-medium">Login to lock in your factory wholesale rate</span>
+                </div>
+                <Link
+                  href="/login?redirect=/quote"
+                  className="text-emerald-800 font-bold hover:underline whitespace-nowrap text-xs"
+                >
+                  Login →
+                </Link>
               </div>
             )}
 
-            <div className="pt-2">
-              {!isAuthenticated && !user ? (
-                <Link
-                  href="/login?redirect=/quote"
-                  className="w-full py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md bg-brand-600 hover:bg-brand-500 text-white active:scale-[0.99] cursor-pointer"
-                >
-                  <Lock className="w-4 h-4" />
-                  <span>Please Login First to Submit Quote</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={state.busy || items.length === 0 || !canSubmit}
-                  className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md ${state.busy
-                    ? "bg-gradient-to-r from-[#0d3f2c] via-[#15803d] to-[#0d3f2c] text-white cursor-wait ring-2 ring-emerald-400/40 shadow-emerald-900/20"
-                    : "btn-primary hover:shadow-lg active:scale-[0.99] cursor-pointer"
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
-                >
-                  {state.busy ? (
-                    <>
-                      {/* Revolving Circle Spinner */}
-                      <span className="relative flex items-center justify-center w-5 h-5 flex-shrink-0">
-                        <svg
-                          className="animate-spin w-5 h-5 text-emerald-300"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="3.5"
-                          />
-                          <path
-                            className="opacity-100"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                      </span>
-                      {/* Eco Leaf Icon */}
-                      <Leaf className="w-4 h-4 text-emerald-200 animate-pulse flex-shrink-0" />
-                      <span>Generating Official Quote…</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Quote Request</span>
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </button>
-              )}
-            </div>
+            <form id="quote-details-form" onSubmit={handleSubmit} noValidate className="flex flex-col flex-1 min-h-0">
+              {/* Form fields in scrollable area so it never overflows 90dvh */}
+              <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
+                {/* Two-column field grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* 1. Your name */}
+                  <div>
+                    <label htmlFor="q-name" className="text-xs font-semibold text-slate-700 block mb-1">
+                      Your name *
+                    </label>
+                    <input
+                      id="q-name"
+                      name="name"
+                      required
+                      placeholder="Rahul Sharma"
+                      value={formData.name}
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value });
+                        if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
+                      }}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                        fieldErrors.name ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    />
+                    {fieldErrors.name && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.name}</p>}
+                  </div>
 
-            <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5 pt-1">
-              <Lock className="w-3.5 h-3.5 text-slate-400" />
-              Direct manufacturer confidentiality: We never share your company contact details.
-            </p>
-          </form>
+                  {/* 2. Company */}
+                  <div>
+                    <label htmlFor="q-company" className="text-xs font-semibold text-slate-700 block mb-1">
+                      Company *
+                    </label>
+                    <input
+                      id="q-company"
+                      name="company"
+                      required
+                      placeholder="Freshworks India"
+                      value={formData.company}
+                      onChange={(e) => {
+                        setFormData({ ...formData, company: e.target.value });
+                        if (fieldErrors.company) setFieldErrors((prev) => ({ ...prev, company: "" }));
+                      }}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                        fieldErrors.company ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    />
+                    {fieldErrors.company && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.company}</p>}
+                  </div>
+
+                  {/* 3. Work email */}
+                  <div>
+                    <label htmlFor="q-email" className="text-xs font-semibold text-slate-700 block mb-1">
+                      Work email *
+                    </label>
+                    <input
+                      id="q-email"
+                      name="email"
+                      type="email"
+                      required
+                      placeholder="rahul@freshworks.com"
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                      }}
+                      onBlur={() => {
+                        if (formData.email && !validateEmail(formData.email)) {
+                          setFieldErrors((prev) => ({ ...prev, email: "Enter a valid work email." }));
+                        }
+                      }}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                        fieldErrors.email ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    />
+                    {fieldErrors.email && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.email}</p>}
+                  </div>
+
+                  {/* 4. Phone / WhatsApp */}
+                  <div>
+                    <label htmlFor="q-phone" className="text-xs font-semibold text-slate-700 block mb-1">
+                      Phone / WhatsApp *
+                    </label>
+                    <input
+                      id="q-phone"
+                      name="phone"
+                      required
+                      type="tel"
+                      placeholder="+91 92173 28777"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        const filtered = filterPhoneInput(e.target.value);
+                        setFormData({ ...formData, phone: filtered });
+                        if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                      }}
+                      onBlur={() => {
+                        if (formData.phone && !validateIndianPhone(formData.phone)) {
+                          setFieldErrors((prev) => ({ ...prev, phone: "Enter a valid 10-digit mobile number." }));
+                        }
+                      }}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                        fieldErrors.phone ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    />
+                    {fieldErrors.phone && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.phone}</p>}
+                  </div>
+
+                  {/* 5. Order purpose (full width) */}
+                  <div className="sm:col-span-2 relative" ref={purposeRef}>
+                    <label className="text-xs font-semibold text-slate-700 block mb-1">
+                      Order purpose
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setPurposeDropdownOpen(!purposeDropdownOpen)}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-800 flex items-center justify-between transition-all cursor-pointer ${
+                        purposeDropdownOpen
+                          ? "border-[#1b5e3f] ring-2 ring-[#1b5e3f]/20"
+                          : "border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <span className="truncate text-left font-medium">
+                        {formData.buyerType || "Select order purpose"}
+                      </span>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ml-2 ${
+                          purposeDropdownOpen ? "rotate-180 text-[#1b5e3f]" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {/* Popover Dropdown Menu */}
+                    {purposeDropdownOpen && (
+                      <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-lg shadow-xl py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                        {ORDER_PURPOSE_OPTIONS.map((opt) => {
+                          const isSelected = formData.buyerType === opt;
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({ ...prev, buyerType: opt }));
+                                setPurposeDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center justify-between cursor-pointer ${
+                                isSelected
+                                  ? "bg-emerald-50 text-emerald-950 font-bold border-l-3 border-[#15803d]"
+                                  : "text-slate-700 hover:bg-slate-50 font-normal"
+                              }`}
+                            >
+                              <span>{opt}</span>
+                              {isSelected && (
+                                <Check className="w-3.5 h-3.5 text-[#15803d] flex-shrink-0 ml-2" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 6. Delivery city */}
+                  <div>
+                    <label htmlFor="q-city" className="text-xs font-semibold text-slate-700 block mb-1">
+                      Delivery city *
+                    </label>
+                    <input
+                      id="q-city"
+                      name="city"
+                      required
+                      placeholder="Bengaluru"
+                      value={formData.city}
+                      onChange={(e) => {
+                        setFormData({ ...formData, city: e.target.value });
+                        if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
+                      }}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                        fieldErrors.city ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    />
+                    {fieldErrors.city && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.city}</p>}
+                  </div>
+
+                  {/* 7. PIN code */}
+                  <div>
+                    <label htmlFor="q-pin" className="text-xs font-semibold text-slate-700 block mb-1">
+                      PIN code *
+                    </label>
+                    <input
+                      id="q-pin"
+                      name="pin"
+                      pattern="[0-9]{6}"
+                      maxLength={6}
+                      required
+                      placeholder="560001"
+                      value={formData.pin}
+                      onChange={(e) => {
+                        const filtered = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        setFormData({ ...formData, pin: filtered });
+                        if (fieldErrors.pin) setFieldErrors((prev) => ({ ...prev, pin: "" }));
+                      }}
+                      onBlur={() => {
+                        if (formData.pin && !validatePinCode(formData.pin)) {
+                          setFieldErrors((prev) => ({
+                            ...prev,
+                            pin: "Enter a valid 6-digit Indian PIN code."
+                          }));
+                        }
+                      }}
+                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                        fieldErrors.pin ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      }`}
+                    />
+                    {fieldErrors.pin && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.pin}</p>}
+                  </div>
+
+                  {/* 8. Required by */}
+                  <div>
+                    <label htmlFor="q-date" className="text-xs font-semibold text-slate-700 block mb-1">
+                      Required by
+                    </label>
+                    <input
+                      id="q-date"
+                      name="date"
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                      className="w-full text-xs sm:text-[13px] py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f]"
+                    />
+                  </div>
+
+                  {/* 9. GSTIN (optional) */}
+                  <div>
+                    <label htmlFor="q-gstin" className="text-xs font-semibold text-slate-700 block mb-1">
+                      GSTIN (optional)
+                    </label>
+                    <input
+                      id="q-gstin"
+                      name="gstin"
+                      placeholder="07AAAAA0000A1Z5"
+                      value={formData.gstin}
+                      onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
+                      className="w-full text-xs sm:text-[13px] py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] uppercase font-mono"
+                    />
+                  </div>
+
+                  {/* 10. Additional information (full width) */}
+                  <div className="sm:col-span-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <label htmlFor="q-notes" className="text-xs font-semibold text-slate-700 block">
+                        Additional information <span className="font-normal text-slate-400">(optional)</span>
+                      </label>
+                      <span className="text-[11px] text-slate-400">
+                        {formData.notes?.length || 0}/2000
+                      </span>
+                    </div>
+                    <textarea
+                      id="q-notes"
+                      name="notes"
+                      maxLength={2000}
+                      placeholder="Specify custom logo laser engraving, custom gift box sleeves, multi-location dispatch, or target delivery timelines..."
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      className="w-full h-16 sm:h-20 min-h-[4rem] text-xs sm:text-[13px] p-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all resize-y"
+                    />
+                  </div>
+                </div>
+
+                {/* Anti-spam honeypot */}
+                <input name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999, opacity: 0 }} aria-hidden="true" />
+
+                {/* Validation & stock warnings */}
+                {currentMoqErrors.map((err, i) => (
+                  <div key={`moq-${i}`} className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-800 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                    <span>{err.message}</span>
+                  </div>
+                ))}
+
+                {stockErrors.map((err, i) => (
+                  <div key={`stock-${i}`} className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center justify-between gap-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+                      <span>{err.message}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setQty(err.item.key, Math.max(1, err.available))}
+                      className="text-[11px] font-bold text-rose-800 underline cursor-pointer"
+                    >
+                      Adjust
+                    </button>
+                  </div>
+                ))}
+
+                {missingColors.map((it, i) => (
+                  <div key={`col-${i}`} className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+                    <span>Line item "{it.name}" requires a color selection.</span>
+                  </div>
+                ))}
+
+                {state.error && (
+                  <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+                    <span>{state.error}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button & Confidentiality pinned at bottom */}
+              <div className="flex-shrink-0 pt-2 border-t border-slate-100 bg-white mt-auto">
+                {!isAuthenticated && !user ? (
+                  <Link
+                    href="/login?redirect=/quote"
+                    className="w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 bg-[#1b5e3f] hover:bg-[#164e34] text-white cursor-pointer shadow-sm active:scale-[0.99]"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>Login first to submit quote</span>
+                  </Link>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={state.busy || items.length === 0 || !canSubmit}
+                    className={`w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
+                      state.busy
+                        ? "bg-[#1b5e3f] text-white cursor-wait opacity-80"
+                        : "bg-[#1b5e3f] hover:bg-[#164e34] text-white active:scale-[0.99]"
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  >
+                    {state.busy ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-emerald-200 border-t-white rounded-full animate-spin flex-shrink-0" />
+                        <span>Generating Official Quote…</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Submit quote request</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Confidentiality note */}
+                <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1 mt-1.5">
+                  <Lock className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                  Direct manufacturer confidentiality: We never share your company contact details.
+                </p>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -1377,8 +1462,8 @@ export default function QuotePage() {
                         disabled={item.qty <= 1}
                         onClick={() => setQty(item.key, Math.max(1, (item.qty || 1) - 1))}
                         className={`w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg border flex items-center justify-center transition-colors shadow-2xs ${item.qty <= 1
-                            ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed opacity-50"
-                            : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                          ? "bg-slate-100 border-slate-200 text-slate-300 cursor-not-allowed opacity-50"
+                          : "bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
                           }`}
                         title={item.qty <= 1 ? "Minimum line quantity is 1" : "Decrease quantity"}
                         aria-label="Decrease quantity"

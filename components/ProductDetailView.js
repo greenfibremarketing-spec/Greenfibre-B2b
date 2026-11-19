@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useQuote } from "./Quote";
 import { getProductTier1Discount } from "@/lib/cartModel";
 import { optimizeImageUrl, getImageSrcSet, IMAGE_SIZES } from "@/lib/imageOptimization";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import {
   Zap,
   ShieldCheck,
@@ -1075,8 +1077,17 @@ export default function ProductDetailView({ product, context, relatedProducts: r
     }
   };
 
+  const swiperRef = useRef(null);
+
   const handleSelectImage = (idx) => {
     setActiveImageIndex(idx);
+    if (swiperRef.current) {
+      if (typeof swiperRef.current.slideToLoop === "function") {
+        swiperRef.current.slideToLoop(idx);
+      } else if (typeof swiperRef.current.slideTo === "function") {
+        swiperRef.current.slideTo(idx);
+      }
+    }
     const clickedImg = images[idx];
     const matchingColor = colorVariants.find(
       (c) => Array.isArray(c.images) && c.images.includes(clickedImg)
@@ -1094,16 +1105,31 @@ export default function ProductDetailView({ product, context, relatedProducts: r
       const imgIdx = images.findIndex((img) => img === targetImg);
       if (imgIdx !== -1) {
         setActiveImageIndex(imgIdx);
+        if (swiperRef.current) {
+          if (typeof swiperRef.current.slideToLoop === "function") {
+            swiperRef.current.slideToLoop(imgIdx);
+          } else if (typeof swiperRef.current.slideTo === "function") {
+            swiperRef.current.slideTo(imgIdx);
+          }
+        }
       }
     }
   };
 
   const handlePrevImage = () => {
-    setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    if (swiperRef.current) {
+      swiperRef.current.slidePrev();
+    } else {
+      setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+    }
   };
 
   const handleNextImage = () => {
-    setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    if (swiperRef.current) {
+      swiperRef.current.slideNext();
+    } else {
+      setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }
   };
 
   const buildProductPayloadForVariant = (variant, variantQty) => {
@@ -1337,6 +1363,124 @@ export default function ProductDetailView({ product, context, relatedProducts: r
         ? product.giftBox.products
         : [];
 
+  // Mobile Accordion State & Teaser/Demo Animation
+  const firstSectionKey = giftItems.length > 0 ? "gift_contents" : "specs";
+  const [mobileSections, setMobileSections] = useState({
+    gift_contents: false,
+    specs: false,
+    highlights: false,
+    ordering: false,
+  });
+  const [mobileManualToggled, setMobileManualToggled] = useState({});
+  const isManualToggledRef = useRef({});
+  const mobileSectionRefs = useRef({});
+  const demoCloseTimerRef = useRef(null);
+  const demoTriggeredRef = useRef(false);
+
+  const allMobileOpen =
+    (giftItems.length === 0 || mobileSections.gift_contents) &&
+    mobileSections.specs &&
+    mobileSections.highlights &&
+    mobileSections.ordering;
+
+  const handleToggleMobileSection = (key) => {
+    if (demoCloseTimerRef.current) {
+      clearTimeout(demoCloseTimerRef.current);
+    }
+    isManualToggledRef.current[key] = true;
+    setMobileSections((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+    setMobileManualToggled((prev) => ({
+      ...prev,
+      [key]: true,
+    }));
+  };
+
+  const handleToggleAllMobile = () => {
+    if (demoCloseTimerRef.current) {
+      clearTimeout(demoCloseTimerRef.current);
+    }
+    const nextState = !allMobileOpen;
+    isManualToggledRef.current = {
+      gift_contents: true,
+      specs: true,
+      highlights: true,
+      ordering: true,
+    };
+    setMobileSections({
+      gift_contents: nextState,
+      specs: nextState,
+      highlights: nextState,
+      ordering: nextState,
+    });
+    setMobileManualToggled({
+      gift_contents: true,
+      specs: true,
+      highlights: true,
+      ordering: true,
+    });
+  };
+
+  // Mobile Demo Preview: When user scrolls to the headers in mobile,
+  // the first header opens for 1.5–2 seconds as a demo preview of what's inside,
+  // then automatically and smoothly closes. Users can tap any header anytime to open/close.
+  useEffect(() => {
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
+    if (window.innerWidth >= 640) return;
+
+    const el = mobileSectionRefs.current[firstSectionKey];
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // If user already manually tapped the first section, do not run automated demo
+          if (isManualToggledRef.current[firstSectionKey]) return;
+
+          if (entry.isIntersecting) {
+            // First time this section scrolls into view: trigger the demo preview
+            if (!demoTriggeredRef.current) {
+              demoTriggeredRef.current = true;
+
+              // 1. Smoothly open first header as a preview
+              setMobileSections((prev) => ({ ...prev, [firstSectionKey]: true }));
+
+              // 2. Keep open for ~1.8 seconds (1-2s demo), then smoothly close
+              if (demoCloseTimerRef.current) clearTimeout(demoCloseTimerRef.current);
+              demoCloseTimerRef.current = setTimeout(() => {
+                if (isManualToggledRef.current[firstSectionKey]) return;
+                setMobileSections((prev) => ({ ...prev, [firstSectionKey]: false }));
+              }, 1800);
+            }
+          } else {
+            // If scrolled completely out of view, reset demo trigger so user can see it again if returning
+            const rect = entry.boundingClientRect;
+            if (rect.top > window.innerHeight || rect.bottom < 0) {
+              demoTriggeredRef.current = false;
+              if (demoCloseTimerRef.current) clearTimeout(demoCloseTimerRef.current);
+              if (!isManualToggledRef.current[firstSectionKey]) {
+                setMobileSections((prev) => ({ ...prev, [firstSectionKey]: false }));
+              }
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+        rootMargin: "0px 0px -10% 0px",
+      }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      if (demoCloseTimerRef.current) clearTimeout(demoCloseTimerRef.current);
+    };
+  }, [firstSectionKey]);
+
   // Limit banner helper
   const renderLimitBanner = () => {
     const maxedVariants = colorVariants.filter((v) => {
@@ -1404,23 +1548,71 @@ export default function ProductDetailView({ product, context, relatedProducts: r
 
         {/* LEFT COLUMN: Gallery & Packaging Card (approx 38% width) */}
         <div className="lg:col-span-5 space-y-2.5 w-full min-w-0">
-          {/* Main Stage Image Frame */}
-          <div
-            onClick={() => setIsLightboxOpen(true)}
-            className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#FAF7F2] border border-slate-200/90 shadow-2xs flex items-center justify-center group cursor-zoom-in"
-          >
-            <img
-              src={optimizeImageUrl(activeImage, { width: 900, quality: "auto" })}
-              srcSet={getImageSrcSet(activeImage, [480, 720, 960, 1200]) || undefined}
-              sizes={IMAGE_SIZES.detail}
-              alt={`${product.name} - ${selectedColour}`}
-              loading="eager"
-              decoding="async"
-              className="w-full h-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-103"
-              onError={(e) => {
-                e.currentTarget.src = "/images/placeholder.jpg";
-              }}
-            />
+          {/* Main Stage Image Frame with Smooth Auto-Swiper */}
+          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-[#FAF7F2] border border-slate-200/90 shadow-2xs flex items-center justify-center group">
+            {mounted && images.length > 1 ? (
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation]}
+                loop={true}
+                speed={700}
+                autoplay={{
+                  delay: 3200,
+                  disableOnInteraction: false,
+                  pauseOnMouseEnter: true,
+                }}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                onSwiper={(swiper) => {
+                  swiperRef.current = swiper;
+                }}
+                onSlideChange={(swiper) => {
+                  setActiveImageIndex(swiper.realIndex);
+                }}
+                className="w-full h-full cursor-grab active:cursor-grabbing select-none"
+              >
+                {images.map((img, idx) => (
+                  <SwiperSlide key={img + idx} className="w-full h-full flex items-center justify-center">
+                    <div
+                      onClick={() => setIsLightboxOpen(true)}
+                      className="w-full h-full flex items-center justify-center cursor-zoom-in"
+                    >
+                      <img
+                        src={optimizeImageUrl(img, { width: 900, quality: "auto" })}
+                        srcSet={getImageSrcSet(img, [480, 720, 960, 1200]) || undefined}
+                        sizes={IMAGE_SIZES.detail}
+                        alt={`${product.name} - angle ${idx + 1}`}
+                        loading={idx === 0 ? "eager" : "lazy"}
+                        decoding="async"
+                        className="w-full h-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-103 pointer-events-none"
+                        onError={(e) => {
+                          e.currentTarget.src = "/images/placeholder.jpg";
+                        }}
+                      />
+                    </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            ) : (
+              <div
+                onClick={() => setIsLightboxOpen(true)}
+                className="w-full h-full flex items-center justify-center cursor-zoom-in"
+              >
+                <img
+                  src={optimizeImageUrl(activeImage, { width: 900, quality: "auto" })}
+                  srcSet={getImageSrcSet(activeImage, [480, 720, 960, 1200]) || undefined}
+                  sizes={IMAGE_SIZES.detail}
+                  alt={`${product.name} - ${selectedColour}`}
+                  loading="eager"
+                  decoding="async"
+                  className="w-full h-full object-contain object-center transition-transform duration-500 ease-out group-hover:scale-103"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/placeholder.jpg";
+                  }}
+                />
+              </div>
+            )}
 
             {/* Navigation Arrows */}
             {images.length > 1 && (
@@ -1465,9 +1657,9 @@ export default function ProductDetailView({ product, context, relatedProducts: r
             </button>
           </div>
 
-          {/* Horizontal Thumbnails Row (48-56px rail) */}
+          {/* Horizontal Thumbnails Row (Hidden on mobile as requested, visible on sm and up) */}
           {images.length > 1 && (
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-0.5">
+            <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar pt-0.5">
               {images.map((img, idx) => {
                 const isActive = activeImageIndex === idx;
                 return (
@@ -1545,8 +1737,8 @@ export default function ProductDetailView({ product, context, relatedProducts: r
               {product.name}
             </h1>
 
-            {/* Short Description */}
-            <p className="text-xs sm:text-[13px] text-slate-600 line-clamp-2 leading-relaxed">
+            {/* Short Description (Hidden on mobile) */}
+            <p className="hidden sm:block text-xs sm:text-[13px] text-slate-600 line-clamp-2 leading-relaxed">
               {product.shortDescription || product.tagline || product.desc}
             </p>
 
@@ -1853,9 +2045,11 @@ export default function ProductDetailView({ product, context, relatedProducts: r
       </div>
 
       {/* =========================================================================
-          PRODUCT INFORMATION TABS (SPECIFICATIONS, SUSTAINABILITY, LOGISTICS)
+          PRODUCT INFORMATION TABS (DESKTOP) & INTERACTIVE ACCORDION (MOBILE)
          ========================================================================= */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+      
+      {/* 1. DESKTOP TABS VIEW (hidden sm:block) */}
+      <div className="hidden sm:block bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
         {/* Tab Headers */}
         <div className="flex border-b border-slate-200 overflow-x-auto bg-slate-50/60 no-scrollbar">
           <button
@@ -2055,6 +2249,397 @@ export default function ProductDetailView({ product, context, relatedProducts: r
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* 2. MOBILE INTERACTIVE ACCORDION WITH SCROLL ANIMATIONS (block sm:hidden) */}
+      <div className="block sm:hidden space-y-3">
+        {/* Mobile Master Header Bar */}
+        <div className="flex items-center justify-between px-1 pb-0.5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+            <Layers className="w-4 h-4 text-emerald-600" />
+            <span>Product Specifications &amp; Details</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleToggleAllMobile}
+            className="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200/70 px-2.5 py-1 rounded-lg transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+          >
+            {allMobileOpen ? "Collapse All" : "Expand All"}
+          </button>
+        </div>
+
+        {/* Section 1: Gift Set Contents (if hamper/set contains products) */}
+        {giftItems.length > 0 && (
+          <div
+            ref={(el) => (mobileSectionRefs.current.gift_contents = el)}
+            data-mobile-section="gift_contents"
+            className={`bg-white border rounded-2xl shadow-2xs overflow-hidden transition-all duration-500 ease-in-out ${
+              mobileSections.gift_contents
+                ? "border-emerald-500/80 shadow-xs ring-1 ring-emerald-500/15"
+                : "border-slate-200/90 hover:border-slate-300"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => handleToggleMobileSection("gift_contents")}
+              className="w-full px-4 py-3.5 text-left flex items-center justify-between gap-3 focus:outline-none cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors"
+              aria-expanded={mobileSections.gift_contents}
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                    mobileSections.gift_contents
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                  }`}
+                >
+                  <Boxes className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-slate-900 truncate">
+                    Gift Set Contents
+                  </h3>
+                  <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                    Sustainable bio-composite items included in this hamper
+                  </p>
+                </div>
+              </div>
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                  mobileSections.gift_contents
+                    ? "bg-emerald-600 text-white rotate-180 shadow-xs"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                }`}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </button>
+
+            {/* Smooth 500ms Collapsible Body */}
+            <div
+              className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${
+                mobileSections.gift_contents
+                  ? "grid-rows-[1fr] opacity-100"
+                  : "grid-rows-[0fr] opacity-0 pointer-events-none"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-2.5">
+                  <p className="text-xs text-slate-500 pt-1">
+                    Each product in this set is crafted from sustainable bio-composite.
+                  </p>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {giftItems.map((item, idx) => (
+                      <div
+                        key={item._id || idx}
+                        className="border border-slate-200/90 rounded-xl p-3 bg-slate-50/70 space-y-1 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="font-bold text-slate-900 text-xs sm:text-sm">
+                            {item.name}
+                          </h4>
+                          <span className="text-[10.5px] font-bold text-emerald-800 bg-emerald-100/70 border border-emerald-200 px-2 py-0.5 rounded whitespace-nowrap">
+                            Qty: {item.quantity} {item.unit || "piece"}
+                          </span>
+                        </div>
+                        {item.description && (
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Section 2: Technical Specifications */}
+        <div
+          ref={(el) => (mobileSectionRefs.current.specs = el)}
+          data-mobile-section="specs"
+          className={`bg-white border rounded-2xl shadow-2xs overflow-hidden transition-all duration-500 ease-in-out ${
+            mobileSections.specs
+              ? "border-emerald-500/80 shadow-xs ring-1 ring-emerald-500/15"
+              : "border-slate-200/90 hover:border-slate-300"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => handleToggleMobileSection("specs")}
+            className="w-full px-4 py-3.5 text-left flex items-center justify-between gap-3 focus:outline-none cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors"
+            aria-expanded={mobileSections.specs}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                  mobileSections.specs
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                }`}
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900 truncate">
+                  Technical Specifications
+                </h3>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  Materials, dimensions, certifications &amp; food safety
+                </p>
+              </div>
+            </div>
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                mobileSections.specs
+                  ? "bg-emerald-600 text-white rotate-180 shadow-xs"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </div>
+          </button>
+
+          {/* Smooth 500ms Collapsible Body */}
+          <div
+            className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${
+              mobileSections.specs
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0 pointer-events-none"
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-3">
+                <div className="border border-slate-200/90 rounded-xl overflow-hidden mt-1">
+                  <table className="w-full text-xs">
+                    <tbody className="divide-y divide-slate-100">
+                      {visibleSpecs.map((spec) => (
+                        <tr key={spec.key} className="hover:bg-slate-50/50">
+                          <td className="py-2 px-3 font-semibold text-slate-600 bg-slate-50/70 w-2/5">
+                            {spec.label}
+                          </td>
+                          <td className="py-2 px-3 text-slate-900 font-medium leading-relaxed">
+                            {spec.value}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {technicalSpecsList.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllSpecs((prev) => !prev)}
+                    className="w-full py-2 px-3 text-xs font-bold text-green-700 hover:text-green-800 bg-green-50 hover:bg-green-100/80 border border-green-200/80 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs active:scale-[0.98]"
+                  >
+                    <span>
+                      {showAllSpecs
+                        ? "View Less Specifications"
+                        : `View All Specifications (${technicalSpecsList.length})`}
+                    </span>
+                    {showAllSpecs ? (
+                      <ChevronUp className="w-3.5 h-3.5" />
+                    ) : (
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Features & Corporate Gifting */}
+        <div
+          ref={(el) => (mobileSectionRefs.current.highlights = el)}
+          data-mobile-section="highlights"
+          className={`bg-white border rounded-2xl shadow-2xs overflow-hidden transition-all duration-500 ease-in-out ${
+            mobileSections.highlights
+              ? "border-emerald-500/80 shadow-xs ring-1 ring-emerald-500/15"
+              : "border-slate-200/90 hover:border-slate-300"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => handleToggleMobileSection("highlights")}
+            className="w-full px-4 py-3.5 text-left flex items-center justify-between gap-3 focus:outline-none cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors"
+            aria-expanded={mobileSections.highlights}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                  mobileSections.highlights
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                }`}
+              >
+                <Gift className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900 truncate">
+                  Features &amp; Occasions
+                </h3>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  Material benefits &amp; suitable enterprise occasions
+                </p>
+              </div>
+            </div>
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                mobileSections.highlights
+                  ? "bg-emerald-600 text-white rotate-180 shadow-xs"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </div>
+          </button>
+
+          {/* Smooth 500ms Collapsible Body */}
+          <div
+            className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${
+              mobileSections.highlights
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0 pointer-events-none"
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-4">
+                {/* Features Checklist */}
+                <div className="space-y-2 pt-1">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Material Highlights
+                  </h4>
+                  <div className="space-y-1.5">
+                    {(Array.isArray(product.productFeatures) && product.productFeatures.length > 0
+                      ? product.productFeatures
+                      : [
+                          "Made with bio-based rice husk composite",
+                          "Hygienic non-porous finish resists odours & bacteria",
+                          "Food grade safe, BPA-free and dishwasher safe",
+                          "Durable and impact-resistant for daily use"
+                        ]
+                    ).map((feat, fIdx) => (
+                      <div key={fIdx} className="flex items-center gap-2 text-xs text-slate-700">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Corporate Occasions */}
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Ideal For Corporate Gifting
+                  </h4>
+                  <div className="grid grid-cols-1 gap-2">
+                    {B2B_OCCASIONS.map((occ) => {
+                      const OccIcon = occ.icon;
+                      return (
+                        <div
+                          key={occ.key}
+                          className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50/80 border border-slate-200/70"
+                        >
+                          <div className="w-6 h-6 rounded bg-emerald-100 text-emerald-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <OccIcon className="w-3 h-3" />
+                          </div>
+                          <div>
+                            <h5 className="text-xs font-bold text-slate-900">{occ.label}</h5>
+                            <p className="text-[10.5px] text-slate-500 leading-tight mt-0.5">{occ.subtitle}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 4: B2B Ordering & Logistics */}
+        <div
+          ref={(el) => (mobileSectionRefs.current.ordering = el)}
+          data-mobile-section="ordering"
+          className={`bg-white border rounded-2xl shadow-2xs overflow-hidden transition-all duration-500 ease-in-out ${
+            mobileSections.ordering
+              ? "border-emerald-500/80 shadow-xs ring-1 ring-emerald-500/15"
+              : "border-slate-200/90 hover:border-slate-300"
+          }`}
+        >
+          <button
+            type="button"
+            onClick={() => handleToggleMobileSection("ordering")}
+            className="w-full px-4 py-3.5 text-left flex items-center justify-between gap-3 focus:outline-none cursor-pointer select-none bg-white hover:bg-slate-50/70 transition-colors"
+            aria-expanded={mobileSections.ordering}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                  mobileSections.ordering
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-emerald-50 text-emerald-700 border border-emerald-200/60"
+                }`}
+              >
+                <Truck className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900 truncate">
+                  B2B Ordering &amp; Logistics
+                </h3>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  Pan-India doorstep dispatch, invoicing &amp; credit terms
+                </p>
+              </div>
+            </div>
+            <div
+              className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ease-in-out ${
+                mobileSections.ordering
+                  ? "bg-emerald-600 text-white rotate-180 shadow-xs"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
+            >
+              <ChevronDown className="w-4 h-4" />
+            </div>
+          </button>
+
+          {/* Smooth 500ms Collapsible Body */}
+          <div
+            className={`grid transition-[grid-template-rows,opacity] duration-500 ease-in-out ${
+              mobileSections.ordering
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0 pointer-events-none"
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="px-4 pb-4 pt-1 border-t border-slate-100 space-y-2.5">
+                <div className="border border-slate-200/90 rounded-xl p-3 space-y-1 bg-slate-50/50 mt-1">
+                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
+                    <Truck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Pan-India Logistics Support</span>
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Direct door-to-door delivery to corporate offices, distribution centers, or multi-location branches across India with live consignment tracking.
+                  </p>
+                </div>
+
+                <div className="border border-slate-200/90 rounded-xl p-3 space-y-1 bg-slate-50/50">
+                  <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 uppercase tracking-wider">
+                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>GST Invoicing &amp; Credit Terms</span>
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Official tax invoices with valid HSN codes for 18% GST Input Tax Credit. Verified enterprise buyers can request standard corporate procurement terms.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
