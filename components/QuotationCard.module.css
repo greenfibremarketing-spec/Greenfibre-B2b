@@ -1,0 +1,983 @@
+/* ==========================================================================
+   QuotationCard.module.css
+   Pure CSS Modules with Container Queries, Auto-Layout, Zero Horizontal Scroll,
+   Clean 2-Line Row Layout for Side-by-Side Mode, and Desktop Spacious Layout.
+
+   FIX 2: Desktop Spacing (861px and up):
+   - Card padding: 32px to 36px (34px)
+   - Gap between products and pricing column: 36px to 40px (38px)
+   - Sticky pricing column on right: 340px to 360px (350px)
+   - Product rows: 14px to 16px vertical padding, line-height 1.5
+   - Pricing rows: 8px to 10px vertical padding
+   - Final quotation green box: 16px margin above/below, 18px-20px internal padding
+   - Typography: table header 0.8rem, variant & note text 0.85rem
+   - Zero horizontal scroll, no table inner scrollbar (normal page scroll on desktop)
+
+   Mobile (860px and below):
+   - Preserves compact mobile view with zero regression.
+   ========================================================================== */
+
+/* ── Design Tokens & Base Theme ───────────────────────────────────────── */
+.card {
+  --qc-bg: #ffffff;
+  --qc-text-main: #0f172a;
+  --qc-text-sub: #475569;
+  --qc-text-muted: #64748b;
+  --qc-border: #e2e8f0;
+  --qc-border-light: #f1f5f9;
+  --qc-hover-row: rgba(248, 250, 252, 0.75);
+
+  --qc-brand-green: #1b5e3f;
+  --qc-brand-hover: #164e34;
+  --qc-accent-green: #16a34a;
+
+  --qc-discount-bg: #ecfdf5;
+  --qc-discount-text: #15803d;
+  --qc-discount-border: #a7f3d0;
+
+  --qc-tag-bg: #f1f5f9;
+  --qc-tag-text: #475569;
+  --qc-tag-border: #e2e8f0;
+
+  --qc-addon-bg: #ecfdf5;
+  --qc-addon-text: #065f46;
+  --qc-addon-border: #a7f3d0;
+
+  --qc-itc-bg: #f0fdf4;
+  --qc-itc-text: #166534;
+  --qc-itc-sub: #334155;
+  --qc-itc-border: #bbf7d0;
+
+  --qc-btn-bg: #ffffff;
+  --qc-btn-hover: #f8fafc;
+  --qc-btn-text: #334155;
+  --qc-btn-border: #cbd5e1;
+
+  --qc-focus-ring: #16a34a;
+  --qc-danger: #ef4444;
+  --qc-danger-hover-bg: #fef2f2;
+
+  /* Card Container Query for intrinsic responsive card behavior */
+  container-type: inline-size;
+  container-name: quotationCard;
+
+  /* Zero horizontal scroll, fluid shrinking */
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+
+  background-color: var(--qc-bg);
+  color: var(--qc-text-main);
+  border: 1px solid var(--qc-border);
+  border-radius: 1.125rem;
+  font-family: inherit;
+
+  /* Mobile Base Padding (<= 860px) */
+  padding: 1.15rem 1.25rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* ── FIX 2: Desktop Card Padding (861px and up: 32px to 36px) ────────── */
+@media (min-width: 861px) {
+  .card {
+    padding: 34px;
+    border-radius: 1.25rem;
+  }
+}
+
+/* ── Accessible Keyboard Focus ────────────────────────────────────────── */
+.card button:focus-visible,
+.card a:focus-visible {
+  outline: 2px solid var(--qc-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── 1. Top Header Row ("1 Your Products (N)" + Action Buttons) ──────────── */
+.topHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid var(--qc-border-light);
+  margin-bottom: 0.95rem;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.topTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.stepCircle {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 50%;
+  background-color: var(--qc-brand-green);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.22rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--qc-text-main);
+  white-space: nowrap;
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.addMoreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.8rem;
+  border-radius: 0.5rem;
+  background-color: var(--qc-discount-bg);
+  color: var(--qc-discount-text);
+  border: 1px solid var(--qc-discount-border);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.addMoreBtn:hover {
+  filter: brightness(0.96);
+}
+
+.addMoreBtn:active {
+  transform: scale(0.98);
+}
+
+.clearBtn {
+  background: transparent;
+  border: none;
+  color: var(--qc-text-muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.375rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.clearBtn:hover {
+  color: var(--qc-danger);
+  background-color: var(--qc-danger-hover-bg);
+}
+
+/* ── 2. Invoice Branding Header ───────────────────────────────────────── */
+.invoiceHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--qc-accent-green);
+  margin-bottom: 0.7rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.brandTile {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.5rem;
+  background-color: var(--qc-discount-bg);
+  border: 1px solid var(--qc-discount-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--qc-brand-green);
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--qc-brand-green);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.brandSubline {
+  margin: 0.12rem 0 0 0;
+  font-size: 0.78rem;
+  color: var(--qc-text-muted);
+}
+
+.docMeta {
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+/* Hide QUOTATION / Draft block on mobile UI */
+@media (max-width: 860px) {
+  .docMeta {
+    display: none !important;
+  }
+}
+
+.docTitle {
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: var(--qc-text-main);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+.docSubline {
+  margin-top: 0.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--qc-text-muted);
+}
+
+.metaDot {
+  color: var(--qc-border);
+}
+
+.draftBadge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--qc-discount-bg);
+  color: var(--qc-discount-text);
+  border: 1px solid var(--qc-discount-border);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+/* ── 3. Supplier Sub-line ──────────────────────────────────────────────── */
+.supplierLine {
+  font-size: 0.85rem;
+  color: var(--qc-text-muted);
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--qc-border-light);
+  margin-bottom: 0.95rem;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+.supplierPrefix {
+  font-weight: 600;
+  color: var(--qc-text-sub);
+}
+
+/* ── 4. Main Body Content Layout ──────────────────────────────────────── */
+.contentLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.tableSection {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  max-height: none;
+}
+
+.pricingSection {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border-top: 1px solid var(--qc-border);
+  padding-top: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+/* ── FIX 2: Desktop Side-by-Side (>= 861px AND container >= 760px) ───── */
+@media (min-width: 861px) {
+  @container quotationCard (min-width: 760px) {
+    .contentLayout.sideBySide {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 38px; /* FIX 2: Gap 36px to 40px */
+    }
+
+    .contentLayout.sideBySide .tableSection {
+      flex: 1 1 0%;
+      min-width: 0;
+    }
+
+    /* Hide 5-column table on desktop side-by-side mode */
+    .contentLayout.sideBySide .normalTable {
+      display: none !important;
+    }
+
+    /* Show clean 2-line layout on desktop side-by-side mode */
+    .contentLayout.sideBySide .twoLineList {
+      display: flex !important;
+      flex-direction: column;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    /* FIX 2: Sticky pricing column on the right (340px to 360px wide) */
+    .contentLayout.sideBySide .pricingSection {
+      width: 350px;
+      flex-shrink: 0;
+      min-width: 0;
+      position: sticky;
+      top: 24px;
+      border-top: none;
+      border-left: 1px solid var(--qc-border);
+      padding-top: 0;
+      padding-left: 36px;
+      margin-top: 0;
+    }
+
+    .contentLayout.sideBySide .footerArea {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+
+    .contentLayout.sideBySide .downloadPdfBtn {
+      width: 100%;
+      margin-top: 0.4rem;
+    }
+  }
+}
+
+/* ── Fallback Table vs 2-Line Toggle ─────────────────────────────────── */
+.normalTable {
+  display: table;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.twoLineList {
+  display: none;
+}
+
+/* ── Narrow cards / Phones (< 520px) ─────────────────────────────────── */
+@container quotationCard (max-width: 520px) {
+  .rateCol {
+    display: none !important;
+  }
+
+  .contentLayout.sideBySide {
+    flex-direction: column !important;
+  }
+
+  .contentLayout.sideBySide .normalTable {
+    display: table !important;
+  }
+
+  .contentLayout.sideBySide .twoLineList {
+    display: none !important;
+  }
+
+  .contentLayout.sideBySide .pricingSection {
+    width: 100% !important;
+    position: static !important;
+    border-left: none !important;
+    border-top: 1px solid var(--qc-border) !important;
+    padding-left: 0 !important;
+    padding-top: 1.25rem !important;
+    margin-top: 0.35rem !important;
+  }
+}
+
+/* ── Table Styles (FIX 2: Spacing & Larger Text) ──────────────────────── */
+.normalTable thead th {
+  padding: 0.65rem 0.6rem;
+  font-size: 0.8rem; /* FIX 2: table header 0.8rem */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--qc-text-muted);
+  border-bottom: 1px solid var(--qc-border);
+  background-color: var(--qc-bg);
+}
+
+.itemRow {
+  border-bottom: 1px solid var(--qc-border-light);
+  transition: background-color 0.15s ease;
+}
+
+.itemRow:hover {
+  background-color: var(--qc-hover-row);
+}
+
+/* FIX 2: Product rows vertical padding: 14px to 16px (15px), line-height 1.5 */
+.itemRow td {
+  padding: 0.65rem 0.6rem;
+  vertical-align: middle;
+  min-width: 0;
+}
+
+@media (min-width: 861px) {
+  .itemRow td {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 1.5;
+  }
+}
+
+.colNum {
+  width: 2.2rem;
+  text-align: center;
+  color: var(--qc-text-muted);
+  font-size: 0.86rem;
+}
+
+.colItem {
+  min-width: 0;
+}
+
+.itemTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* FIX 2: Clear spacing between badge, name, tag */
+  flex-wrap: wrap;
+  line-height: 1.5;
+  min-width: 0;
+}
+
+.itemName {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--qc-text-main);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.tagPrimary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.08rem 0.42rem;
+  border-radius: 0.3rem;
+  background-color: var(--qc-tag-bg);
+  color: var(--qc-tag-text);
+  border: 1px solid var(--qc-tag-border);
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tagAddon {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.08rem 0.42rem;
+  border-radius: 0.3rem;
+  background-color: var(--qc-addon-bg);
+  color: var(--qc-addon-text);
+  border: 1px solid var(--qc-addon-border);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.discountBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.3rem;
+  background-color: var(--qc-discount-bg);
+  color: var(--qc-discount-text);
+  border: 1px solid var(--qc-discount-border);
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+/* FIX 2: Variant and note text 0.85rem */
+.itemSubline {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--qc-text-muted);
+  line-height: 1.4;
+  flex-wrap: wrap;
+}
+
+.variantLabel {
+  font-weight: 600;
+  color: var(--qc-text-sub);
+  font-size: 0.85rem;
+}
+
+.struckMrp {
+  text-decoration: line-through;
+  color: var(--qc-text-muted);
+}
+
+/* Qty Column */
+.colQty {
+  width: 7.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.stepperContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.stepperGroup {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--qc-border);
+  border-radius: 0.45rem;
+  background-color: var(--qc-btn-bg);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.qtyBtn {
+  width: 1.85rem;
+  height: 1.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--qc-btn-text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  user-select: none;
+}
+
+.qtyBtn:hover:not(:disabled) {
+  background-color: var(--qc-btn-hover);
+}
+
+.qtyBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.qtyDisplay {
+  min-width: 1.9rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--qc-text-main);
+  user-select: none;
+}
+
+.removeBtn {
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--qc-text-muted);
+  font-size: 1.15rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.removeBtn:hover {
+  color: var(--qc-danger);
+  background-color: var(--qc-danger-hover-bg);
+}
+
+.rateCol {
+  width: 8rem;
+  text-align: right;
+  font-size: 0.92rem;
+  color: var(--qc-text-sub);
+  white-space: nowrap;
+}
+
+.amountCol {
+  width: 7.5rem;
+  text-align: right;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--qc-text-main);
+  white-space: nowrap;
+}
+
+/* ── FIX 2: 2-Line Item Layout (Spacious Desktop) ────────────────────── */
+.twoLineItem {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--qc-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 861px) {
+  .twoLineItem {
+    padding-top: 15px; /* FIX 2: 14px to 16px */
+    padding-bottom: 15px;
+    line-height: 1.5;
+  }
+}
+
+.twoLineRow1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.twoLineTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem; /* FIX 2: Clear spacing between badge, name, tag */
+  flex-wrap: wrap;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.twoLineItemName {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--qc-text-main);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.twoLineAmount {
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--qc-text-main);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.twoLineRow2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem; /* FIX 2: Larger gap */
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+}
+
+.twoLineVariantGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem; /* FIX 2: 0.85rem */
+  color: var(--qc-text-muted);
+  min-width: 0;
+}
+
+.twoLineControlsGroup {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem; /* FIX 2: Larger gap between stepper, rate and amount */
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.twoLineRate {
+  font-size: 0.88rem;
+  color: var(--qc-text-sub);
+  white-space: nowrap;
+}
+
+/* ── FIX 2: Pricing Summary Rows (Spacious Desktop) ───────────────────── */
+.pricingStack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.pricingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.38rem 0;
+  font-size: 0.92rem;
+  color: var(--qc-text-sub);
+  gap: 0.6rem;
+}
+
+@media (min-width: 861px) {
+  .pricingRow {
+    padding-top: 9px; /* FIX 2: 8px to 10px vertical padding */
+    padding-bottom: 9px;
+    font-size: 0.95rem;
+  }
+}
+
+.pricingValue {
+  font-weight: 600;
+  color: var(--qc-text-main);
+  white-space: nowrap;
+}
+
+.discountRow {
+  color: var(--qc-discount-text);
+  font-weight: 600;
+}
+
+.discountValue {
+  font-weight: 700;
+  color: var(--qc-discount-text);
+  white-space: nowrap;
+}
+
+.taxableRow {
+  font-weight: 700;
+  color: var(--qc-text-main);
+  border-top: 1px solid var(--qc-border);
+  margin-top: 0.25rem;
+  padding-top: 0.55rem;
+}
+
+@media (min-width: 861px) {
+  .taxableRow {
+    padding-top: 11px;
+    margin-top: 0.35rem;
+  }
+}
+
+/* ── FIX 2: Big Green Final Quotation Box ─────────────────────────────── */
+.finalQuotationBar {
+  background-color: var(--qc-accent-green);
+  color: #ffffff;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.22);
+  gap: 0.6rem;
+
+  /* Mobile Base Spacing */
+  margin: 0.65rem 0;
+  padding: 0.85rem 1.15rem;
+}
+
+@media (min-width: 861px) {
+  .finalQuotationBar {
+    margin: 16px 0; /* FIX 2: About 16px space above and below */
+    padding: 19px 20px; /* FIX 2: 18px to 20px padding inside */
+    border-radius: 0.85rem;
+  }
+}
+
+.finalLabelGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.finalLabel {
+  font-size: 0.96rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+@media (min-width: 861px) {
+  .finalLabel {
+    font-size: 1.02rem;
+  }
+}
+
+.finalSubLabel {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #dcfce7;
+  line-height: 1.15;
+  margin-top: 0.15rem;
+}
+
+.finalAmount {
+  font-size: 1.7rem;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (min-width: 861px) {
+  .finalAmount {
+    font-size: 1.95rem;
+  }
+}
+
+/* ── GST / ITC Banner (FIX 2: Variant & note text 0.85rem) ────────────── */
+.itcBanner {
+  background-color: var(--qc-itc-bg);
+  border: 1px solid var(--qc-itc-border);
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.85rem; /* FIX 2: 0.85rem */
+  color: var(--qc-itc-text);
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+.itcIcon {
+  color: var(--qc-accent-green);
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.itcText {
+  color: var(--qc-itc-sub);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ── Footer Area (You Save & Download PDF) ────────────────────────────── */
+.footerArea {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--qc-border-light);
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.savingsText {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--qc-discount-text);
+}
+
+.downloadPdfBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 0.55rem;
+  background-color: var(--qc-btn-bg);
+  color: var(--qc-btn-text);
+  border: 1px solid var(--qc-btn-border);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.downloadPdfBtn:hover {
+  background-color: var(--qc-btn-hover);
+  border-color: #94a3b8;
+}
+
+.downloadPdfBtn:active {
+  transform: scale(0.98);
+}
+
+/* ── Empty State ──────────────────────────────────────────────────────── */
+.emptyState {
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyIconWrapper {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-color: var(--qc-border-light);
+  color: var(--qc-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: var(--qc-text-main);
+}
+
+.emptyDesc {
+  margin: 0.45rem 0 1.25rem 0;
+  font-size: 0.88rem;
+  color: var(--qc-text-muted);
+  max-width: 22rem;
+  line-height: 1.45;
+}
+
+.browseBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.35rem;
+  border-radius: 0.65rem;
+  background-color: var(--qc-brand-green);
+  color: #ffffff;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 2px 6px rgba(27, 94, 63, 0.2);
+}
+
+.browseBtn:hover {
+  background-color: var(--qc-brand-hover);
+}
+
+.browseBtn:active {
+  transform: scale(0.98);
+}

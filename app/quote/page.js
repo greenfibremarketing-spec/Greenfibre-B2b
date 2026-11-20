@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuote, moqErrors } from "@/components/Quote";
@@ -8,7 +8,7 @@ import { useAuth } from "@/components/AuthContext";
 import {
   CheckCircle2, ShoppingBag, AlertCircle, Lock, ShieldCheck,
   BadgePercent, Minus, Plus, Trash2, X, SlidersHorizontal,
-  Clock, Copy, Check, ArrowRight, Leaf, ChevronDown, Download
+  Clock, Copy, Check, ArrowRight, Leaf, ChevronDown, Download, Info, Loader2
 } from "lucide-react";
 import GreenyLoader from "@/components/GreenyLoader";
 import { optimizeImageUrl } from "@/lib/imageOptimization";
@@ -19,6 +19,15 @@ import {
   filterPhoneInput,
   validatePinCode
 } from "@/lib/validation";
+import {
+  validateGstin,
+  computeQuoteTax,
+  SUPPLIER_STATE_CODE,
+  SUPPLIER_GSTIN
+} from "@/lib/gstQuote";
+import { useGstinVerify } from "@/hooks/useGstinVerify";
+import GstBenefitCard from "@/components/GstBenefitCard";
+import MobileQuoteStepFlow from "@/components/MobileQuoteStepFlow";
 
 const ORDER_PURPOSE_OPTIONS = [
   "Corporate gifting and new joinee welcome kits",
@@ -69,13 +78,72 @@ export default function QuotePage() {
     date: "", gstin: "", notes: ""
   });
 
+  const [hasGstin, setHasGstin] = useState(false);
+
   const [fieldErrors, setFieldErrors] = useState({
-    name: "", company: "", email: "", phone: "", city: "", pin: ""
+    name: "", company: "", email: "", phone: "", city: "", pin: "", gstin: ""
   });
 
   const [catalogProducts, setCatalogProducts] = useState([]);
   const [quotationDate, setQuotationDate] = useState("");
-  const [mobileTab, setMobileTab] = useState("invoice"); // "invoice" | "form"
+  const [state, setState] = useState({ busy: false, error: null, ref: null });
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const pageRef = useRef(null);
+  const workspaceRef = useRef(null);
+  const billCardRef = useRef(null);
+  const itemsAreaRef = useRef(null);
+  const formCardRef = useRef(null);
+  const formFieldsAreaRef = useRef(null);
+
+  // Live lookup & verification of GSTIN via gstinapi.in
+  const gstinLive = useGstinVerify(formData.gstin, { enabled: hasGstin });
+  const gstinValidation = gstinLive.localValidation;
+
+  // Auto-fill company, city, and PIN code when GSTIN is verified (never overwrite user edits)
+  const lastAutoFilledGstinRef = useRef("");
+  useEffect(() => {
+    if (!hasGstin || gstinLive.status !== "verified" || !gstinLive.data) return;
+
+    const currentGstin = gstinLive.data.gstin;
+    if (lastAutoFilledGstinRef.current === currentGstin) return;
+    lastAutoFilledGstinRef.current = currentGstin;
+
+    const { legalName, tradeName, address } = gstinLive.data;
+    setFormData((prev) => {
+      const updates = {};
+      if (!prev.company || prev.company.trim() === "" || prev.company === "Corporate Buyer" || prev.company === "Freshworks India") {
+        updates.company = legalName || tradeName || "";
+      }
+      if (!prev.city || prev.city.trim() === "" || prev.city === "Pan-India") {
+        if (address?.city) updates.city = address.city;
+      }
+      if (!prev.pin || prev.pin.trim() === "") {
+        if (address?.pincode) updates.pin = address.pincode;
+      }
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+    });
+  }, [hasGstin, gstinLive.status, gstinLive.data]);
+
+  // Dynamic GST Tax calculation & split driven by verified/active state code
+  const quoteTax = useMemo(() => {
+    const isUsable = hasGstin && (gstinLive.status === "verified" || gstinLive.status === "soft");
+    const activeValidation = (gstinLive.status === "verified" && gstinLive.data)
+      ? {
+          valid: true,
+          gstin: gstinLive.data.gstin,
+          stateCode: gstinLive.data.stateCode,
+          stateName: gstinLive.data.stateName,
+          pan: gstinLive.data.pan
+        }
+      : gstinValidation;
+
+    return computeQuoteTax({
+      taxable: estimatedTotal,
+      buyerType: hasGstin ? "gst" : "non_gst",
+      gstinValidation: isUsable ? activeValidation : { valid: false, error: null },
+      supplierStateCode: SUPPLIER_STATE_CODE
+    });
+  }, [estimatedTotal, hasGstin, gstinLive.status, gstinLive.data, gstinValidation]);
 
   useEffect(() => {
     setQuotationDate(
@@ -86,6 +154,82 @@ export default function QuotePage() {
       })
     );
   }, []);
+
+  // Desktop Auto-Fit & Dynamic Font Scaling
+  const fitQuotePage = () => {
+    if (typeof window === "undefined") return;
+
+    // Rule 6: Mobile (900px and below) - return early, single column normal scroll
+    if (window.innerWidth <= 900) {
+      if (pageRef.current) {
+        pageRef.current.style.removeProperty("--hdr");
+      }
+      if (billCardRef.current) {
+        billCardRef.current.style.removeProperty("--fs-bill");
+        billCardRef.current.classList.remove("compact");
+      }
+      if (formCardRef.current) {
+        formCardRef.current.style.setProperty("--fs-form", "14px");
+        formCardRef.current.classList.remove("compact-form");
+      }
+      return;
+    }
+
+    // 1. Measure sticky/fixed site header height and set --hdr
+    const header = document.querySelector("header");
+    const hdrHeight = header ? Math.round(header.getBoundingClientRect().height) : 80;
+    if (pageRef.current) {
+      pageRef.current.style.setProperty("--hdr", `${hdrHeight}px`);
+    }
+
+    // 2. Bill Card auto-fit (Natural height, no inner scroll)
+    const billCard = billCardRef.current;
+    if (billCard) {
+      billCard.classList.remove("compact");
+      billCard.style.setProperty("--fs-bill", "14px");
+    }
+
+    // 3. Form Card: Scaled to clean ~20% compact size with comfortable breathing room
+    const formCard = formCardRef.current;
+    if (formCard) {
+      formCard.classList.remove("compact-form");
+      formCard.style.setProperty("--fs-form", "11.5px");
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let rafId = null;
+    const scheduleFit = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        fitQuotePage();
+      });
+    };
+
+    scheduleFit();
+
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(scheduleFit);
+    }
+
+    window.addEventListener("resize", scheduleFit);
+    window.addEventListener("orientationchange", scheduleFit);
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", scheduleFit);
+      window.removeEventListener("orientationchange", scheduleFit);
+    };
+  }, [items.length, hasGstin]);
+
+  const handleScrollToDetails = () => {
+    const el = document.getElementById("details");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -144,7 +288,17 @@ export default function QuotePage() {
   const currentMoqErrors = moqErrors(lineItems);
   const stockErrors = lineItems.map((it) => ({ item: it, ...getStockInfo(it) })).filter((s) => s.isExceeded);
   const missingColors = lineItems.filter((it) => !(it.colour || it.color)?.trim());
-  const canSubmit = lineItems.length > 0 && currentMoqErrors.length === 0 && stockErrors.length === 0 && missingColors.length === 0;
+  const isGstEligibleForSubmit =
+    !hasGstin ||
+    gstinLive.status === "verified" ||
+    gstinLive.status === "soft";
+
+  const canSubmit =
+    lineItems.length > 0 &&
+    currentMoqErrors.length === 0 &&
+    stockErrors.length === 0 &&
+    missingColors.length === 0 &&
+    isGstEligibleForSubmit;
 
   // Close order purpose dropdown on outside click
   useEffect(() => {
@@ -159,6 +313,9 @@ export default function QuotePage() {
 
   useEffect(() => {
     if (user) {
+      if (user.gstin) {
+        setHasGstin(true);
+      }
       setFormData((prev) => ({
         ...prev,
         name: prev.name || user.fullName || user.full_name || "",
@@ -179,9 +336,6 @@ export default function QuotePage() {
     }
   }, [items.length, isAdjustOpen]);
 
-  const [state, setState] = useState({ busy: false, error: null, ref: null });
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   async function handleDownloadPdf() {
     if (lineItems.length === 0 || isDownloadingPdf) return;
     setIsDownloadingPdf(true);
@@ -198,7 +352,7 @@ export default function QuotePage() {
             city: formData.city || "Pan-India",
             pin: formData.pin || "",
             buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
-            gstin: formData.gstin || "",
+            gstin: hasGstin && gstinValidation?.valid ? gstinValidation.gstin : (formData.gstin || ""),
             notes: formData.notes || ""
           },
           items: lineItems,
@@ -209,7 +363,16 @@ export default function QuotePage() {
           bundleBonusAmount,
           estimatedTotal,
           estimatedGST,
-          totalWithGST
+          totalWithGST,
+          buyerType: hasGstin ? "gst" : "non_gst",
+          isGstinValid: hasGstin ? (gstinLive.status === "verified" || gstinLive.status === "soft") : false,
+          gstin: hasGstin ? formData.gstin : "",
+          gstinState: hasGstin && quoteTax?.buyerStateCode ? `${quoteTax.buyerStateName} (${quoteTax.buyerStateCode})` : null,
+          pan: hasGstin ? (gstinLive.data?.pan || gstinLive.localValidation?.pan || null) : null,
+          legalName: gstinLive.data?.legalName || null,
+          tradeName: gstinLive.data?.tradeName || null,
+          taxSplit: quoteTax.taxSplit,
+          supplierGstin: SUPPLIER_GSTIN
         })
       });
 
@@ -264,7 +427,20 @@ export default function QuotePage() {
       errors.name = "Please enter your full name.";
     }
     if (!formData.company?.trim()) {
-      errors.company = "Please enter your company / organization name.";
+      errors.company = hasGstin
+        ? "Please enter your company / legal name."
+        : "Please enter your company / organization name.";
+    }
+    if (hasGstin) {
+      if (!formData.gstin?.trim()) {
+        errors.gstin = "Please enter your GSTIN.";
+      } else if (gstinLive.status === "checking") {
+        errors.gstin = "Verifying GSTIN with official records, please wait…";
+      } else if (gstinLive.status === "rejected") {
+        errors.gstin = gstinLive.message || "Invalid or unregistered GSTIN.";
+      } else if (!gstinLive.localValidation?.valid) {
+        errors.gstin = gstinLive.localValidation?.error || "Please enter a valid 15-character GSTIN.";
+      }
     }
     if (!formData.email?.trim()) {
       errors.email = "Please enter your work email address.";
@@ -323,7 +499,7 @@ export default function QuotePage() {
       return;
     }
 
-    setFieldErrors({ name: "", company: "", email: "", phone: "", city: "", pin: "" });
+    setFieldErrors({ name: "", company: "", email: "", phone: "", city: "", pin: "", gstin: "" });
     setState({ busy: true, error: null, ref: null });
     try {
       const [response] = await Promise.all([
@@ -333,7 +509,20 @@ export default function QuotePage() {
           body: JSON.stringify({
             ...formData,
             phone: formatIndianPhone(formData.phone),
-            buyerType: formData.buyerType || "Corporate gifting and new joinee welcome kits",
+            buyerType: hasGstin ? "gst" : "non_gst",
+            orderPurpose: formData.buyerType || "Corporate gifting and new joinee welcome kits",
+            gstin: hasGstin ? formData.gstin : "",
+            gstinState: hasGstin && quoteTax?.buyerStateCode ? `${quoteTax.buyerStateName} (${quoteTax.buyerStateCode})` : null,
+            pan: hasGstin ? (gstinLive.data?.pan || gstinLive.localValidation?.pan || null) : null,
+            legalName: gstinLive.data?.legalName || null,
+            tradeName: gstinLive.data?.tradeName || null,
+            isLiveVerified: gstinLive.status === "verified",
+            taxSplit: quoteTax.taxSplit,
+            taxable: quoteTax.taxable,
+            gst: quoteTax.gstAmount,
+            total: quoteTax.totalWithGst,
+            itcAmount: quoteTax.itcAmount,
+            supplierGstin: SUPPLIER_GSTIN,
             userId: user?.id || user?._id || null,
             isB2BVerified: user?.isB2BVerified || false,
             totalGross,
@@ -602,9 +791,542 @@ export default function QuotePage() {
     );
   }
 
+  const renderTotalsContent = (mode = "side") => (
+    <div className="bill-totals-block w-full space-y-[0.25em]">
+      <div className="bill-totals-row flex items-center justify-between text-[0.9em] text-slate-600">
+        <span>Catalog gross ({totalUnitsCount} units)</span>
+        <span className="font-medium text-slate-800">₹{Number(totalGross || 0).toLocaleString("en-IN")}</span>
+      </div>
+
+      {totalItemDiscount > 0 && (
+        <div className="bill-totals-row flex items-center justify-between text-[#15803d]">
+          <span>Volume tier discount</span>
+          <span className="font-semibold">−₹{Number(totalItemDiscount || 0).toLocaleString("en-IN")}</span>
+        </div>
+      )}
+
+      {hasBundleBonus && bundleBonusAmount > 0 && (
+        <div className="bill-totals-row flex items-center justify-between text-[#15803d]">
+          <span>Bundle pairing bonus (5%)</span>
+          <span className="font-semibold">−₹{Number(bundleBonusAmount || 0).toLocaleString("en-IN")}</span>
+        </div>
+      )}
+
+      <div className="bill-totals-row flex items-center justify-between pt-[0.25em] min-[861px]:pt-[9px] min-[861px]:pb-[9px] border-t border-slate-200 text-[0.95em] font-bold text-slate-900">
+        <span>Taxable value</span>
+        <span className="font-extrabold text-[1.05em]">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
+      </div>
+
+      <div className="bill-totals-row flex items-center justify-between text-[0.88em] min-[861px]:text-[0.92em] min-[861px]:py-[9px] text-slate-600">
+        <span>GST @ 18% (included in price)</span>
+        <span className="font-medium text-slate-700">₹{Number(estimatedGST || 0).toLocaleString("en-IN")}</span>
+      </div>
+
+      {/* Green Final quotation bar */}
+      <div className="bg-[#16a34a] text-white rounded-[0.8em] py-[0.65em] px-[0.95em] min-[861px]:my-[16px] min-[861px]:p-[19px_20px] flex items-center justify-between shadow-2xs mt-[0.35em]">
+        <div>
+          <div className="text-[0.92em] min-[861px]:text-[1.02rem] font-bold leading-tight">Final quotation</div>
+          <span className="text-[0.76em] text-emerald-100 font-normal">Incl. GST</span>
+        </div>
+        <div className="text-[1.5em] sm:text-[1.75em] min-[861px]:text-[1.95rem] font-black text-white tracking-tight leading-none">
+          ₹{Number(totalWithGST || 0).toLocaleString("en-IN")}
+        </div>
+      </div>
+
+      {/* ITC BANNER / GST Benefit Card (Mobile Animated Celebration / Desktop Fallback) */}
+      <GstBenefitCard
+        verified={Boolean(quoteTax.isGstValid)}
+        gst={estimatedGST}
+        total={totalWithGST}
+        legalName={gstinLive.data?.legalName || gstinLive.data?.tradeName}
+        desktopFallback={
+          <div className="bill-itc-banner relative overflow-hidden bg-emerald-50/70 rounded-[0.8em] border border-emerald-200/80 p-[0.65em] shadow-2xs mt-[0.35em] text-[0.85rem]">
+            <div className="flex items-center gap-[0.4em] text-slate-700">
+              <Info className="w-[1.1em] h-[1.1em] text-emerald-700 flex-shrink-0" />
+              <span className="font-medium">
+                {quoteTax.isGstValid
+                  ? `Input tax credit of ₹${Number(estimatedGST || 0).toLocaleString("en-IN")} is available against your GSTIN.`
+                  : `GST of ₹${Number(estimatedGST || 0).toLocaleString("en-IN")} is included in the price. Input tax credit requires a valid GSTIN.`}
+              </span>
+            </div>
+          </div>
+        }
+      />
+
+      {/* Savings and Download PDF */}
+      {mode === "standard" ? (
+        <div className="flex items-center justify-between pt-[0.5em] mt-[0.35em] border-t border-slate-200 text-[0.88em]">
+          {totalSavings > 0 ? (
+            <span className="font-bold text-[#15803d]">
+              You save ₹{Number(totalSavings || 0).toLocaleString("en-IN")} ({savingsPct}%)
+            </span>
+          ) : (
+            <span className="text-slate-400 text-[0.8em]">Direct factory wholesale rate</span>
+          )}
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="inline-flex items-center gap-[0.35em] px-[0.9em] py-[0.45em] rounded-[0.5em] border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-[0.85em] transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
+          >
+            {isDownloadingPdf ? (
+              <>
+                <span className="w-[1em] h-[1em] border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                <span>Generating…</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-[1em] h-[1em] text-slate-500" />
+                <span>Download PDF</span>
+              </>
+            )}
+          </button>
+        </div>
+      ) : (
+        <div className="pt-[0.5em] border-t border-slate-200 text-[0.88em] space-y-[0.35em]">
+          {totalSavings > 0 ? (
+            <div className="font-bold text-[#15803d] text-center">
+              You save ₹{Number(totalSavings || 0).toLocaleString("en-IN")} ({savingsPct}%)
+            </div>
+          ) : (
+            <div className="text-slate-400 text-center text-[0.8em]">Direct factory wholesale rate</div>
+          )}
+          <button
+            type="button"
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="w-full inline-flex items-center justify-center gap-[0.35em] px-[0.9em] py-[0.45em] rounded-[0.5em] border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-[0.85em] transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
+          >
+            {isDownloadingPdf ? (
+              <>
+                <span className="w-[1em] h-[1em] border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                <span>Generating…</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-[1em] h-[1em] text-slate-500" />
+                <span>Download PDF</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderTableContent = () => (
+    <>
+      {/* Desktop/Tablet > 640px */}
+      <div className="hidden sm:block">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-xs border-b border-slate-200 text-[0.8rem] text-slate-500 font-semibold uppercase tracking-wider">
+            <tr>
+              <th className="py-[0.65em] min-[861px]:py-[12px] px-[0.6em] w-[2.2em] text-center">#</th>
+              <th className="py-[0.65em] min-[861px]:py-[12px] px-[0.6em]">Item</th>
+              <th className="py-[0.65em] min-[861px]:py-[12px] px-[0.6em] text-center w-[8.5em]">Qty</th>
+              <th className="py-[0.65em] min-[861px]:py-[12px] px-[0.6em] text-right w-[8.5em]">RATE (incl. GST)</th>
+              <th className="py-[0.65em] min-[861px]:py-[12px] px-[0.6em] text-right w-[6.5em]">Amount</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-[0.95em]">
+            {lineItems.map((item, idx) => {
+              const stockInfo = getStockInfo(item);
+              const colorDisplay = (item.colour || item.color || "").trim();
+              const isAddon = Boolean(item.addOn || item.isPair || item.isPairItem);
+              const rate = item.unitPrice || item.price || item.mrp;
+
+              return (
+                <tr key={item.key} className="bill-item-row hover:bg-slate-50/50 transition-colors">
+                  <td className="py-[0.6em] min-[861px]:py-[15px] px-[0.6em] text-center text-slate-400 text-[0.85em] align-middle">
+                    {idx + 1}
+                  </td>
+                  <td className="py-[0.6em] min-[861px]:py-[15px] px-[0.6em] align-middle leading-[1.5]">
+                    {/* Line 1: [42% off] in front of name + item name (bold) + optional Add-on badge */}
+                    <div className="flex items-center gap-[0.4em] leading-snug">
+                      {item.discountPct > 0 && (
+                        <span className="text-[0.72em] font-extrabold text-[#15803d] bg-emerald-50 px-[0.4em] py-[0.08em] rounded border border-emerald-200/80 whitespace-nowrap flex-shrink-0">
+                          {item.discountPct}% off
+                        </span>
+                      )}
+                      <span className="font-bold text-slate-900 text-[0.95em] truncate" title={item.name}>
+                        {item.name}
+                      </span>
+                      {isAddon ? (
+                        <span className="text-[0.7em] font-bold px-[0.35em] py-[0.05em] bg-emerald-50 text-emerald-700 border border-emerald-200/70 rounded whitespace-nowrap flex-shrink-0">
+                          Add-on
+                        </span>
+                      ) : (
+                        <span className="text-[0.7em] font-medium px-[0.35em] py-[0.05em] bg-slate-100 text-slate-500 border border-slate-200 rounded whitespace-nowrap flex-shrink-0">
+                          Primary
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Line 2: variant / colour · struck MRP */}
+                    <div className="bill-item-subline flex items-center gap-[0.35em] text-[0.82em] text-slate-500 whitespace-nowrap mt-[0.12em]">
+                      {colorDisplay ? (
+                        <span className="font-medium text-slate-600">{colorDisplay}</span>
+                      ) : (
+                        <span className="text-[0.78em] font-bold text-rose-600 bg-rose-50 px-[0.35em] py-[0.05em] rounded border border-rose-200">
+                          Color required
+                        </span>
+                      )}
+                      {item.mrp > rate && (
+                        <>
+                          <span className="text-slate-300">·</span>
+                          <span className="line-through text-slate-400">
+                            ₹{Number(item.mrp || 0).toLocaleString("en-IN")}
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Stock exceeded warning */}
+                    {stockInfo.isExceeded && (
+                      <div className="text-[0.82em] text-rose-600 font-semibold flex items-center gap-[0.3em] mt-[0.2em]">
+                        <AlertCircle className="w-[1em] h-[1em] flex-shrink-0" />
+                        <span>Only {stockInfo.available} {colorDisplay} available</span>
+                        <button
+                          type="button"
+                          onClick={() => setQty(item.key, Math.max(1, stockInfo.available))}
+                          className="underline hover:text-rose-800 cursor-pointer font-bold ml-[0.2em]"
+                        >
+                          Set to {stockInfo.available}
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-[0.6em] px-[0.6em] text-center align-middle whitespace-nowrap">
+                    {/* Qty: − / + stepper plus a small × remove button */}
+                    <div className="inline-flex items-center gap-[0.35em]">
+                      <div className="inline-flex items-center border border-slate-200 rounded-[0.4em] bg-white overflow-hidden shadow-2xs">
+                        <button
+                          type="button"
+                          disabled={item.qty <= 1}
+                          onClick={() => setQty(item.key, Math.max(1, (item.qty || 1) - 1))}
+                          className="w-[1.7em] h-[1.7em] flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-[0.9em] select-none transition-colors"
+                          aria-label="Decrease quantity"
+                        >
+                          −
+                        </button>
+                        <span className="px-[0.4em] text-[0.9em] font-bold text-slate-800 min-w-[1.8em] text-center select-none">
+                          {item.qty}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={stockInfo.available !== null && item.qty >= stockInfo.available}
+                          onClick={() => setQty(item.key, (item.qty || 1) + 1)}
+                          className="w-[1.7em] h-[1.7em] flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-[0.9em] select-none transition-colors"
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => remove(item.key)}
+                        className="w-[1.5em] h-[1.5em] rounded-[0.3em] text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer text-[0.9em] font-bold"
+                        title="Remove item"
+                        aria-label="Remove item"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </td>
+                  <td className="py-[0.6em] px-[0.6em] text-right text-slate-700 font-medium text-[0.92em] align-middle whitespace-nowrap">
+                    ₹{Number(rate || 0).toLocaleString("en-IN")}
+                  </td>
+                  <td className="py-[0.6em] px-[0.6em] text-right font-bold text-slate-900 text-[1em] align-middle whitespace-nowrap">
+                    ₹{Number(item.lineNet || 0).toLocaleString("en-IN")}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Small Phones Stacked Item Cards (<= 640px) */}
+      <div className="block sm:hidden divide-y divide-slate-100">
+        {lineItems.map((item) => {
+          const stockInfo = getStockInfo(item);
+          const colorDisplay = (item.colour || item.color || "").trim();
+          const isAddon = Boolean(item.addOn || item.isPair || item.isPairItem);
+          const rate = item.unitPrice || item.price || item.mrp;
+          return (
+            <div key={`mobile-${item.key}`} className="py-[0.7em] space-y-[0.45em]">
+              {/* Row 1 (full width): item name + discount badge (shown instead of Primary on mobile) */}
+              <div>
+                <div className="flex items-center gap-[0.4em] leading-snug">
+                  <span className="font-bold text-slate-900 text-[0.98em] truncate">
+                    {item.name}
+                  </span>
+                  {isAddon ? (
+                    <span className="text-[0.7em] font-bold px-[0.35em] py-[0.05em] bg-emerald-50 text-emerald-700 border border-emerald-200/70 rounded whitespace-nowrap flex-shrink-0">
+                      Add-on
+                    </span>
+                  ) : item.discountPct > 0 ? (
+                    <span className="text-[0.72em] font-extrabold text-[#15803d] bg-emerald-50 px-[0.4em] py-[0.08em] rounded border border-emerald-200/80 whitespace-nowrap flex-shrink-0">
+                      {item.discountPct}% off
+                    </span>
+                  ) : null}
+                  {isAddon && item.discountPct > 0 && (
+                    <span className="text-[0.72em] font-extrabold text-[#15803d] bg-emerald-50 px-[0.4em] py-[0.08em] rounded border border-emerald-200/80 whitespace-nowrap flex-shrink-0">
+                      {item.discountPct}% off
+                    </span>
+                  )}
+                </div>
+                <div className="bill-item-subline flex items-center gap-[0.35em] text-[0.82em] text-slate-500 whitespace-nowrap mt-[0.1em]">
+                  {colorDisplay ? (
+                    <span className="font-medium text-slate-600">{colorDisplay}</span>
+                  ) : (
+                    <span className="text-[0.78em] font-bold text-rose-600 bg-rose-50 px-[0.35em] py-[0.05em] rounded border border-rose-200">
+                      Color required
+                    </span>
+                  )}
+                  {item.mrp > rate && (
+                    <>
+                      <span className="text-slate-300">·</span>
+                      <span className="line-through text-slate-400">
+                        ₹{Number(item.mrp || 0).toLocaleString("en-IN")}
+                      </span>
+                    </>
+                  )}
+                </div>
+                {stockInfo.isExceeded && (
+                  <div className="text-[0.8em] text-rose-600 font-semibold flex items-center gap-[0.3em] mt-[0.15em]">
+                    <AlertCircle className="w-[1em] h-[1em] flex-shrink-0" />
+                    <span>Only {stockInfo.available} {colorDisplay} available</span>
+                    <button
+                      type="button"
+                      onClick={() => setQty(item.key, Math.max(1, stockInfo.available))}
+                      className="underline hover:text-rose-800 cursor-pointer font-bold ml-[0.2em]"
+                    >
+                      Set to {stockInfo.available}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Row 2: qty stepper and × remove on left, amount (bold) on right */}
+              <div className="flex items-center justify-between pt-[0.2em]">
+                <div className="inline-flex items-center gap-[0.35em]">
+                  <div className="inline-flex items-center border border-slate-200 rounded-[0.4em] bg-white overflow-hidden shadow-2xs">
+                    <button
+                      type="button"
+                      disabled={item.qty <= 1}
+                      onClick={() => setQty(item.key, Math.max(1, (item.qty || 1) - 1))}
+                      className="w-[1.7em] h-[1.7em] flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-[0.9em] select-none"
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span className="px-[0.4em] text-[0.9em] font-bold text-slate-800 min-w-[1.8em] text-center select-none">
+                      {item.qty}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={stockInfo.available !== null && item.qty >= stockInfo.available}
+                      onClick={() => setQty(item.key, (item.qty || 1) + 1)}
+                      className="w-[1.7em] h-[1.7em] flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-[0.9em] select-none"
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => remove(item.key)}
+                    className="w-[1.5em] h-[1.5em] rounded-[0.3em] text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer text-[0.9em] font-bold"
+                    title="Remove item"
+                    aria-label="Remove item"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="text-right">
+                  <span className="font-bold text-slate-900 text-[1.05em]">
+                    ₹{Number(item.lineNet || 0).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50/50 flex flex-col justify-center py-2 sm:py-4">
-      <div className="w-full max-w-[1240px] mx-auto px-3 sm:px-6 h-[90dvh] max-h-[90dvh] flex flex-col">
+    <div
+      ref={pageRef}
+      className="min-h-screen bg-white text-slate-900"
+    >
+      {/* Global & Scoped Styles for Quote Page Auto-Fit & Compact Modes */}
+      <style jsx global>{`
+        /* Floating WhatsApp widget adjustments */
+        @media (max-width: 900px) {
+          aside[aria-label="Quick WhatsApp Quote"] {
+            bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px)) !important;
+          }
+        }
+        @media (min-width: 901px) {
+          aside[aria-label="Quick WhatsApp Quote"] {
+            bottom: 0.75rem !important;
+            right: 1.25rem !important;
+            z-index: 30 !important;
+          }
+
+          /* 1. Desktop Workspace (>900px): Natural scrolling on products, sticky fixed form on right */
+          .quote-workspace-container {
+            min-height: calc(100vh - var(--hdr, 80px) - 24px);
+            min-height: calc(100dvh - var(--hdr, 80px) - 24px);
+            height: auto;
+            max-height: none;
+          }
+          .quote-workspace-grid {
+            height: auto;
+            min-height: 0;
+            align-items: stretch;
+          }
+          .quote-bill-card {
+            align-self: flex-start;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            overflow-y: visible !important;
+          }
+          .bill-items-area {
+            overflow: visible !important;
+            overflow-y: visible !important;
+            flex: none !important;
+            height: auto !important;
+            max-height: none !important;
+          }
+          .quote-form-card {
+            position: sticky;
+            top: calc(var(--hdr, 80px) + 16px);
+            align-self: flex-start;
+            height: auto !important;
+            max-height: calc(100dvh - var(--hdr, 80px) - 24px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+          }
+          .quote-form-card::-webkit-scrollbar {
+            width: 4px;
+          }
+          .quote-form-card::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+          }
+          .form-fields-area {
+            overflow-y: visible !important;
+            flex: none !important;
+            height: auto !important;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .quote-workspace-container {
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+          }
+          .quote-workspace-grid {
+            height: auto !important;
+            min-height: auto !important;
+          }
+          .quote-bill-card,
+          .quote-form-card {
+            position: static !important;
+            height: auto !important;
+            min-height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+          }
+          .bill-items-area,
+          .form-fields-area {
+            overflow-y: visible !important;
+            flex: none !important;
+            height: auto !important;
+          }
+        }
+
+        /* 3. Sticky Table Header inside Bill Items Area */
+        .bill-items-area thead {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background-color: rgba(248, 250, 252, 0.98);
+          backdrop-filter: blur(4px);
+        }
+
+        /* Custom Slim Scrollbar for Bill Items Area */
+        .bill-items-area {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 transparent;
+        }
+        .bill-items-area::-webkit-scrollbar {
+          width: 5px;
+        }
+        .bill-items-area::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .bill-items-area::-webkit-scrollbar-thumb {
+          background-color: #cbd5e1;
+          border-radius: 9999px;
+        }
+        .bill-items-area::-webkit-scrollbar-thumb:hover {
+          background-color: #94a3b8;
+        }
+
+        /* 4. Compact Mode on Bill Card */
+        .quote-bill-card.compact .bill-item-row td {
+          padding-top: 0.38em !important;
+          padding-bottom: 0.38em !important;
+        }
+        .quote-bill-card.compact .bill-item-subline {
+          font-size: 0.82em !important;
+          margin-top: 0.08em !important;
+        }
+        .quote-bill-card.compact .bill-notes-block {
+          display: none !important;
+        }
+        .quote-bill-card.compact .bill-totals-block {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .quote-bill-card.compact .bill-totals-row {
+          padding-top: 0.16em !important;
+          padding-bottom: 0.16em !important;
+        }
+
+        /* 4. Compact Mode on Form Card */
+        .quote-form-card.compact-form #q-notes {
+          min-height: 2.2em !important;
+          height: 2.2em !important;
+        }
+        .quote-form-card.compact-form .form-grid {
+          gap: 0.45em !important;
+        }
+        .quote-form-card.compact-form label {
+          margin-bottom: 0.1em !important;
+        }
+        .quote-form-card.compact-form input,
+        .quote-form-card.compact-form button.purpose-btn {
+          padding-top: 0.35em !important;
+          padding-bottom: 0.35em !important;
+        }
+      `}</style>
+
+      {/* Main Container: Fixed-height workspace on desktop, natural scroll on mobile */}
+      <div
+        ref={workspaceRef}
+        className="quote-workspace-container w-full max-w-[1240px] xl:max-w-[1360px] mx-auto px-[0.8em] sm:px-[1.5em] lg:px-[2em] xl:px-[2.5em] my-0 min-[901px]:my-3 pb-[5.5em] min-[901px]:pb-8 box-border"
+      >
         {/* Premium Leaf Loader displayed on top during quote submission */}
         <GreenyLoader
           loading={state.busy}
@@ -612,380 +1334,176 @@ export default function QuotePage() {
           title="Processing Wholesale Quotation"
         />
 
-        {/* Mobile Tab Switcher (Visible on mobile < 900px, hidden on desktop >= 900px) */}
-        <div className="flex min-[900px]:hidden bg-slate-100 p-1 rounded-xl mb-2 flex-shrink-0 border border-slate-200/80">
-          <button
-            type="button"
-            onClick={() => setMobileTab("invoice")}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === "invoice"
-                ? "bg-white text-[#1b5e3f] shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
+        {/* Two-column grid on desktop (responsive split based on item count, min-height: 0) */}
+        <div className={`quote-workspace-grid grid grid-cols-1 ${lineItems.length >= 4 ? "min-[1024px]:grid-cols-[1.52fr_1fr]" : "min-[901px]:grid-cols-[1.25fr_1fr]"} gap-[1.1em] lg:gap-[1.4em] xl:gap-[1.8em]`}>
+          <MobileQuoteStepFlow
+            totalWithGst={totalWithGST}
+            itemCount={items.length}
+            isSubmitting={state.busy}
+            formId="quote-details-form"
           >
-            <span className="w-4 h-4 rounded-full bg-[#1b5e3f] text-white text-[10px] flex items-center justify-center font-bold">1</span>
-            <span>Quotation ({count})</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileTab("form")}
-            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-              mobileTab === "form"
-                ? "bg-white text-[#1b5e3f] shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
+            {/* ── Left Card: Professional Invoice ───────────────────────────── */}
+          <div
+            ref={billCardRef}
+            style={{ fontSize: "var(--fs-bill, 14px)" }}
+            className="quote-bill-card bg-white border border-slate-200/90 rounded-[1em] sm:rounded-[1.2em] p-[1.1em] sm:py-[1.4em] sm:px-[1.4em] min-[861px]:p-[34px] shadow-none flex flex-col min-h-0"
           >
-            <span className="w-4 h-4 rounded-full bg-[#1b5e3f] text-white text-[10px] flex items-center justify-center font-bold">2</span>
-            <span>Your Details</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 min-[900px]:grid-cols-[1.2fr_1fr] gap-4 lg:gap-6 flex-1 min-h-0 items-stretch">
-          {/* ── Left Card: Invoice ────────────────────────────────────────── */}
-          <div className={`bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex-col h-full min-h-0 overflow-hidden ${
-            mobileTab === "invoice" ? "flex" : "hidden min-[900px]:flex"
-          }`}>
-            {/* 1. Header: "Your Products (N)" with "+ Add more products" button */}
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 min-h-[32px] mb-2 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                  1
-                </span>
-                <h3 className="font-bold text-slate-900 text-base tracking-tight">
-                  Your Products ({count})
-                </h3>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
-                  title="Browse catalog to add more products"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>+ Add more products</span>
-                </Link>
-                {items.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={clear}
-                    className="text-xs text-slate-400 hover:text-rose-600 transition-colors cursor-pointer px-1"
-                    title="Clear quote basket"
-                  >
-                    Clear
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 2. Invoice header: "Green Fibre" (bold, brand green) + subline, Right: QUOTATION, date, Draft. 2px green line under it */}
-            <div className="flex items-start justify-between pb-2 border-b-2 border-[#16a34a] flex-shrink-0">
-              <div>
-                <div className="font-bold text-[#1b5e3f] text-lg leading-tight tracking-tight">
-                  Green Fibre
-                </div>
-                <p className="text-xs text-slate-500 leading-normal mt-0.5">
-                  Direct factory wholesale rate · Pan-India logistics
-                </p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <div className="font-bold text-slate-800 text-sm tracking-wider uppercase">
-                  QUOTATION
-                </div>
-                <div className="text-xs text-slate-500 flex items-center justify-end gap-1.5 mt-0.5">
-                  <span>{quotationDate || "Draft Date"}</span>
-                  <span className="text-slate-300">·</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 text-[11px]">
-                    Draft
+            {/* a. Top Headers: Grouped with flex: none */}
+            <div className="flex-none flex-shrink-0">
+              {/* 1. Header: "Your Products (N)" with "+ Add more products" button */}
+              <div className="flex items-center justify-between pb-[0.95em] border-b border-slate-100 min-h-[2.8em] mb-[0.95em]">
+                <div className="flex items-center gap-[0.5em]">
+                  <span className="w-[1.6em] h-[1.6em] rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-[0.8em] font-bold flex-shrink-0">
+                    1
                   </span>
+                  <h3 className="font-bold text-slate-900 text-[1.2em] tracking-tight">
+                    Your Products ({count})
+                  </h3>
+                </div>
+                <div className="flex items-center gap-[0.6em]">
+                  <Link
+                    href="/products"
+                    className="inline-flex items-center gap-[0.3em] text-[0.85em] font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300/80 px-[0.75em] py-[0.35em] rounded-[0.5em] transition-colors cursor-pointer"
+                    title="Browse catalog to add more products"
+                  >
+                    <Plus className="w-[1em] h-[1em]" />
+                    <span>+ Add more products</span>
+                  </Link>
+                  {items.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={clear}
+                      className="text-[0.85em] text-slate-400 hover:text-rose-600 transition-colors cursor-pointer px-[0.3em]"
+                      title="Clear quote basket"
+                    >
+                      Clear
+                    </button>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* 3. One-line supplier text under it (muted), then a thin divider */}
-            <div className="py-1.5 border-b border-slate-100 text-xs text-slate-500 mb-2 flex-shrink-0">
-              <span className="font-semibold text-slate-700">Supplier: </span>
-              Green Fibre India Pvt. Ltd. · Direct factory wholesale rate · 18% GST input tax credit
+              {/* 2. Invoice header: Leaf logo tile + "Green Fibre" + subline. Right: "QUOTATION", date, "Draft". 2px green line below */}
+              <div className="flex items-start justify-between pb-[0.72em] border-b-2 border-[#16a34a] flex-wrap sm:flex-nowrap gap-[0.6em]">
+                <div className="flex items-center gap-[0.75em]">
+                  {/* Leaf logo tile: 2.1em rounded square, light green background, 1px border, green leaf icon */}
+                  <div className="w-[2.1em] h-[2.1em] rounded-[0.45em] bg-emerald-50 border border-emerald-200/90 flex items-center justify-center flex-shrink-0 shadow-2xs">
+                    <Leaf className="w-[1.2em] h-[1.2em] text-[#1b5e3f]" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-[#1b5e3f] text-[1.15em] sm:text-[1.4em] leading-tight tracking-tight">
+                      Green Fibre
+                    </div>
+                    <p className="text-[0.78em] text-slate-500 leading-normal mt-[0.1em]">
+                      Direct factory wholesale rate · Pan-India logistics
+                    </p>
+                  </div>
+                </div>
+                <div className="hidden min-[861px]:block text-right flex-shrink-0 self-end sm:self-auto ml-auto sm:ml-0">
+                  <div className="font-bold text-slate-800 text-[1.05em] sm:text-[1.1em] tracking-wider uppercase">
+                    {quoteTax.isGstValid ? "TAX INVOICE" : "QUOTATION"}
+                  </div>
+                  <div className="text-[0.82em] sm:text-[0.85em] text-slate-500 flex items-center justify-end gap-[0.4em] mt-[0.1em]">
+                    <span>{quotationDate || "Draft Date"}</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="font-semibold text-emerald-700 bg-emerald-50 px-[0.5em] py-[0.1em] rounded border border-emerald-200 text-[0.8em]">
+                      {quoteTax.isGstValid ? "Tax invoice" : "Draft"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. One-line supplier text (.88em, muted), then a thin divider */}
+              <div className="py-[0.6em] border-b border-slate-100 text-[0.88em] text-slate-500 mb-[0.6em]">
+                <span className="font-semibold text-slate-700">Supplier: </span>
+                Charvik Moulds and Products Private Limited · All prices inclusive of 18% GST
+              </div>
             </div>
 
             {items.length === 0 ? (
-              <div className="py-8 text-center space-y-3 flex flex-col items-center justify-center flex-1">
-                <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1">
-                  <ShoppingBag className="w-6 h-6" />
+              <div className="py-[3.5em] text-center space-y-[0.8em] flex flex-col items-center justify-center flex-1">
+                <div className="w-[3em] h-[3em] rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-[0.2em]">
+                  <ShoppingBag className="w-[1.5em] h-[1.5em]" />
                 </div>
-                <h4 className="text-base font-bold text-slate-900">Your quote basket is empty</h4>
-                <p className="text-xs text-slate-500 max-w-xs">Browse our wholesale catalog to add eco drinkware, tableware, and hampers.</p>
-                <div className="pt-2">
-                  <Link href="/products" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#1b5e3f] hover:bg-[#164e34] text-white text-xs font-bold transition-colors">
+                <h4 className="text-[1.15em] font-bold text-slate-900">Your quote basket is empty</h4>
+                <p className="text-[0.88em] text-slate-500 max-w-[22em]">Browse our wholesale catalog to add eco drinkware, tableware, and hampers.</p>
+                <div className="pt-[0.4em]">
+                  <Link href="/products" className="inline-flex items-center gap-[0.4em] px-[1.2em] py-[0.6em] rounded-[0.6em] bg-[#1b5e3f] hover:bg-[#164e34] text-white text-[0.88em] font-bold transition-colors">
                     Browse Product Catalog
                   </Link>
                 </div>
               </div>
-            ) : (
-              <div className="flex flex-col flex-1 min-h-0">
-                {/* 4. Item table with columns #, Item, Qty, Rate, Amount */}
-                <div className="flex-1 min-h-0 overflow-y-auto overflow-x-auto pr-1">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="sticky top-0 bg-white z-10">
-                      <tr className="bg-slate-50/95 border-b border-slate-200 text-xs text-slate-500 font-semibold uppercase tracking-wider">
-                        <th className="py-2 px-2.5 w-8 text-center">#</th>
-                        <th className="py-2 px-2.5">Item</th>
-                        <th className="py-2 px-2.5 text-center w-28">Qty</th>
-                        <th className="py-2 px-2.5 text-right w-20">Rate</th>
-                        <th className="py-2 px-2.5 text-right w-24">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 text-sm">
-                      {lineItems.map((item, idx) => {
-                        const stockInfo = getStockInfo(item);
-                        const colorDisplay = (item.colour || item.color || "").trim();
-                        const isAddon = Boolean(item.addOn || item.isPair || item.isPairItem);
-                        const rate = item.unitPrice || item.price || item.mrp;
-
-                        return (
-                          <tr key={item.key} className="hover:bg-slate-50/60 transition-colors">
-                            <td className="py-2 px-2.5 text-center text-slate-400 text-xs align-middle">
-                              {idx + 1}
-                            </td>
-                            <td className="py-2 px-2.5 align-middle">
-                              {/* Line 1: item name (bold) + tag (Primary / Add-on) */}
-                              <div className="flex items-center gap-1.5 flex-wrap leading-snug">
-                                <span className="font-bold text-slate-900 text-[13.5px]">
-                                  {item.name}
-                                </span>
-                                {isAddon ? (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200/70 rounded">
-                                    Add-on
-                                  </span>
-                                ) : (
-                                  <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 border border-slate-200 rounded">
-                                    Primary
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Line 2 (muted): variant · struck-through catalog price · green "% off" badge */}
-                              <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-wrap mt-0.5">
-                                {colorDisplay ? (
-                                  <span className="font-medium text-slate-600">{colorDisplay}</span>
-                                ) : (
-                                  <span className="text-[11px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                                    Color required
-                                  </span>
-                                )}
-                                {item.mrp > rate && (
-                                  <>
-                                    <span className="text-slate-300">·</span>
-                                    <span className="line-through text-slate-400 text-xs">
-                                      ₹{item.mrp.toLocaleString("en-IN")}
-                                    </span>
-                                  </>
-                                )}
-                                {item.discountPct > 0 && (
-                                  <>
-                                    <span className="text-slate-300">·</span>
-                                    <span className="text-[11px] font-bold text-[#15803d] bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
-                                      {item.discountPct}% off
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-
-                              {/* Stock exceeded warning */}
-                              {stockInfo.isExceeded && (
-                                <div className="text-xs text-rose-600 font-semibold flex items-center gap-1 mt-1">
-                                  <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-                                  <span>Only {stockInfo.available} {colorDisplay} available</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setQty(item.key, Math.max(1, stockInfo.available))}
-                                    className="underline hover:text-rose-800 cursor-pointer font-bold ml-1"
-                                  >
-                                    Set to {stockInfo.available}
-                                  </button>
-                                </div>
-                              )}
-                            </td>
-                            <td className="py-2 px-2.5 text-center align-middle whitespace-nowrap">
-                              {/* Qty: − / + stepper plus a small × remove button */}
-                              <div className="inline-flex items-center gap-1.5">
-                                <div className="inline-flex items-center border border-slate-200 rounded-md bg-white overflow-hidden shadow-2xs">
-                                  <button
-                                    type="button"
-                                    disabled={item.qty <= 1}
-                                    onClick={() => setQty(item.key, Math.max(1, (item.qty || 1) - 1))}
-                                    className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-xs select-none transition-colors"
-                                    aria-label="Decrease quantity"
-                                  >
-                                    −
-                                  </button>
-                                  <span className="px-2 text-xs font-bold text-slate-800 min-w-[22px] text-center select-none">
-                                    {item.qty}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    disabled={stockInfo.available !== null && item.qty >= stockInfo.available}
-                                    onClick={() => setQty(item.key, (item.qty || 1) + 1)}
-                                    className="w-6 h-6 flex items-center justify-center text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer font-bold text-xs select-none transition-colors"
-                                    aria-label="Increase quantity"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => remove(item.key)}
-                                  className="w-5 h-5 rounded text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer text-xs font-bold"
-                                  title="Remove item"
-                                  aria-label="Remove item"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            </td>
-                            <td className="py-2 px-2.5 text-right text-slate-700 font-medium text-xs align-middle whitespace-nowrap">
-                              ₹{rate.toLocaleString("en-IN")}
-                            </td>
-                            <td className="py-2 px-2.5 text-right font-bold text-slate-900 text-sm align-middle whitespace-nowrap">
-                              ₹{item.lineNet.toLocaleString("en-IN")}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+            ) : lineItems.length >= 4 ? (
+              /* Desktop Wide Split Layout (>= 4 products): Side-by-side with products on left and totals on right */
+              <div className="flex flex-col min-[861px]:flex-row min-[861px]:gap-[38px] gap-4 flex-1 min-h-0 items-start">
+                {/* Left Side: Products Table Area */}
+                <div
+                  ref={itemsAreaRef}
+                  className="bill-items-area flex-1 min-w-0 w-full overflow-visible pr-[0.2em] pb-[0.5em]"
+                >
+                  {renderTableContent()}
                 </div>
 
-                {/* 6. Totals, right-aligned, 72% width */}
-                <div className="flex-shrink-0 pt-2 border-t border-slate-100 bg-white">
-                  <div className="ml-auto w-full sm:w-[72%] space-y-1 text-xs">
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>Catalog gross ({totalUnitsCount} units)</span>
-                      <span className="font-medium text-slate-800">₹{totalGross.toLocaleString("en-IN")}</span>
-                    </div>
+                {/* Right Side: Totals / Pricing Area (340px to 360px wide, sticky) */}
+                <div className="bill-footer-area w-full min-[861px]:w-[350px] flex-shrink-0 min-[861px]:sticky min-[861px]:top-6 min-[861px]:border-l min-[861px]:border-slate-200/90 min-[861px]:pl-[36px] border-t min-[861px]:border-t-0 border-slate-200/90 pt-3 min-[861px]:pt-0">
+                  {renderTotalsContent("side")}
+                </div>
+              </div>
+            ) : (
+              /* Single-Column Full-Width Layout (1-3 products): Clean full-width table with totals stacked below */
+              <div className="flex flex-col flex-1 min-h-0">
+                {/* Full-width Products Table */}
+                <div
+                  ref={itemsAreaRef}
+                  className="bill-items-area w-full overflow-visible pb-[0.4em]"
+                >
+                  {renderTableContent()}
+                </div>
 
-                    {totalItemDiscount > 0 && (
-                      <div className="flex items-center justify-between text-[#15803d]">
-                        <span>Volume tier discount</span>
-                        <span className="font-semibold">−₹{totalItemDiscount.toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
-
-                    {hasBundleBonus && bundleBonusAmount > 0 && (
-                      <div className="flex items-center justify-between text-[#15803d]">
-                        <span>Bundle pairing bonus (5%)</span>
-                        <span className="font-semibold">−₹{bundleBonusAmount.toLocaleString("en-IN")}</span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-200 font-bold text-slate-900 text-[13px]">
-                      <span>Net taxable subtotal</span>
-                      <span className="font-extrabold">₹{(estimatedTotal || 0).toLocaleString("en-IN")}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between text-slate-600">
-                      <span>GST 18% (ITC eligible)</span>
-                      <span className="font-medium text-slate-700">₹{estimatedGST.toLocaleString("en-IN")}</span>
-                    </div>
-
-                    {/* Green Final quotation bar with total */}
-                    <div className="bg-[#16a34a] text-white rounded-xl py-2 px-3.5 flex items-center justify-between shadow-2xs mt-1.5">
-                      <div>
-                        <div className="text-xs font-bold leading-tight">Final quotation</div>
-                        <span className="text-[10px] text-emerald-100 font-normal">Incl. GST</span>
-                      </div>
-                      <div className="text-xl sm:text-2xl font-black text-white tracking-tight leading-none">
-                        ₹{totalWithGST.toLocaleString("en-IN")}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 7. Footer: "You save ₹X (Y%)" in green on left, "Download PDF" button on right */}
-                  <div className="flex items-center justify-between pt-2 mt-1.5 border-t border-slate-200 text-xs">
-                    {totalSavings > 0 ? (
-                      <span className="font-bold text-[#15803d]">
-                        You save ₹{totalSavings.toLocaleString("en-IN")} ({savingsPct}%)
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 text-xs">Direct factory wholesale rate</span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={handleDownloadPdf}
-                      disabled={isDownloadingPdf}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
-                    >
-                      {isDownloadingPdf ? (
-                        <>
-                          <span className="w-3.5 h-3.5 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
-                          <span>Generating…</span>
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Download PDF</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  {/* Mobile CTA: Proceed to Details */}
-                  <div className="mt-2 min-[900px]:hidden">
-                    <button
-                      type="button"
-                      onClick={() => setMobileTab("form")}
-                      className="w-full py-2.5 px-4 rounded-xl bg-[#1b5e3f] hover:bg-[#164e34] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
-                    >
-                      <span>Proceed to Details & Submit</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                {/* Below Table: Full-width Totals Block */}
+                <div className="bill-footer-area w-full border-t border-slate-200/90 pt-3 mt-1">
+                  {renderTotalsContent("standard")}
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── Right Card: Details Form ────────────────────────────────────── */}
-          <div className={`bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex-col h-full min-h-0 overflow-hidden ${
-            mobileTab === "form" ? "flex" : "hidden min-[900px]:flex"
-          }`}>
-            {/* Header row: Numbered circle + title */}
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 min-h-[32px] mb-2 flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+          {/* ── Right Card: Details Form ──────────────────────────────────── */}
+          <div
+            ref={formCardRef}
+            style={{ fontSize: "var(--fs-form, 11.5px)" }}
+            className="quote-form-card bg-white border border-slate-200/90 rounded-[1em] sm:rounded-[1.2em] p-[1em] sm:p-[1.25em] xl:p-[1.5em] shadow-none flex flex-col min-h-0"
+          >
+            {/* Header row: Numbered circle + title with id="details" (flex: none) */}
+            <div
+              id="details"
+              className="scroll-mt-4 flex-none flex-shrink-0 flex items-center justify-between pb-[0.65em] border-b border-slate-100 min-h-[2.2em] mb-[0.65em]"
+            >
+              <div className="flex items-center gap-[0.5em]">
+                <span className="w-[1.6em] h-[1.6em] rounded-full bg-[#1b5e3f] text-white flex items-center justify-center text-[0.8em] font-bold flex-shrink-0">
                   2
                 </span>
-                <h3 className="font-bold text-slate-900 text-base tracking-tight">
+                <h3 className="font-bold text-slate-900 text-[1.15em] tracking-tight">
                   Your Details
                 </h3>
               </div>
-              <div className="flex items-center gap-2">
-                {/* On mobile: option to go back to quotation */}
-                <button
-                  type="button"
-                  onClick={() => setMobileTab("invoice")}
-                  className="min-[900px]:hidden text-xs text-emerald-800 font-bold hover:underline"
-                >
-                  ← View Quotation
-                </button>
-                {isAuthenticated && user && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-0.5 rounded-full">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                    <span>Logged in as {user.fullName || user.companyName}</span>
-                  </span>
-                )}
-              </div>
+              {isAuthenticated && user && (
+                <span className="inline-flex items-center gap-[0.4em] text-[0.8em] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-[0.7em] py-[0.25em] rounded-full">
+                  <ShieldCheck className="w-[1em] h-[1em] text-emerald-700" />
+                  <span>Logged in as {user.fullName || user.companyName}</span>
+                </span>
+              )}
             </div>
 
-            {/* Login banner for logged-out users */}
+            {/* Login banner for logged-out users (flex: none) */}
             {(!isAuthenticated && !user) && (
-              <div className="p-2.5 mb-2 bg-emerald-50/80 border border-emerald-200/90 rounded-xl flex items-center justify-between gap-2 text-xs flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5 text-emerald-800 flex-shrink-0" />
+              <div className="flex-none flex-shrink-0 p-[0.6em] mb-[0.65em] bg-emerald-50/80 border border-emerald-200/90 rounded-[0.55em] flex items-center justify-between gap-[0.8em] text-[0.85em]">
+                <div className="flex items-center gap-[0.5em]">
+                  <Lock className="w-[1.1em] h-[1.1em] text-emerald-800 flex-shrink-0" />
                   <span className="text-slate-700 font-medium">Login to lock in your factory wholesale rate</span>
                 </div>
                 <Link
                   href="/login?redirect=/quote"
-                  className="text-emerald-800 font-bold hover:underline whitespace-nowrap text-xs"
+                  className="text-emerald-800 font-bold hover:underline whitespace-nowrap text-[0.85em]"
                 >
                   Login →
                 </Link>
@@ -993,238 +1511,389 @@ export default function QuotePage() {
             )}
 
             <form id="quote-details-form" onSubmit={handleSubmit} noValidate className="flex flex-col flex-1 min-h-0">
-              {/* Form fields in scrollable area so it never overflows 90dvh */}
-              <div className="flex-1 min-h-0 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
-                {/* Two-column field grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {/* 1. Your name */}
-                  <div>
-                    <label htmlFor="q-name" className="text-xs font-semibold text-slate-700 block mb-1">
-                      Your name *
-                    </label>
-                    <input
-                      id="q-name"
-                      name="name"
-                      required
-                      placeholder="Rahul Sharma"
-                      value={formData.name}
-                      onChange={(e) => {
-                        setFormData({ ...formData, name: e.target.value });
-                        if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
-                      }}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
-                        fieldErrors.name ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
-                    />
-                    {fieldErrors.name && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.name}</p>}
+              {/* Form Fields Area (comfortable breathing room) */}
+              <div
+                ref={formFieldsAreaRef}
+                className="form-fields-area space-y-[0.55em]"
+              >
+                {/* 6) Mobile Sticky Total Line (<= 900px) */}
+                <div className="min-[901px]:hidden sticky top-0 z-20 -mx-[0.4em] px-[0.6em] py-[0.45em] bg-white/95 backdrop-blur-md border-b border-emerald-100 flex items-center justify-between shadow-2xs mb-[0.4em] rounded-[0.5em]">
+                  <div className="flex items-center gap-[0.4em] text-[0.85em] font-semibold text-slate-700">
+                    <span className="w-2 h-2 rounded-full bg-[#16a34a]" />
+                    <span>Total (Incl. GST):</span>
                   </div>
-
-                  {/* 2. Company */}
-                  <div>
-                    <label htmlFor="q-company" className="text-xs font-semibold text-slate-700 block mb-1">
-                      Company *
-                    </label>
-                    <input
-                      id="q-company"
-                      name="company"
-                      required
-                      placeholder="Freshworks India"
-                      value={formData.company}
-                      onChange={(e) => {
-                        setFormData({ ...formData, company: e.target.value });
-                        if (fieldErrors.company) setFieldErrors((prev) => ({ ...prev, company: "" }));
-                      }}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
-                        fieldErrors.company ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
-                    />
-                    {fieldErrors.company && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.company}</p>}
+                  <div className="font-extrabold text-[1.1em] text-[#1b5e3f]">
+                    ₹{Number(totalWithGST || 0).toLocaleString("en-IN")}
                   </div>
+                </div>
 
-                  {/* 3. Work email */}
-                  <div>
-                    <label htmlFor="q-email" className="text-xs font-semibold text-slate-700 block mb-1">
-                      Work email *
-                    </label>
-                    <input
-                      id="q-email"
-                      name="email"
-                      type="email"
-                      required
-                      placeholder="rahul@freshworks.com"
-                      value={formData.email}
-                      onChange={(e) => {
-                        setFormData({ ...formData, email: e.target.value });
-                        if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
-                      }}
-                      onBlur={() => {
-                        if (formData.email && !validateEmail(formData.email)) {
-                          setFieldErrors((prev) => ({ ...prev, email: "Enter a valid work email." }));
-                        }
-                      }}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
-                        fieldErrors.email ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
-                    />
-                    {fieldErrors.email && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.email}</p>}
-                  </div>
-
-                  {/* 4. Phone / WhatsApp */}
-                  <div>
-                    <label htmlFor="q-phone" className="text-xs font-semibold text-slate-700 block mb-1">
-                      Phone / WhatsApp *
-                    </label>
-                    <input
-                      id="q-phone"
-                      name="phone"
-                      required
-                      type="tel"
-                      placeholder="+91 92173 28777"
-                      value={formData.phone}
-                      onChange={(e) => {
-                        const filtered = filterPhoneInput(e.target.value);
-                        setFormData({ ...formData, phone: filtered });
-                        if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
-                      }}
-                      onBlur={() => {
-                        if (formData.phone && !validateIndianPhone(formData.phone)) {
-                          setFieldErrors((prev) => ({ ...prev, phone: "Enter a valid 10-digit mobile number." }));
-                        }
-                      }}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
-                        fieldErrors.phone ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
-                    />
-                    {fieldErrors.phone && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.phone}</p>}
-                  </div>
-
-                  {/* 5. Order purpose (full width) */}
-                  <div className="sm:col-span-2 relative" ref={purposeRef}>
-                    <label className="text-xs font-semibold text-slate-700 block mb-1">
-                      Order purpose
-                    </label>
+                {/* 1) GST TOGGLE (top of "Your Details", above "Your name") */}
+                <div className="mb-[0.4em]">
+                  <div className="bg-slate-100 p-[0.2em] rounded-[0.65em] flex items-center gap-[0.2em] border border-slate-200">
                     <button
                       type="button"
-                      onClick={() => setPurposeDropdownOpen(!purposeDropdownOpen)}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-800 flex items-center justify-between transition-all cursor-pointer ${
-                        purposeDropdownOpen
-                          ? "border-[#1b5e3f] ring-2 ring-[#1b5e3f]/20"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <span className="truncate text-left font-medium">
-                        {formData.buyerType || "Select order purpose"}
-                      </span>
-                      <ChevronDown
-                        className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 flex-shrink-0 ml-2 ${
-                          purposeDropdownOpen ? "rotate-180 text-[#1b5e3f]" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {/* Popover Dropdown Menu */}
-                    {purposeDropdownOpen && (
-                      <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-slate-200 rounded-lg shadow-xl py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                        {ORDER_PURPOSE_OPTIONS.map((opt) => {
-                          const isSelected = formData.buyerType === opt;
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({ ...prev, buyerType: opt }));
-                                setPurposeDropdownOpen(false);
-                              }}
-                              className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center justify-between cursor-pointer ${
-                                isSelected
-                                  ? "bg-emerald-50 text-emerald-950 font-bold border-l-3 border-[#15803d]"
-                                  : "text-slate-700 hover:bg-slate-50 font-normal"
-                              }`}
-                            >
-                              <span>{opt}</span>
-                              {isSelected && (
-                                <Check className="w-3.5 h-3.5 text-[#15803d] flex-shrink-0 ml-2" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 6. Delivery city */}
-                  <div>
-                    <label htmlFor="q-city" className="text-xs font-semibold text-slate-700 block mb-1">
-                      Delivery city *
-                    </label>
-                    <input
-                      id="q-city"
-                      name="city"
-                      required
-                      placeholder="Bengaluru"
-                      value={formData.city}
-                      onChange={(e) => {
-                        setFormData({ ...formData, city: e.target.value });
-                        if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
-                      }}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
-                        fieldErrors.city ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
-                      }`}
-                    />
-                    {fieldErrors.city && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.city}</p>}
-                  </div>
-
-                  {/* 7. PIN code */}
-                  <div>
-                    <label htmlFor="q-pin" className="text-xs font-semibold text-slate-700 block mb-1">
-                      PIN code *
-                    </label>
-                    <input
-                      id="q-pin"
-                      name="pin"
-                      pattern="[0-9]{6}"
-                      maxLength={6}
-                      required
-                      placeholder="560001"
-                      value={formData.pin}
-                      onChange={(e) => {
-                        const filtered = e.target.value.replace(/\D/g, "").slice(0, 6);
-                        setFormData({ ...formData, pin: filtered });
-                        if (fieldErrors.pin) setFieldErrors((prev) => ({ ...prev, pin: "" }));
-                      }}
-                      onBlur={() => {
-                        if (formData.pin && !validatePinCode(formData.pin)) {
-                          setFieldErrors((prev) => ({
-                            ...prev,
-                            pin: "Enter a valid 6-digit Indian PIN code."
-                          }));
+                      onClick={() => {
+                        setHasGstin(true);
+                        if (!formData.gstin && user?.gstin) {
+                          setFormData((prev) => ({ ...prev, gstin: user.gstin }));
                         }
                       }}
-                      className={`w-full text-xs sm:text-[13px] py-2 px-3 bg-white border rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
-                        fieldErrors.pin ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                      className={`flex-1 py-[0.42em] px-[0.7em] text-[0.85em] font-semibold rounded-[0.5em] transition-all text-center cursor-pointer ${
+                        hasGstin
+                          ? "bg-white text-[#1b5e3f] shadow-2xs border border-emerald-300 font-bold"
+                          : "text-slate-600 hover:text-slate-900 border border-transparent"
+                      }`}
+                    >
+                      I have a GSTIN
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHasGstin(false)}
+                      className={`flex-1 py-[0.42em] px-[0.7em] text-[0.85em] font-semibold rounded-[0.5em] transition-all text-center cursor-pointer ${
+                        !hasGstin
+                          ? "bg-white text-slate-900 shadow-2xs border border-slate-200 font-bold"
+                          : "text-slate-600 hover:text-slate-900 border border-transparent"
+                      }`}
+                    >
+                      I don&apos;t have a GSTIN
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2) WHEN "I have a GSTIN" IS SELECTED: GSTIN * field with live validation & info chips */}
+                {hasGstin && (
+                  <div className="mb-[0.5em] p-[0.7em] sm:p-[0.8em] bg-slate-50/70 border border-slate-200/80 rounded-[0.65em] space-y-[0.35em]">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="q-gstin-primary" className="text-[0.88em] font-medium text-slate-700 block">
+                        GSTIN *
+                      </label>
+                      <span className="text-[0.76em] text-slate-400 font-mono">15 characters</span>
+                    </div>
+                    <input
+                      id="q-gstin-primary"
+                      name="gstin"
+                      required
+                      maxLength={15}
+                      placeholder="27AAPFU0939F1ZV"
+                      value={formData.gstin}
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase().replace(/\s+/g, "").slice(0, 15);
+                        setFormData((prev) => ({ ...prev, gstin: val }));
+                        if (fieldErrors.gstin) setFieldErrors((prev) => ({ ...prev, gstin: "" }));
+                      }}
+                      className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 uppercase font-mono tracking-wider transition-all ${
+                        formData.gstin
+                          ? gstinLive.status === "checking"
+                            ? "border-amber-300 focus:ring-amber-300/20 focus:border-amber-400"
+                            : gstinLive.status === "verified"
+                              ? "border-emerald-500 focus:ring-emerald-500/20 focus:border-emerald-500"
+                              : gstinLive.status === "soft"
+                                ? "border-emerald-500/70 focus:ring-emerald-500/20 focus:border-emerald-500"
+                                : "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10"
+                          : "border-slate-200"
                       }`}
                     />
-                    {fieldErrors.pin && <p className="text-[11px] text-red-600 font-medium mt-0.5">{fieldErrors.pin}</p>}
-                  </div>
+                    {/* Live validation & lookup feedback */}
+                    {formData.gstin ? (
+                      gstinLive.status === "checking" ? (
+                        <div className="flex items-center gap-[0.4em] text-[0.82em] text-slate-500 font-medium pt-[0.1em]">
+                          <Loader2 className="w-[1.15em] h-[1.15em] text-[#16a34a] animate-spin flex-shrink-0" />
+                          <span>Verifying with GST records…</span>
+                        </div>
+                      ) : gstinLive.status === "verified" && gstinLive.data ? (
+                        <div className="space-y-[0.35em] pt-[0.15em]">
+                          <p className="text-[0.85em] text-emerald-800 font-bold flex items-center gap-[0.35em]">
+                            <Check className="w-[1.2em] h-[1.2em] text-[#16a34a] flex-shrink-0" />
+                            <span>{gstinLive.data.legalName || "Valid Active GSTIN"}</span>
+                          </p>
+                          {/* Info chips: State, PAN, and Trade name if present */}
+                          <div className="flex flex-wrap items-center gap-[0.45em] pt-[0.15em]">
+                            <span className="inline-flex items-center px-[0.65em] py-[0.2em] rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-[0.8em] font-semibold">
+                              State: {gstinLive.data.stateName} ({gstinLive.data.stateCode})
+                            </span>
+                            <span className="inline-flex items-center px-[0.65em] py-[0.2em] rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[0.8em] font-semibold font-mono">
+                              PAN: {gstinLive.data.pan}
+                            </span>
+                            {gstinLive.data.tradeName && gstinLive.data.tradeName !== gstinLive.data.legalName && (
+                              <span className="inline-flex items-center px-[0.65em] py-[0.2em] rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[0.8em] font-semibold">
+                                Trade: {gstinLive.data.tradeName}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ) : gstinLive.status === "soft" ? (
+                        <div className="space-y-[0.3em] pt-[0.1em]">
+                          <p className="text-[0.78em] text-slate-600 font-medium flex items-center gap-[0.3em]">
+                            <Info className="w-[1.1em] h-[1.1em] text-slate-500 flex-shrink-0" />
+                            <span>{gstinLive.message || "Format valid (live verification unavailable). You can proceed."}</span>
+                          </p>
+                          <div className="flex flex-wrap items-center gap-[0.4em] pt-[0.1em]">
+                            <span className="inline-flex items-center px-[0.55em] py-[0.15em] rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[0.78em] font-semibold">
+                              State: {gstinLive.localValidation?.stateName} ({gstinLive.localValidation?.stateCode})
+                            </span>
+                            <span className="inline-flex items-center px-[0.55em] py-[0.15em] rounded-md bg-slate-100 border border-slate-200 text-slate-700 text-[0.78em] font-semibold font-mono">
+                              PAN: {gstinLive.localValidation?.pan}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-[0.78em] text-red-600 font-medium">
+                          {gstinLive.message || "Invalid GSTIN"}
+                        </p>
+                      )
+                    ) : (
+                      <p className="text-[0.75em] text-slate-400">
+                        Enter your 15-character Goods and Services Tax Identification Number.
+                      </p>
+                    )}
+                    {fieldErrors.gstin && (
+                      <p className="text-[0.78em] text-red-600 font-medium mt-[0.25em]">
+                        {fieldErrors.gstin}
+                      </p>
+                    )}
 
-                  {/* 8. Required by */}
-                  <div>
-                    <label htmlFor="q-date" className="text-xs font-semibold text-slate-700 block mb-1">
-                      Required by
-                    </label>
-                    <input
-                      id="q-date"
-                      name="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="w-full text-xs sm:text-[13px] py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f]"
+                    {/* GST Benefit Card (Mobile Animated Celebration / Desktop Fallback is null) */}
+                    <GstBenefitCard
+                      verified={Boolean(quoteTax.isGstValid || (hasGstin && gstinLive.status === "verified"))}
+                      gst={estimatedGST}
+                      total={totalWithGST}
+                      legalName={gstinLive.data?.legalName || gstinLive.data?.tradeName}
+                      desktopFallback={null}
                     />
                   </div>
+                )}
 
-                  {/* 9. GSTIN (optional) */}
+                {/* Form grid: one column on <=900px, two-column on desktop */}
+                <div className="form-grid grid grid-cols-1 min-[900px]:grid-cols-2 gap-[0.5em]">
+                {/* 1. Your name */}
+                <div>
+                  <label htmlFor="q-name" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    Your name *
+                  </label>
+                  <input
+                    id="q-name"
+                    name="name"
+                    required
+                    placeholder="Rahul Sharma"
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: "" }));
+                    }}
+                    className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                      fieldErrors.name ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                    }`}
+                  />
+                  {fieldErrors.name && <p className="text-[0.76em] text-red-600 font-medium mt-[0.2em]">{fieldErrors.name}</p>}
+                </div>
+
+                {/* 2. Company */}
+                <div>
+                  <label htmlFor="q-company" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    {hasGstin ? "Company / legal name *" : "Company *"}
+                  </label>
+                  <input
+                    id="q-company"
+                    name="company"
+                    required
+                    placeholder="Freshworks India"
+                    value={formData.company}
+                    onChange={(e) => {
+                      setFormData({ ...formData, company: e.target.value });
+                      if (fieldErrors.company) setFieldErrors((prev) => ({ ...prev, company: "" }));
+                    }}
+                    className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                      fieldErrors.company ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                    }`}
+                  />
+                  {fieldErrors.company && <p className="text-[0.76em] text-red-600 font-medium mt-[0.2em]">{fieldErrors.company}</p>}
+                </div>
+
+                {/* 3. Work email */}
+                <div>
+                  <label htmlFor="q-email" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    Work email *
+                  </label>
+                  <input
+                    id="q-email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="rahul@freshworks.com"
+                    value={formData.email}
+                    onChange={(e) => {
+                      setFormData({ ...formData, email: e.target.value });
+                      if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: "" }));
+                    }}
+                    onBlur={() => {
+                      if (formData.email && !validateEmail(formData.email)) {
+                        setFieldErrors((prev) => ({ ...prev, email: "Enter a valid work email." }));
+                      }
+                    }}
+                    className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                      fieldErrors.email ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                    }`}
+                  />
+                  {fieldErrors.email && <p className="text-[0.76em] text-red-600 font-medium mt-[0.2em]">{fieldErrors.email}</p>}
+                </div>
+
+                {/* 4. Phone / WhatsApp */}
+                <div>
+                  <label htmlFor="q-phone" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    Phone / WhatsApp *
+                  </label>
+                  <input
+                    id="q-phone"
+                    name="phone"
+                    required
+                    type="tel"
+                    placeholder="+91 92173 28777"
+                    value={formData.phone}
+                    onChange={(e) => {
+                      const filtered = filterPhoneInput(e.target.value);
+                      setFormData({ ...formData, phone: filtered });
+                      if (fieldErrors.phone) setFieldErrors((prev) => ({ ...prev, phone: "" }));
+                    }}
+                    onBlur={() => {
+                      if (formData.phone && !validateIndianPhone(formData.phone)) {
+                        setFieldErrors((prev) => ({ ...prev, phone: "Enter a valid 10-digit mobile number." }));
+                      }
+                    }}
+                    className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                      fieldErrors.phone ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                    }`}
+                  />
+                  {fieldErrors.phone && <p className="text-[0.76em] text-red-600 font-medium mt-[0.2em]">{fieldErrors.phone}</p>}
+                </div>
+
+                {/* 5. Order purpose (full width) */}
+                <div className="min-[900px]:col-span-2 relative" ref={purposeRef}>
+                  <label className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    Order purpose
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setPurposeDropdownOpen(!purposeDropdownOpen)}
+                    className={`purpose-btn w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-800 flex items-center justify-between transition-all cursor-pointer ${
+                      purposeDropdownOpen
+                        ? "border-[#1b5e3f] ring-2 ring-[#1b5e3f]/20"
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <span className="truncate text-left font-medium">
+                      {formData.buyerType || "Select order purpose"}
+                    </span>
+                    <ChevronDown
+                      className={`w-[1em] h-[1em] text-slate-400 transition-transform duration-200 flex-shrink-0 ml-[0.5em] ${
+                        purposeDropdownOpen ? "rotate-180 text-[#1b5e3f]" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* Popover Dropdown Menu */}
+                  {purposeDropdownOpen && (
+                    <div className="absolute left-0 right-0 top-full mt-[0.3em] z-50 bg-white border border-slate-200 rounded-[0.6em] shadow-xl py-[0.25em] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                      {ORDER_PURPOSE_OPTIONS.map((opt) => {
+                        const isSelected = formData.buyerType === opt;
+                        return (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({ ...prev, buyerType: opt }));
+                              setPurposeDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-[0.9em] py-[0.5em] text-[15px] min-[900px]:text-[0.88em] transition-colors flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? "bg-emerald-50 text-emerald-950 font-bold border-l-3 border-[#15803d]"
+                                : "text-slate-700 hover:bg-slate-50 font-normal"
+                            }`}
+                          >
+                            <span>{opt}</span>
+                            {isSelected && (
+                              <Check className="w-[1em] h-[1em] text-[#15803d] flex-shrink-0 ml-[0.5em]" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* 6. Delivery city */}
+                <div>
+                  <label htmlFor="q-city" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    Delivery city *
+                  </label>
+                  <input
+                    id="q-city"
+                    name="city"
+                    required
+                    placeholder="Bengaluru"
+                    value={formData.city}
+                    onChange={(e) => {
+                      setFormData({ ...formData, city: e.target.value });
+                      if (fieldErrors.city) setFieldErrors((prev) => ({ ...prev, city: "" }));
+                    }}
+                    className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                      fieldErrors.city ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                    }`}
+                  />
+                  {fieldErrors.city && <p className="text-[0.76em] text-red-600 font-medium mt-[0.2em]">{fieldErrors.city}</p>}
+                </div>
+
+                {/* 7. PIN code */}
+                <div>
+                  <label htmlFor="q-pin" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    PIN code *
+                  </label>
+                  <input
+                    id="q-pin"
+                    name="pin"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    required
+                    placeholder="560001"
+                    value={formData.pin}
+                    onChange={(e) => {
+                      const filtered = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      setFormData({ ...formData, pin: filtered });
+                      if (fieldErrors.pin) setFieldErrors((prev) => ({ ...prev, pin: "" }));
+                    }}
+                    onBlur={() => {
+                      if (formData.pin && !validatePinCode(formData.pin)) {
+                        setFieldErrors((prev) => ({
+                          ...prev,
+                          pin: "Enter a valid 6-digit Indian PIN code."
+                        }));
+                      }
+                    }}
+                    className={`w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all ${
+                      fieldErrors.pin ? "border-red-400 focus:ring-red-400/20 focus:border-red-400 bg-red-50/10" : "border-slate-200"
+                    }`}
+                  />
+                  {fieldErrors.pin && <p className="text-[0.76em] text-red-600 font-medium mt-[0.2em]">{fieldErrors.pin}</p>}
+                </div>
+
+                {/* 8. Required by */}
+                <div>
+                  <label htmlFor="q-date" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
+                    Required by
+                  </label>
+                  <input
+                    id="q-date"
+                    name="date"
+                    type="date"
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border border-slate-200 rounded-[0.6em] text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f]"
+                  />
+                </div>
+
+                {/* 9. GSTIN (optional) - shown when non-GST mode to maintain identical layout */}
+                {!hasGstin && (
                   <div>
-                    <label htmlFor="q-gstin" className="text-xs font-semibold text-slate-700 block mb-1">
+                    <label htmlFor="q-gstin" className="text-[0.88em] font-medium text-slate-700 block mb-[0.2em]">
                       GSTIN (optional)
                     </label>
                     <input
@@ -1232,90 +1901,95 @@ export default function QuotePage() {
                       name="gstin"
                       placeholder="07AAAAA0000A1Z5"
                       value={formData.gstin}
-                      onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                      className="w-full text-xs sm:text-[13px] py-2 px-3 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] uppercase font-mono"
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase().replace(/\s+/g, "").slice(0, 15);
+                        setFormData({ ...formData, gstin: val });
+                      }}
+                      className="w-full text-[16px] min-[900px]:text-[1em] py-[0.5em] px-[0.75em] bg-white border border-slate-200 rounded-[0.6em] text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] uppercase font-mono"
                     />
-                  </div>
-
-                  {/* 10. Additional information (full width) */}
-                  <div className="sm:col-span-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <label htmlFor="q-notes" className="text-xs font-semibold text-slate-700 block">
-                        Additional information <span className="font-normal text-slate-400">(optional)</span>
-                      </label>
-                      <span className="text-[11px] text-slate-400">
-                        {formData.notes?.length || 0}/2000
-                      </span>
-                    </div>
-                    <textarea
-                      id="q-notes"
-                      name="notes"
-                      maxLength={2000}
-                      placeholder="Specify custom logo laser engraving, custom gift box sleeves, multi-location dispatch, or target delivery timelines..."
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      className="w-full h-16 sm:h-20 min-h-[4rem] text-xs sm:text-[13px] p-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all resize-y"
-                    />
-                  </div>
-                </div>
-
-                {/* Anti-spam honeypot */}
-                <input name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999, opacity: 0 }} aria-hidden="true" />
-
-                {/* Validation & stock warnings */}
-                {currentMoqErrors.map((err, i) => (
-                  <div key={`moq-${i}`} className="p-2 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-800 flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                    <span>{err.message}</span>
-                  </div>
-                ))}
-
-                {stockErrors.map((err, i) => (
-                  <div key={`stock-${i}`} className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center justify-between gap-1.5">
-                    <div className="flex items-center gap-1.5">
-                      <AlertCircle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
-                      <span>{err.message}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setQty(err.item.key, Math.max(1, err.available))}
-                      className="text-[11px] font-bold text-rose-800 underline cursor-pointer"
-                    >
-                      Adjust
-                    </button>
-                  </div>
-                ))}
-
-                {missingColors.map((it, i) => (
-                  <div key={`col-${i}`} className="p-2 bg-rose-50 border border-rose-200 rounded-lg text-xs font-semibold text-rose-700 flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
-                    <span>Line item "{it.name}" requires a color selection.</span>
-                  </div>
-                ))}
-
-                {state.error && (
-                  <div className="p-2 bg-red-50 border border-red-200 rounded-lg text-xs font-semibold text-red-700 flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
-                    <span>{state.error}</span>
                   </div>
                 )}
+
+                {/* 10. Additional information (full width, textarea min-height 4.2em) */}
+                <div className="min-[900px]:col-span-2">
+                  <div className="flex items-center justify-between mb-[0.2em]">
+                    <label htmlFor="q-notes" className="text-[0.88em] font-medium text-slate-700 block">
+                      Additional information <span className="font-normal text-slate-400">(optional)</span>
+                    </label>
+                    <span className="text-[0.76em] text-slate-400">
+                      {formData.notes?.length || 0}/2000
+                    </span>
+                  </div>
+                  <textarea
+                    id="q-notes"
+                    name="notes"
+                    maxLength={2000}
+                    placeholder="Specify custom logo laser engraving, custom gift box sleeves, multi-location dispatch, or target delivery timelines..."
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    className="w-full min-h-[4.2em] h-[4.2em] text-[16px] min-[900px]:text-[1em] p-[0.7em] bg-white border border-slate-200 rounded-[0.6em] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1b5e3f]/20 focus:border-[#1b5e3f] transition-all resize-y"
+                  />
+                </div>
               </div>
 
-              {/* Submit Button & Confidentiality pinned at bottom */}
-              <div className="flex-shrink-0 pt-2 border-t border-slate-100 bg-white mt-auto">
+              {/* Anti-spam honeypot */}
+              <input name="website" tabIndex={-1} autoComplete="off" style={{ position: "absolute", left: -9999, opacity: 0 }} aria-hidden="true" />
+
+              {/* Validation & stock warnings */}
+              {currentMoqErrors.map((err, i) => (
+                <div key={`moq-${i}`} className="p-[0.7em] bg-amber-50 border border-amber-200 rounded-[0.65em] text-[0.85em] font-semibold text-amber-800 flex items-center gap-[0.5em]">
+                  <AlertCircle className="w-[1.1em] h-[1.1em] text-amber-600 flex-shrink-0" />
+                  <span>{err.message}</span>
+                </div>
+              ))}
+
+              {stockErrors.map((err, i) => (
+                <div key={`stock-${i}`} className="p-[0.7em] bg-rose-50 border border-rose-200 rounded-[0.65em] text-[0.85em] font-semibold text-rose-700 flex items-center justify-between gap-[0.5em]">
+                  <div className="flex items-center gap-[0.5em]">
+                    <AlertCircle className="w-[1.1em] h-[1.1em] text-rose-600 flex-shrink-0" />
+                    <span>{err.message}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQty(err.item.key, Math.max(1, err.available))}
+                    className="text-[0.78em] font-bold text-rose-800 underline cursor-pointer"
+                  >
+                    Adjust
+                  </button>
+                </div>
+              ))}
+
+              {missingColors.map((it, i) => (
+                <div key={`col-${i}`} className="p-[0.7em] bg-rose-50 border border-rose-200 rounded-[0.65em] text-[0.85em] font-semibold text-rose-700 flex items-center gap-[0.5em]">
+                  <AlertCircle className="w-[1.1em] h-[1.1em] text-rose-600 flex-shrink-0" />
+                  <span>Line item "{it.name}" requires a color selection.</span>
+                </div>
+              ))}
+
+              {state.error && (
+                <div className="p-[0.7em] bg-red-50 border border-red-200 rounded-[0.65em] text-[0.85em] font-semibold text-red-700 flex items-center gap-[0.5em]">
+                  <AlertCircle className="w-[1.1em] h-[1.1em] text-red-600 flex-shrink-0" />
+                  <span>{state.error}</span>
+                </div>
+              )}
+
+              </div>
+
+              {/* Form Submit Area: Pinned at bottom (flex: none) */}
+              <div className="form-submit-area flex-none flex-shrink-0 mt-2.5 pt-2 border-t border-slate-100">
                 {!isAuthenticated && !user ? (
                   <Link
                     href="/login?redirect=/quote"
-                    className="w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 bg-[#1b5e3f] hover:bg-[#164e34] text-white cursor-pointer shadow-sm active:scale-[0.99]"
+                    className="w-full py-2.5 sm:py-3 px-5 rounded-lg sm:rounded-xl font-bold text-[13.5px] sm:text-[14px] tracking-wide transition-all duration-200 flex items-center justify-center gap-2 bg-[#1b5e3f] hover:bg-[#164e34] text-white cursor-pointer shadow-sm hover:shadow-md active:scale-[0.99]"
                   >
-                    <Lock className="w-4 h-4" />
+                    <Lock className="w-4 h-4 flex-shrink-0" />
                     <span>Login first to submit quote</span>
                   </Link>
                 ) : (
                   <button
                     type="submit"
                     disabled={state.busy || items.length === 0 || !canSubmit}
-                    className={`w-full py-2.5 sm:py-3 px-4 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer ${
+                    className={`w-full py-2.5 sm:py-3 px-5 rounded-lg sm:rounded-xl font-bold text-[13.5px] sm:text-[14px] tracking-wide transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow-md cursor-pointer ${
                       state.busy
                         ? "bg-[#1b5e3f] text-white cursor-wait opacity-80"
                         : "bg-[#1b5e3f] hover:bg-[#164e34] text-white active:scale-[0.99]"
@@ -1329,20 +2003,15 @@ export default function QuotePage() {
                     ) : (
                       <>
                         <span>Submit quote request</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-4 h-4 flex-shrink-0" />
                       </>
                     )}
                   </button>
                 )}
-
-                {/* Confidentiality note */}
-                <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1 mt-1.5">
-                  <Lock className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                  Direct manufacturer confidentiality: We never share your company contact details.
-                </p>
               </div>
             </form>
           </div>
+          </MobileQuoteStepFlow>
         </div>
       </div>
 
@@ -1413,9 +2082,16 @@ export default function QuotePage() {
                             <span>🔗</span> Add-on{item.parentName ? ` with ${item.parentName}` : ""}
                           </span>
                         ) : (
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
-                            <span>📦</span> Primary
-                          </span>
+                          <>
+                            <span className="hidden sm:inline-flex text-[9px] sm:text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-full items-center gap-0.5 flex-shrink-0">
+                              <span>📦</span> Primary
+                            </span>
+                            {item.discountPct > 0 && (
+                              <span className="sm:hidden text-[9px] font-extrabold text-[#15803d] bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                                {item.discountPct}% off
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5 sm:mt-1 text-[10.5px] sm:text-xs text-slate-500">
@@ -1429,11 +2105,11 @@ export default function QuotePage() {
                           </span>
                         )}
                         <span className="font-semibold text-slate-800">
-                          ₹{(item.unitPrice || item.price || item.mrp).toLocaleString("en-IN")}/{item.unit || "pc"}
+                          ₹{Number(item.unitPrice || item.price || item.mrp || 0).toLocaleString("en-IN")}/{item.unit || "pc"}
                         </span>
                         {item.mrp > (item.unitPrice || item.price) && (
                           <span className="line-through text-slate-400 text-[10px]">
-                            ₹{item.mrp.toLocaleString("en-IN")}
+                            ₹{Number(item.mrp || 0).toLocaleString("en-IN")}
                           </span>
                         )}
                         <span className={`text-[10px] sm:text-[11px] font-bold px-1.5 py-0.2 rounded border transition-colors ${item.tierNumber === 3
@@ -1451,8 +2127,8 @@ export default function QuotePage() {
                   {/* Right: Quantity Stepper & Net Price & Delete */}
                   <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 flex-shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                     <div className="text-left sm:text-right">
-                      <p className="text-xs sm:text-sm font-bold text-slate-900">₹{item.lineNet.toLocaleString("en-IN")}</p>
-                      <p className="text-[10px] sm:text-[11px] text-slate-400 line-through">₹{item.lineGross.toLocaleString("en-IN")}</p>
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">₹{Number(item.lineNet || 0).toLocaleString("en-IN")}</p>
+                      <p className="text-[10px] sm:text-[11px] text-slate-400 line-through">₹{Number(item.lineGross || 0).toLocaleString("en-IN")}</p>
                     </div>
 
                     {/* Stepper */}

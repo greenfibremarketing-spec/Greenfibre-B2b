@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Leaf, Check, ChevronDown, Minus, Plus, ShoppingBag } from "lucide-react";
 
@@ -47,6 +47,7 @@ function resolveMRP(product) {
 export function QuoteProvider({ children }) {
   const [items, setItems] = useState([]);
   const [toast, setToast] = useState(null);
+  const toastTimerRef = useRef(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -63,10 +64,11 @@ export function QuoteProvider({ children }) {
     }
   }, []);
 
-  const showToast = (message) => {
+  const showToast = useCallback((message) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToast(message);
-    setTimeout(() => setToast(null), 3200);
-  };
+    toastTimerRef.current = setTimeout(() => setToast(null), 5500);
+  }, []);
 
   const saveItems = (newItemsOrUpdater) => {
     setItems((prevItems) => {
@@ -84,6 +86,43 @@ export function QuoteProvider({ children }) {
   // ── addBatch (Atomic addition of multiple items/variants in a single pass) ──
   const addBatch = (batchList) => {
     if (!Array.isArray(batchList) || batchList.length === 0) return;
+
+    // Helper: Checks if primary products already meet the 10 units rule
+    const hasPrimaryWithMoq = (currentItems) => {
+      const prodTotals = {};
+      let totalPrimaryUnits = 0;
+      for (const it of currentItems) {
+        if (it.isPair || it.isPairItem || it.addOn) continue;
+        const k = it.slug || it.productId || it.name;
+        const q = Number(it.qty) || 0;
+        prodTotals[k] = (prodTotals[k] || 0) + q;
+        totalPrimaryUnits += q;
+      }
+      return Object.values(prodTotals).some((q) => q >= 10) || totalPrimaryUnits >= 10;
+    };
+
+    const allAddOns = batchList.every(
+      ({ product: p }) =>
+        Boolean(p.isPairItem === true || p.isPair === true || p.addOn === true)
+    );
+
+    const incomingTotal = batchList.reduce((sum, item) => sum + (parseInt(item.qty, 10) || 0), 0);
+    const cartAlreadyQualifies = hasPrimaryWithMoq(items);
+
+    if (allAddOns && !cartAlreadyQualifies) {
+      showToast(
+        "Add at least 10 units of a primary product first to unlock add-on items."
+      );
+      return;
+    }
+
+    // If basket doesn't qualify yet and incoming batch is less than 10 units:
+    if (!cartAlreadyQualifies && incomingTotal < 10) {
+      showToast(
+        "Minimum 10 units required for your first product. Please select at least 10 units."
+      );
+      return;
+    }
 
     saveItems((currentItems) => {
       let current = [...currentItems];
@@ -212,7 +251,11 @@ export function QuoteProvider({ children }) {
     });
 
     const totalAdded = batchList.reduce((sum, item) => sum + (parseInt(item.qty, 10) || 0), 0);
-    showToast(`Added ${totalAdded} pieces to quote basket.`);
+    if (!cartAlreadyQualifies && incomingTotal >= 10) {
+      showToast(`Added ${totalAdded} pieces! 🎉 10-unit minimum met. You can now add other products with quantity 1 or more.`);
+    } else {
+      showToast(`Added ${totalAdded} pieces to quote basket.`);
+    }
   };
 
   // ── add ───────────────────────────────────────────────────────────────────
@@ -321,7 +364,7 @@ export function QuoteProvider({ children }) {
   };
 
   // ── Derived cart-level totals with centralized reactive calculations ──────
-  const lineItems = items.map(computeLineItem);
+  const lineItems = useMemo(() => items.map(computeLineItem), [items]);
 
   const totalUnits = lineItems.reduce((acc, it) => acc + (it.qty || 0), 0);
   const totalUnitsCount = totalUnits;
@@ -339,10 +382,16 @@ export function QuoteProvider({ children }) {
     ? Math.round(netSubtotalBeforeBundle * (BUNDLE_BONUS_PCT / 100))
     : 0;
 
-  const estimatedTotal = netSubtotalBeforeBundle - bundleBonusAmount;
-  const estimatedGST = Math.round(estimatedTotal * 0.18);
-  const totalWithGST = estimatedTotal + estimatedGST;
-  const totalSavings = totalItemDiscount + bundleBonusAmount;
+  // FIX 1: All product rates and MRP already include 18% GST. Never add GST on top.
+  // afterDiscounts = sum(rate × qty) − bundleBonus
+  // total (final quotation) = afterDiscounts
+  // gst = Math.round(total × 0.18 / 1.18)   // the GST contained in the price
+  // taxable = total − gst
+  const afterDiscounts = netSubtotalBeforeBundle - bundleBonusAmount;
+  const totalWithGST = Math.max(0, afterDiscounts);
+  const estimatedGST = Math.round((totalWithGST * 0.18) / 1.18);
+  const estimatedTotal = totalWithGST - estimatedGST;
+  const totalSavings = Math.max(0, totalGross - totalWithGST);
   const savingsPct = totalGross > 0 ? ((totalSavings / totalGross) * 100).toFixed(1) : "0";
 
   return (
@@ -382,18 +431,26 @@ export function QuoteProvider({ children }) {
     >
       {children}
       {toast && (
-        <div className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:bottom-6 z-50 animate-slide-up flex justify-center sm:justify-end pointer-events-none">
-          <div className="flex items-center gap-3 bg-white text-slate-800 px-4 py-3 rounded-xl shadow-xl border border-slate-200 max-w-md w-full sm:w-auto pointer-events-auto">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-100 text-brand-800 flex items-center justify-center font-bold text-xs border border-brand-200">
-              <Leaf className="w-3.5 h-3.5" />
+        <div className="fixed bottom-20 sm:bottom-24 left-4 right-4 sm:left-auto sm:right-6 z-[99999] animate-in fade-in slide-in-from-bottom-2 duration-200 flex justify-end pointer-events-none">
+          <div className="flex items-center gap-3 bg-white text-slate-800 px-4 py-3.5 rounded-xl shadow-2xl border-2 border-emerald-500 max-w-md w-full sm:w-auto pointer-events-auto">
+            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-emerald-100 text-[#1b5e3f] flex items-center justify-center font-bold text-xs border border-emerald-300">
+              <Leaf className="w-4 h-4 text-[#1b5e3f]" />
             </span>
-            <span className="text-xs sm:text-sm font-medium text-slate-800 flex-1">{toast}</span>
+            <span className="text-xs sm:text-sm font-semibold text-slate-800 flex-1 leading-snug">{toast}</span>
             <Link
               href="/quote"
-              className="text-xs font-bold text-brand-700 hover:text-brand-800 underline uppercase tracking-wider ml-1 flex-shrink-0"
+              className="text-xs font-bold text-[#1b5e3f] hover:text-emerald-700 underline uppercase tracking-wider ml-1 flex-shrink-0 whitespace-nowrap"
             >
-              View
+              View Basket
             </Link>
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              className="text-slate-400 hover:text-slate-700 text-lg leading-none ml-1.5 cursor-pointer p-1"
+              aria-label="Close notification"
+            >
+              ×
+            </button>
           </div>
         </div>
       )}

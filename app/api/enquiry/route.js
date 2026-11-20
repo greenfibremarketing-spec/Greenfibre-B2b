@@ -6,6 +6,8 @@ import { quotationAttachments } from "@/lib/quotationAttachment";
 import { sendQuotationEmail } from "@/lib/email";
 import { deductInventoryForOrder } from "@/lib/inventory";
 import { validateCartLine } from "@/lib/cartModel";
+import { validateGstin, computeQuoteTax, SUPPLIER_STATE_CODE, SUPPLIER_GSTIN } from "@/lib/gstQuote";
+import { verifyGstin } from "@/lib/gstinApi";
 import {
   validateEmail,
   validateIndianPhone,
@@ -44,16 +46,79 @@ export async function POST(req) {
     }
 
     const s = (k, n = 300) => String(b[k] || "").trim().slice(0, n);
+    const buyerType = s("buyerType") === "gst" ? "gst" : "non_gst";
+    const rawGstin = s("gstin", 15);
+    let gstinValidation = null;
+    let gstinState = null;
+    let pan = null;
+    let isLiveVerified = false;
+    let verifiedLegalName = null;
+    let verifiedTradeName = null;
+    let verifiedGstStatus = null;
+    let verifiedAt = null;
+
+    if (buyerType === "gst") {
+      // Re-verify GSTIN on server using live verification service (never trust client)
+      const liveResult = await verifyGstin(rawGstin);
+
+      if (!liveResult.ok) {
+        if (!liveResult.soft) {
+          // Hard rejection (e.g. NOT_FOUND or INVALID_FORMAT)
+          return NextResponse.json(
+            { error: liveResult.message || "Invalid or unregistered GSTIN. Please check your GST number." },
+            { status: 422 }
+          );
+        }
+        // Soft failure: format passed local check, but upstream API unavailable/out of credits
+        const local = validateGstin(rawGstin);
+        if (!local.valid) {
+          return NextResponse.json(
+            { error: local.error || "Please provide a valid 15-character GSTIN." },
+            { status: 422 }
+          );
+        }
+        gstinValidation = local;
+        gstinState = `${local.stateName} (${local.stateCode})`;
+        pan = local.pan;
+        isLiveVerified = false;
+        verifiedGstStatus = "Unverified (Service Offline)";
+      } else {
+        // Successful verification from gstinapi.in
+        if (!liveResult.data.isActive) {
+          // Cancelled or Suspended -> Hard rejection
+          return NextResponse.json(
+            { error: `GSTIN status is ${liveResult.data.status || "Inactive"}. An active GSTIN is required.` },
+            { status: 422 }
+          );
+        }
+
+        isLiveVerified = true;
+        verifiedLegalName = liveResult.data.legalName;
+        verifiedTradeName = liveResult.data.tradeName;
+        verifiedGstStatus = liveResult.data.status;
+        verifiedAt = new Date().toISOString();
+        gstinValidation = {
+          valid: true,
+          gstin: liveResult.data.gstin,
+          stateCode: liveResult.data.stateCode,
+          stateName: liveResult.data.stateName,
+          pan: liveResult.data.pan
+        };
+        gstinState = `${liveResult.data.stateName} (${liveResult.data.stateCode})`;
+        pan = liveResult.data.pan;
+      }
+    }
+
     const client = {
       name: s("name"),
       company: s("company"),
       email: s("email"),
       phone: s("phone", 30),
-      buyerType: s("buyerType", 100),
+      buyerType: s("orderPurpose") || s("buyerType", 100),
       city: s("city", 100),
       pin: s("pin", 10),
       date: s("date", 30),
-      gstin: s("gstin", 30),
+      gstin: buyerType === "gst" ? (gstinValidation?.gstin || rawGstin) : "",
       notes: s("notes", 5000)
     };
 
@@ -66,7 +131,7 @@ export async function POST(req) {
 
     if (!client.company || client.company.length < 2) {
       return NextResponse.json(
-        { error: "Please provide your company or organization name." },
+        { error: buyerType === "gst" ? "Please provide your company or legal name." : "Please provide your company or organization name." },
         { status: 422 }
       );
     }
@@ -211,12 +276,14 @@ export async function POST(req) {
       });
     }
 
-    // Verify MOQ across product lines (sum of variant quantities >= MOQ)
-    for (const key of Object.keys(productPrimaryTotals)) {
-      const pTotal = productPrimaryTotals[key];
-      if (pTotal.totalQty < pTotal.requiredMoq) {
+    // Verify MOQ across product lines (at least one primary product must have >= requiredMoq)
+    const primaryProds = Object.values(productPrimaryTotals);
+    if (primaryProds.length > 0) {
+      const hasQualifiedProduct = primaryProds.some((p) => p.totalQty >= p.requiredMoq);
+      if (!hasQualifiedProduct) {
+        const p = primaryProds[0];
         return NextResponse.json(
-          { error: `${pTotal.name}: Minimum wholesale order quantity is ${pTotal.requiredMoq} ${pTotal.unit} (you have selected ${pTotal.totalQty}).` },
+          { error: `${p.name}: Minimum wholesale order quantity is ${p.requiredMoq} ${p.unit} (you have selected ${p.totalQty}).` },
           { status: 422 }
         );
       }
@@ -243,6 +310,13 @@ export async function POST(req) {
     const estimatedGST = Math.round(estimatedTotal * 0.18);
     const totalWithGST = estimatedTotal + estimatedGST;
 
+    const taxCalc = computeQuoteTax({
+      taxable: estimatedTotal,
+      buyerType,
+      gstinValidation,
+      supplierStateCode: SUPPLIER_STATE_CODE
+    });
+
     const pricing = {
       totalGross,
       totalItemDiscount,
@@ -252,7 +326,23 @@ export async function POST(req) {
       bundleBonusAmount,
       estimatedTotal,
       estimatedGST,
-      totalWithGST
+      totalWithGST,
+      buyerType,
+      isGstinValid: Boolean(gstinValidation?.valid),
+      gstin: buyerType === "gst" ? (gstinValidation?.gstin || rawGstin) : "",
+      gstinState,
+      pan,
+      legalName: verifiedLegalName,
+      tradeName: verifiedTradeName,
+      gstStatus: verifiedGstStatus,
+      verified: isLiveVerified,
+      verifiedAt,
+      taxSplit: taxCalc.taxSplit,
+      taxable: taxCalc.taxable,
+      gst: taxCalc.gstAmount,
+      total: taxCalc.totalWithGst,
+      itcAmount: taxCalc.itcAmount,
+      supplierGstin: SUPPLIER_GSTIN
     };
 
     const reference =
@@ -337,6 +427,17 @@ export async function POST(req) {
       discountAmount: pricing.totalItemDiscount + (pricing.bundleBonusAmount || 0),
       finalAmount: pricing.totalWithGST,
       estimatedTax: pricing.estimatedGST,
+      buyerType: pricing.buyerType,
+      gstin: pricing.gstin,
+      gstinState: pricing.gstinState,
+      pan: pricing.pan,
+      legalName: pricing.legalName || null,
+      tradeName: pricing.tradeName || null,
+      gstStatus: pricing.gstStatus || null,
+      verified: Boolean(pricing.verified),
+      verifiedAt: pricing.verifiedAt || null,
+      taxSplit: pricing.taxSplit,
+      itcAmount: pricing.itcAmount,
       items: items.map((it) => ({
         product: it.productId || it.slug,
         productId: it.productId,

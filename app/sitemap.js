@@ -28,7 +28,11 @@ export default async function sitemap() {
   const landingPages = [
     { url: `${BASE_URL}/corporate-gifting`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 },
     { url: `${BASE_URL}/custom-branded-water-bottles`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 },
-    { url: `${BASE_URL}/diwali-corporate-gifts`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 }
+    { url: `${BASE_URL}/diwali-corporate-gifts`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/wholesale-kitchenware`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/eco-lunch-boxes`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/bulk-tableware`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/wholesale-drinkware`, lastModified: currentDate, changeFrequency: "weekly", priority: 0.85 }
   ];
 
   const categoryPages = categories.map((c) => ({

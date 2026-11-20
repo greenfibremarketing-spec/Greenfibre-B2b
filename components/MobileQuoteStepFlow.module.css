@@ -1,0 +1,291 @@
+/* ==========================================================================
+   MobileQuoteStepFlow.module.css
+   Mobile-Only (<= 860px) 2-Step Flow:
+   - Top Step Progress Indicator (1 Products ——— 2 Details)
+   - Step Slide Animations (from right when going forward, left when going back)
+   - Fixed Bottom Bar respecting iPhone safe-area
+   - Desktop (>= 861px) uses display: contents, completely hidden from desktop.
+   ========================================================================== */
+
+/* ── Desktop (>= 861px): Hide all mobile step flow chrome & use display: contents ── */
+@media (min-width: 861px) {
+  .mobileProgressHeader {
+    display: none !important;
+  }
+  .mobileFixedBottomBar {
+    display: none !important;
+  }
+  .stepsWrapper {
+    display: contents !important;
+  }
+  .stepSlide {
+    display: contents !important;
+  }
+}
+
+/* ── Mobile (<= 860px): Active 2-Step Flow ───────────────────────────── */
+@media (max-width: 860px) {
+  .mobileProgressHeader {
+    display: flex !important;
+  }
+  .mobileFixedBottomBar {
+    display: block !important;
+  }
+  .stepsWrapper {
+    display: block;
+    width: 100%;
+    position: relative;
+    overflow-x: hidden;
+  }
+}
+
+/* ── Top Progress Header ("1 Products ——— 2 Details") ────────────────── */
+.mobileProgressHeader {
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem 0.85rem;
+  background-color: #ffffff;
+  margin-bottom: 0.65rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stepTab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.stepTab:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stepTab.active {
+  background-color: #ecfdf5;
+  color: #1b5e3f;
+  font-weight: 700;
+}
+
+.stepTab.completed {
+  color: #15803d;
+}
+
+.stepBadge {
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background-color: #f1f5f9;
+  color: #64748b;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.stepTab.active .stepBadge {
+  background-color: #1b5e3f;
+  color: #ffffff;
+}
+
+.stepTab.completed .stepBadge {
+  background-color: #16a34a;
+  color: #ffffff;
+}
+
+.checkSvg {
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.stepLine {
+  flex: 1;
+  max-width: 3.5rem;
+  height: 2px;
+  background-color: #e2e8f0;
+  border-radius: 9999px;
+  transition: background-color 0.25s ease;
+}
+
+.stepLine.active {
+  background-color: #16a34a;
+}
+
+/* ── Step Slides & Animations (Mobile only) ──────────────────────────── */
+@media (max-width: 860px) {
+  .stepSlide {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .stepSlide.hidden {
+    display: none !important;
+  }
+
+  .stepSlide.visible {
+    display: block !important;
+  }
+
+  .slideForward {
+    animation: slideInFromRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .slideBackward {
+    animation: slideInFromLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-35px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Fixed Bottom Bar ────────────────────────────────────────────────── */
+.mobileFixedBottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+
+.bottomBarInner {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.priceLabel {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.priceValue {
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #1b5e3f;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.primaryCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 0.75rem;
+  background-color: #1b5e3f;
+  color: #ffffff;
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(27, 94, 63, 0.2);
+  white-space: nowrap;
+}
+
+.primaryCtaBtn:hover:not(:disabled) {
+  background-color: #164e34;
+}
+
+.primaryCtaBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.primaryCtaBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.step2Actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.75rem;
+  background-color: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.backBtn:hover {
+  background-color: #e2e8f0;
+}
+
+/* ── Accessible Keyboard Focus ────────────────────────────────────────── */
+.stepTab:focus-visible,
+.primaryCtaBtn:focus-visible,
+.backBtn:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: 2px;
+}
+
+/* ── Prefers-Reduced-Motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .slideForward,
+  .slideBackward {
+    animation: none !important;
+  }
+}
+

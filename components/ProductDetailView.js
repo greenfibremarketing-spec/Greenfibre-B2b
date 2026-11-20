@@ -646,12 +646,40 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   const relatedProducts = (rawRelated || []).filter(
     (rel) => rel && !String(rel.slug || rel.name || "").toLowerCase().includes("tulsi")
   );
-  const { add, addBatch, updateCustomizations, items } = useQuote() || {};
+  const { add, addBatch, updateCustomizations, items, showToast } = useQuote() || {};
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // ── GLOBAL MOQ CHECK across cart items ──
+  const cartHasPrimaryMoq = useMemo(() => {
+    if (!Array.isArray(items) || items.length === 0) return false;
+    const totalsByProduct = {};
+    let totalPrimaryUnits = 0;
+    for (const it of items) {
+      if (it.isPair || it.isPairItem || it.addOn) continue;
+      const k = it.slug || it.productId || it.name;
+      const q = Number(it.qty) || 0;
+      totalsByProduct[k] = (totalsByProduct[k] || 0) + q;
+      totalPrimaryUnits += q;
+    }
+    return Object.values(totalsByProduct).some((q) => q >= 10) || totalPrimaryUnits >= 10;
+  }, [items]);
+
+  // Show MOQ info toast when product detail opens or cart hydrates
+  const lastMoqToastStateRef = useRef(null);
+  useEffect(() => {
+    if (!mounted || !showToast) return;
+    if (cartHasPrimaryMoq && lastMoqToastStateRef.current !== "unlocked") {
+      lastMoqToastStateRef.current = "unlocked";
+      showToast("✓ Minimum 10 units met in your basket! You can select 1 or more of any product.");
+    } else if (!cartHasPrimaryMoq && lastMoqToastStateRef.current === null) {
+      lastMoqToastStateRef.current = "locked";
+      showToast("Minimum 10 units required for your first product. Additional items can be added from quantity 1.");
+    }
+  }, [mounted, cartHasPrimaryMoq, showToast]);
 
   const isSetProduct =
     product.unit?.toLowerCase() === "set" ||
@@ -701,34 +729,36 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   };
 
   // Normalize colors
-  const rawColorList = Array.isArray(product.colors) && product.colors.length > 0
-    ? product.colors
-    : Array.isArray(product.colours) && product.colours.length > 0
-      ? product.colours
-      : ["Natural Sand", "Sage Green"];
+  const colorVariants = useMemo(() => {
+    const rawColorList = Array.isArray(product.colors) && product.colors.length > 0
+      ? product.colors
+      : Array.isArray(product.colours) && product.colours.length > 0
+        ? product.colours
+        : ["Natural Sand", "Sage Green"];
 
-  const colorVariants = rawColorList.map((c, idx) => {
-    const name = typeof c === "string" ? c : c?.name || `Variant ${idx + 1}`;
-    const id = typeof c === "object" ? (c?._id || c?.id || `variant-${idx}`) : `variant-${idx}`;
-    const rawImgs = typeof c === "object" ? (c?.images || (c?.image ? [c.image] : [])) : [];
-    const cImgs = Array.isArray(rawImgs)
-      ? rawImgs.map(normalizeImageUrl)
-      : typeof rawImgs === "string"
-        ? [normalizeImageUrl(rawImgs)]
-        : [];
-    const colorHex = getColorHex(name, typeof c === "object" ? (c?.colorHex || c?.hex) : "");
-    const colorStock = typeof c === "object" && typeof c?.stock === "number"
-      ? c.stock
-      : (typeof c === "object" && typeof c?.b2bStock === "number" ? c.b2bStock : null);
-    return {
-      id,
-      name,
-      colorHex,
-      stock: colorStock ?? product.totalStock ?? product.stockQuantity ?? 100,
-      b2bStock: typeof c === "object" ? c?.b2bStock : undefined,
-      images: cImgs
-    };
-  });
+    return rawColorList.map((c, idx) => {
+      const name = typeof c === "string" ? c : c?.name || `Variant ${idx + 1}`;
+      const id = typeof c === "object" ? (c?._id || c?.id || `variant-${idx}`) : `variant-${idx}`;
+      const rawImgs = typeof c === "object" ? (c?.images || (c?.image ? [c.image] : [])) : [];
+      const cImgs = Array.isArray(rawImgs)
+        ? rawImgs.map(normalizeImageUrl)
+        : typeof rawImgs === "string"
+          ? [normalizeImageUrl(rawImgs)]
+          : [];
+      const colorHex = getColorHex(name, typeof c === "object" ? (c?.colorHex || c?.hex) : "");
+      const colorStock = typeof c === "object" && typeof c?.stock === "number"
+        ? c.stock
+        : (typeof c === "object" && typeof c?.b2bStock === "number" ? c.b2bStock : null);
+      return {
+        id,
+        name,
+        colorHex,
+        stock: colorStock ?? product.totalStock ?? product.stockQuantity ?? 100,
+        b2bStock: typeof c === "object" ? c?.b2bStock : undefined,
+        images: cImgs
+      };
+    });
+  }, [product.colors, product.colours, product.totalStock, product.stockQuantity]);
 
   // Calculate verified total stock across product or variants
   const totalStock = (function () {
@@ -804,6 +834,12 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   const currentMoq = activeOccasion.moq || 10;
   const minMoq = Math.max(1, currentMoq);
 
+  const thisProductIsAddOn = Boolean(
+    product.isPairItem === true || product.isPair === true || product.addOn === true
+  );
+  // If cart already qualifies OR this is an add-on, effective min is 1; otherwise minMoq (10)
+  const effectiveMinQty = (cartHasPrimaryMoq || thisProductIsAddOn) ? 1 : minMoq;
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedColour, setSelectedColour] = useState(initialColor);
 
@@ -826,11 +862,15 @@ export default function ProductDetailView({ product, context, relatedProducts: r
     variantMaxStock[v.name] = Math.max(0, v.stock - inBasket);
   });
 
+  // Track if user has manually adjusted quantities
+  const hasUserInteractedRef = useRef(false);
+
   // Independent quantities state per color variant
   const [variantQtys, setVariantQtys] = useState(() => {
     const initial = {};
     let allocated = 0;
-    const target = minMoq;
+    // If cart already has ≥10 primary units or product is add-on, pre-fill to 1; otherwise fill to MOQ
+    const target = (cartHasPrimaryMoq || thisProductIsAddOn) ? 1 : minMoq;
     for (let i = 0; i < colorVariants.length; i++) {
       const v = colorVariants[i];
       const maxStock = variantMaxStock[v.name] ?? v.stock ?? 0;
@@ -859,6 +899,44 @@ export default function ProductDetailView({ product, context, relatedProducts: r
     0
   );
   const qty = totalCombinedQty;
+
+  // When cart items hydrate, if user hasn't edited anything and MOQ is already met,
+  // ensure target is 1 unit instead of defaulting to 10
+  const hasAdjustedForMoqRef = useRef(false);
+  useEffect(() => {
+    if (hasUserInteractedRef.current) return;
+    if (cartHasPrimaryMoq && !hasAdjustedForMoqRef.current) {
+      hasAdjustedForMoqRef.current = true;
+      setVariantQtys((prev) => {
+        const curTotal = Object.values(prev || {}).reduce((acc, q) => acc + (Number(q) || 0), 0);
+        if (curTotal <= 1) return prev;
+        const activeName = selectedColour || colorVariants[0]?.name;
+        const next = {};
+        for (const v of colorVariants) {
+          next[v.name] = v.name === activeName ? 1 : 0;
+        }
+        return next;
+      });
+      setVariantQtyInputs((prev) => {
+        const activeName = selectedColour || colorVariants[0]?.name;
+        const next = {};
+        for (const v of colorVariants) {
+          next[v.name] = v.name === activeName ? "1" : "0";
+        }
+        return next;
+      });
+    }
+  }, [cartHasPrimaryMoq, colorVariants, selectedColour]);
+
+  // Toast when user on this page reaches 10 units
+  const prevQtyRef = useRef(totalCombinedQty);
+  useEffect(() => {
+    if (!mounted || !showToast) return;
+    if (!cartHasPrimaryMoq && prevQtyRef.current < 10 && totalCombinedQty >= 10) {
+      showToast("🎉 10 units selected! Minimum order requirement met. You can now select any other products in quantities of 1 or more.");
+    }
+    prevQtyRef.current = totalCombinedQty;
+  }, [totalCombinedQty, cartHasPrimaryMoq, mounted, showToast]);
 
   const [brandingNotes, setBrandingNotes] = useState("");
   const [senderName, setSenderName] = useState("");
@@ -997,6 +1075,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
 
   // Independent Stepper & Input Handlers
   const handleAdjustVariantQty = (colorName, delta) => {
+    hasUserInteractedRef.current = true;
     const cur = variantQtys[colorName] || 0;
     const maxLimit = variantMaxStock[colorName] ?? 999999;
     const target = cur + delta;
@@ -1006,6 +1085,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   };
 
   const handleVariantInputChange = (colorName, val) => {
+    hasUserInteractedRef.current = true;
     const cleaned = val.replace(/\D/g, "");
     setVariantQtyInputs((prev) => ({ ...prev, [colorName]: cleaned }));
     if (cleaned !== "") {
@@ -1019,6 +1099,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   };
 
   const handleVariantInputBlur = (colorName) => {
+    hasUserInteractedRef.current = true;
     const raw = variantQtyInputs[colorName];
     const parsed = parseInt(raw, 10);
     const maxLimit = variantMaxStock[colorName] ?? 999999;
@@ -1028,6 +1109,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   };
 
   const handleSelectTier = (tier) => {
+    hasUserInteractedRef.current = true;
     // Distribute tier min evenly or set to active variant
     const activeVar = colorVariants.find((c) => c.name === selectedColour) || colorVariants[0];
     const maxForActive = variantMaxStock[activeVar.name] || 0;
@@ -1054,6 +1136,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
   };
 
   const handleSetExactQty = (targetQty) => {
+    hasUserInteractedRef.current = true;
     const activeVar = colorVariants.find((c) => c.name === selectedColour) || colorVariants[0];
     const maxForActive = variantMaxStock[activeVar.name] || 0;
     if (maxForActive >= targetQty) {
@@ -1186,8 +1269,17 @@ export default function ProductDetailView({ product, context, relatedProducts: r
     if (isAdding) return;
     if (!add) return;
 
-    if (totalCombinedQty < minMoq) {
-      alert(`Minimum order quantity is ${minMoq} ${unitLabelPlural}.`);
+    // Enforce effective minimum (1 if cart already qualifies globally, else 10 for primary)
+    if (totalCombinedQty < effectiveMinQty) {
+      if (showToast) {
+        showToast(
+          effectiveMinQty === 1
+            ? `Please select at least 1 ${unitLabelPlural} to add.`
+            : `Minimum 10 units required for your first product. Please select at least 10 ${unitLabelPlural}.`
+        );
+      } else {
+        alert(`Minimum order quantity is ${effectiveMinQty} ${unitLabelPlural}.`);
+      }
       return;
     }
 
@@ -1828,7 +1920,7 @@ export default function ProductDetailView({ product, context, relatedProducts: r
                 </p>
               </div>
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-md flex-shrink-0">
-                MOQ: {minMoq} {unitLabelPlural}
+                MOQ: {cartHasPrimaryMoq ? `1 ${unitLabel}` : `${minMoq} ${unitLabelPlural}`}
               </span>
             </div>
 
@@ -1989,9 +2081,9 @@ export default function ProductDetailView({ product, context, relatedProducts: r
               <button
                 type="button"
                 onClick={handleAddToCart}
-                disabled={isAdding || totalCombinedQty < minMoq}
+                disabled={isAdding || totalCombinedQty < effectiveMinQty}
                 className={`w-full py-3 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors min-h-[44px] ${
-                  totalCombinedQty < minMoq
+                  totalCombinedQty < effectiveMinQty
                     ? "bg-slate-200 text-slate-500 cursor-not-allowed"
                     : added
                       ? "bg-green-700 text-white"
@@ -2007,8 +2099,8 @@ export default function ProductDetailView({ product, context, relatedProducts: r
                   <>
                     <ShoppingBag className="w-4 h-4" />
                     <span>
-                      {totalCombinedQty < minMoq
-                        ? `Select MOQ ${minMoq} ${unitLabelPlural}`
+                      {totalCombinedQty < effectiveMinQty
+                        ? `Select MOQ ${effectiveMinQty} ${unitLabelPlural}`
                         : `Add ${totalCombinedQty} ${unitLabelPlural} to Basket`}
                     </span>
                   </>
@@ -2839,9 +2931,9 @@ export default function ProductDetailView({ product, context, relatedProducts: r
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={isAdding || totalCombinedQty < minMoq}
+          disabled={isAdding || totalCombinedQty < effectiveMinQty}
           className={`px-4 sm:px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm flex-shrink-0 min-h-[44px] ${
-            totalCombinedQty < minMoq
+            totalCombinedQty < effectiveMinQty
               ? "bg-slate-300 text-slate-500 cursor-not-allowed"
               : added
                 ? "bg-green-700 text-white"
@@ -2855,8 +2947,8 @@ export default function ProductDetailView({ product, context, relatedProducts: r
             </>
           ) : (
             <span>
-              {totalCombinedQty < minMoq
-                ? `MOQ: ${minMoq}`
+              {totalCombinedQty < effectiveMinQty
+                ? `MOQ: ${effectiveMinQty}`
                 : `Add ${totalCombinedQty} ${unitLabelPlural.toLowerCase()} to basket`}
             </span>
           )}

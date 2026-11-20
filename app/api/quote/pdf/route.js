@@ -45,13 +45,23 @@ export async function POST(req) {
       bundleBonusAmount,
       estimatedTotal,
       estimatedGST,
-      totalWithGST
+      totalWithGST,
+      buyerType: body.buyerType,
+      isGstinValid: body.isGstinValid,
+      gstin: body.gstin || client.gstin,
+      gstinState: body.gstinState,
+      pan: body.pan,
+      taxSplit: body.taxSplit,
+      supplierGstin: body.supplierGstin
     });
+
+    const isTaxInvoice = body.buyerType === "gst" && body.isGstinValid !== false;
+    const filePrefix = isTaxInvoice ? "GreenFibre_Tax_Invoice" : "GreenFibre_Quotation";
 
     return new Response(pdfBuffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="GreenFibre_Quotation_${reference}.pdf"`
+        "Content-Disposition": `attachment; filename="${filePrefix}_${reference}.pdf"`
       }
     });
   } catch (err) {

@@ -1,0 +1,257 @@
+/* ==========================================================================
+   GstBenefitCard.module.css
+   Mobile-only (<= 860px) Green Animated GST Benefit Card with SVG Checkmark,
+   Shine Sweep, Confetti Burst, and Indian Currency Typography.
+   Desktop (>= 861px) shows ONLY desktopFallback with display: contents.
+   ========================================================================== */
+
+/* ── Desktop (>= 861px): Hide mobile card, display fallback cleanly ───── */
+@media (min-width: 861px) {
+  .mobileCardContainer {
+    display: none !important;
+  }
+  .desktopFallbackWrapper {
+    display: contents !important;
+  }
+}
+
+/* ── Mobile (<= 860px): Hide desktop fallback, show animated card ─────── */
+@media (max-width: 860px) {
+  .desktopFallbackWrapper {
+    display: none !important;
+  }
+  .mobileCardContainer {
+    display: block !important;
+  }
+}
+
+/* ── Animated Card Base ──────────────────────────────────────────────── */
+.card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1.5px solid #86efac;
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.08);
+  font-family: inherit;
+  color: #0f172a;
+  margin-top: 0.45rem;
+  margin-bottom: 0.45rem;
+}
+
+/* ── Light Shine Sweep across the card ───────────────────────────────── */
+.card::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -70%;
+  width: 50%;
+  height: 220%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  animation: shineSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) 0.25s forwards;
+  pointer-events: none;
+}
+
+@keyframes shineSweep {
+  0% {
+    left: -70%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* ── Header Row: Animated SVG Checkmark + Title ──────────────────────── */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.checkBadge {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background-color: #dcfce7;
+  border: 1px solid #86efac;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.checkSvg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.checkPolyline {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: drawCheck 0.6s cubic-bezier(0.65, 0, 0.45, 1) 0.15s forwards;
+}
+
+@keyframes drawCheck {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #166534;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.legalBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #15803d;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.35rem;
+  border: 1px solid #bbf7d0;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Confetti Burst ─────────────────────────────────────────────────── */
+.confettiBox {
+  position: absolute;
+  top: 0.75rem;
+  left: 1rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: popDot 0.85s cubic-bezier(0.2, 0.8, 0.4, 1) 0.2s forwards;
+}
+
+.d1 { background: #16a34a; --tx: -12px; --ty: -10px; }
+.d2 { background: #eab308; --tx: 14px; --ty: -12px; }
+.d3 { background: #10b981; --tx: 16px; --ty: 8px; }
+.d4 { background: #3b82f6; --tx: -14px; --ty: 9px; }
+.d5 { background: #f59e0b; --tx: -6px; --ty: -16px; }
+.d6 { background: #059669; --tx: 8px; --ty: -14px; }
+
+@keyframes popDot {
+  0% {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 1;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tx), var(--ty)) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ── Main Benefit Block ("You get ₹X back") ─────────────────────────── */
+.benefitBlock {
+  margin-top: 0.45rem;
+  position: relative;
+  z-index: 2;
+}
+
+.amountLine {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #1b5e3f;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.amountNumber {
+  color: #15803d;
+  font-weight: 900;
+}
+
+.benefitSub {
+  font-size: 0.75rem;
+  color: #475569;
+  margin: 0.1rem 0 0 0;
+  font-weight: 500;
+}
+
+/* ── Price Comparison Line ───────────────────────────────────────────── */
+.comparisonLine {
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+  border-top: 1px dashed #bbf7d0;
+  font-size: 0.77rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  position: relative;
+  z-index: 2;
+}
+
+.strikePrice {
+  text-decoration: line-through;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.arrow {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.realCostGroup {
+  font-weight: 700;
+  color: #166534;
+}
+
+.realCostNumber {
+  color: #15803d;
+  font-weight: 900;
+  font-size: 0.86rem;
+}
+
+/* ── Prefers-Reduced-Motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .card::after {
+    animation: none !important;
+    display: none !important;
+  }
+  .checkPolyline {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  .confettiBox {
+    display: none !important;
+  }
+}

@@ -22,12 +22,16 @@ const organizationAndWebsiteSchema = {
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Organization",
+      "@type": ["Organization", "LocalBusiness"],
       "@id": "https://trade.greenfibre.org/#organization",
       "name": "Green Fibre",
+      "legalName": "Charvik Moulds and Products Private Limited",
       "url": "https://trade.greenfibre.org",
       "logo": "https://trade.greenfibre.org/images/logo.png",
+      "image": "https://trade.greenfibre.org/images/hero.jpg",
       "telephone": "+919217328777",
+      "email": "greenfibre.marketing@gmail.com",
+      "priceRange": "₹₹",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "Udyog Kendra 2",
@@ -35,6 +39,27 @@ const organizationAndWebsiteSchema = {
         "addressRegion": "Uttar Pradesh",
         "postalCode": "201306",
         "addressCountry": "IN"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 28.4701,
+        "longitude": 77.5033
+      },
+      "areaServed": { "@type": "Country", "name": "India" },
+      "knowsAbout": [
+        "wholesale kitchenware", "eco-friendly tableware", "rice husk composite products",
+        "bulk tableware supplier", "sustainable drinkware", "corporate gifting",
+        "BPA-free food containers", "eco lunch boxes", "laser engraved gifts"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Green Fibre B2B Wholesale Catalog",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Wholesale Kitchenware & Tableware" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Eco-Friendly Drinkware" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Corporate Gift Sets & Hampers" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Custom Branded Water Bottles" } }
+        ]
       },
       "contactPoint": [
         {
@@ -44,6 +69,10 @@ const organizationAndWebsiteSchema = {
           "areaServed": "IN",
           "availableLanguage": ["en", "hi"]
         }
+      ],
+      "sameAs": [
+        "https://www.linkedin.com/company/green-fibre",
+        "https://www.instagram.com/greenfibre.in"
       ]
     },
     {
@@ -89,6 +118,13 @@ export const metadata = {
       "max-video-preview": -1,
       "max-image-preview": "large",
       "max-snippet": -1
+    }
+  },
+  alternates: {
+    canonical: "https://trade.greenfibre.org",
+    languages: {
+      "en-IN": "https://trade.greenfibre.org",
+      "x-default": "https://trade.greenfibre.org"
     }
   },
   verification: {
