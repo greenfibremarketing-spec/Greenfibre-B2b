@@ -121,7 +121,6 @@ export const metadata = {
     }
   },
   alternates: {
-    canonical: "https://trade.greenfibre.org",
     languages: {
       "en-IN": "https://trade.greenfibre.org",
       "x-default": "https://trade.greenfibre.org"

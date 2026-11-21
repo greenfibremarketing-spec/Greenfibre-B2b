@@ -5,7 +5,8 @@ import AuthSkeleton from "@/components/AuthSkeleton";
 export const metadata = {
   title: "B2B Enterprise Portal Sign In",
   description: "Sign in to your Green Fibre B2B corporate account to manage bulk quotes, volume tier pricing, and laser branding orders.",
-  robots: { index: false, follow: false }
+  robots: { index: false, follow: false },
+  alternates: { canonical: "https://trade.greenfibre.org/login" }
 };
 
 export default function LoginPage() {

@@ -61,12 +61,32 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Corporate Solutions & Legal */}
+          {/* Column 3: Wholesale & Corporate Solutions */}
           <div className="space-y-3.5">
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Corporate Solutions
+              Wholesale &amp; Bulk Supply
             </h3>
             <ul className="space-y-2.5 text-xs text-slate-600">
+              <li>
+                <Link href="/wholesale-kitchenware" className="hover:text-brand-700 transition-colors font-medium">
+                  Wholesale Kitchenware India
+                </Link>
+              </li>
+              <li>
+                <Link href="/bulk-tableware" className="hover:text-brand-700 transition-colors font-medium">
+                  Bulk Tableware Supplier
+                </Link>
+              </li>
+              <li>
+                <Link href="/eco-lunch-boxes" className="hover:text-brand-700 transition-colors font-medium">
+                  Eco-Friendly Lunch Boxes
+                </Link>
+              </li>
+              <li>
+                <Link href="/wholesale-drinkware" className="hover:text-brand-700 transition-colors font-medium">
+                  Wholesale Drinkware &amp; Bottles
+                </Link>
+              </li>
               <li>
                 <Link href="/corporate-gifting" className="hover:text-brand-700 transition-colors">
                   Corporate Gifts Bulk India
@@ -83,23 +103,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/story" className="hover:text-brand-700 transition-colors flex items-center gap-1.5">
-                  <span>Our Story</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/products" className="hover:text-brand-700 transition-colors">
-                  Wholesale Product Catalog
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="hover:text-brand-700 transition-colors font-medium text-slate-700 hover:underline">
-                  Terms &amp; Conditions
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-brand-700 transition-colors font-medium text-slate-700 hover:underline">
-                  Privacy &amp; Replacement Policy
+                <Link href="/story" className="hover:text-brand-700 transition-colors">
+                  Our Story
                 </Link>
               </li>
             </ul>

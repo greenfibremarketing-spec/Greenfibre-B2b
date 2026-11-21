@@ -3,7 +3,8 @@
 
 export const metadata = {
   title: "Request a Bulk Quote",
-  robots: { index: false, follow: false }
+  robots: { index: false, follow: false },
+  alternates: { canonical: "https://trade.greenfibre.org/quote" }
 };
 
 export default function QuoteLayout({ children }) {

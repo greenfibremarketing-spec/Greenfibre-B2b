@@ -1,5 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/our-story",
+        destination: "/story",
+        permanent: true
+      }
+    ];
+  },
   experimental: {
     cpus: 1,
     workerThreads: false,

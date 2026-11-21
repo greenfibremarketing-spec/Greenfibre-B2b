@@ -7,24 +7,23 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   Menu,
   X,
+  ShoppingBag,
+  User,
+  ShieldCheck,
+  Search,
+  LogOut,
+  Building,
   Gift,
   Package,
   Sprout,
-  ShoppingBag,
   Sparkles,
-  ArrowRight,
-  Phone,
-  ShieldCheck,
-  ChevronRight,
-  User,
-  Search,
-  LogOut,
-  Building
+  ChevronRight
 } from "lucide-react";
 import NavbarSearch from "./NavbarSearch";
 import UserNav from "./UserNav";
-import { Count, useQuote } from "./Quote";
+import { Count } from "./Quote";
 import { useAuth } from "./AuthContext";
+import styles from "./Navbar.module.css";
 
 function NavbarInner({ canManageSeo = false }) {
   const pathname = usePathname();
@@ -33,7 +32,15 @@ function NavbarInner({ canManageSeo = false }) {
   const { user, isAuthenticated, logout } = useAuth() || {};
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
-  const isSeoAdmin = canManageSeo || Boolean(user?.email && (user.email.toLowerCase() === "greenfibre.marketing@gmail.com" || user.role === "admin"));
+  const isSeoAdmin =
+    canManageSeo ||
+    Boolean(
+      user?.email &&
+        (user.email.toLowerCase() === "greenfibre.marketing@gmail.com" ||
+          user.role === "admin")
+    );
+
+  const isHome = pathname === "/";
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -61,7 +68,12 @@ function NavbarInner({ canManageSeo = false }) {
     }
   };
 
-  if (pathname === "/status/login" || pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password") {
+  if (
+    pathname === "/status/login" ||
+    pathname === "/login" ||
+    pathname === "/signup" ||
+    pathname === "/forgot-password"
+  ) {
     return null;
   }
 
@@ -73,7 +85,15 @@ function NavbarInner({ canManageSeo = false }) {
     catLower.includes("gift") ||
     catLower.includes("hamper") ||
     Boolean(typeParam) ||
-    ["corporate", "anniversary", "birthday", "institutional", "housewarming", "house warming", "wedding"].includes(catLower);
+    [
+      "corporate",
+      "anniversary",
+      "birthday",
+      "institutional",
+      "housewarming",
+      "house warming",
+      "wedding"
+    ].includes(catLower);
 
   const isAllProductsActive =
     pathname === "/products" && !categoryParam && !typeParam;
@@ -92,14 +112,13 @@ function NavbarInner({ canManageSeo = false }) {
 
   return (
     <>
-      <header className="relative z-40 w-full px-3 sm:px-6 lg:px-8 py-3 sm:py-3 transition-all">
-        <div className="max-w-[1440px] mx-auto bg-[#fbfdf9]/95 sm:bg-white/95 backdrop-blur-xl border border-slate-200/90 rounded-full px-4 sm:px-6 h-[60px] sm:h-14 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-all">
-
-          {/* LEFT: Logo + Nav */}
-          <div className="flex items-center gap-3 sm:gap-6 xl:gap-8 flex-shrink-0">
+      <header className={isHome ? styles.headerHome : styles.headerOther}>
+        <div className={styles.pill}>
+          {/* LEFT: Logo & Main Navigation Links */}
+          <div className={styles.leftSection}>
             <Link
               href="/"
-              className="flex items-center h-full group select-none flex-shrink-0 py-1"
+              className={styles.logoLink}
               aria-label="Green Fibre Home"
             >
               <Image
@@ -107,85 +126,100 @@ function NavbarInner({ canManageSeo = false }) {
                 alt="Green Fibre Sustainable Living Logo"
                 width={175}
                 height={36}
-                className="h-[36px] sm:h-8 md:h-9 w-auto max-w-[145px] sm:max-w-[175px] object-contain group-hover:scale-105 transition-transform flex-shrink-0"
                 priority
+                className={styles.logoImg}
               />
             </Link>
 
-            <nav
-              className="hidden lg:flex items-center gap-1 xl:gap-1.5 text-sm font-semibold text-slate-700"
-              aria-label="Main Navigation"
-            >
-              {/* All Products */}
+            <nav className={styles.navLinks} aria-label="Main">
               <Link
                 href="/products"
-                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isAllProductsActive
-                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                  }`}
+                className={`${styles.navLink} ${
+                  isAllProductsActive ? styles.navLinkActive : ""
+                }`}
               >
-                <span className="relative z-10">All Products</span>
+                All Products
               </Link>
-
-              {/* Gifts & Hampers */}
               <Link
                 href="/category/gift-boxes-hampers"
-                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isGiftingActive
-                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                  }`}
+                className={`${styles.navLink} ${
+                  isGiftingActive ? styles.navLinkActive : ""
+                }`}
               >
-                <span className="relative z-10">Gifts &amp; Hampers</span>
+                Gifts &amp; Hampers
               </Link>
-
-              {/* Corporate Gifting */}
               <Link
                 href="/corporate-gifting"
-                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isCorporateGiftingActive
-                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                  }`}
+                className={`${styles.navLink} ${
+                  isCorporateGiftingActive ? styles.navLinkActive : ""
+                }`}
               >
-                <span className="relative z-10">Corporate Gifting</span>
+                Corporate Gifting
               </Link>
-
-              {/* Our Story */}
               <Link
                 href="/story"
-                className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-[13px] xl:text-sm font-semibold transition-all duration-150 relative ${isStoryActive
-                  ? "text-emerald-950 bg-emerald-50 font-bold border border-emerald-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
-                  }`}
+                className={`${styles.navLink} ${
+                  isStoryActive ? styles.navLinkActive : ""
+                }`}
               >
-                <span className="relative z-10">Our Story</span>
+                Our Story
               </Link>
-              {isSeoAdmin && <Link href="/status" aria-current={pathname === "/status" ? "page" : undefined} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-sm font-semibold ${pathname === "/status" ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-100"}`}>Status</Link>}
+              {isSeoAdmin && (
+                <Link
+                  href="/status"
+                  aria-current={pathname === "/status" ? "page" : undefined}
+                  className={`${styles.navLink} ${
+                    pathname === "/status" ? styles.navLinkActive : ""
+                  }`}
+                >
+                  Status
+                </Link>
+              )}
             </nav>
           </div>
 
-          {/* RIGHT: Actions (Search, User, Dark Green Quote Circle, Mobile Hamburger) */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <NavbarSearch />
-            <UserNav />
+          {/* RIGHT: Search, Auth, Cart, Mobile Menu Button */}
+          <div className={styles.rightSection}>
+            {/* Search Box - Hidden at <= 980px */}
+            <div className={styles.searchBox}>
+              <NavbarSearch />
+            </div>
 
-            {/* Light Green Circular Quote Basket Icon with Notification Badge */}
+            {/* User Auth Buttons or Dropdown */}
+            {isAuthenticated && user ? (
+              <UserNav />
+            ) : (
+              <>
+                <Link href="/login" className={styles.signInBtn}>
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className={styles.registerBtn}
+                  aria-label="Register B2B Account"
+                >
+                  <User className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Register B2B</span>
+                </Link>
+              </>
+            )}
+
+            {/* Cart Button: Round Mint Circle with Orange Count Badge */}
             <Link
               href="/quote"
-              className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-100/90 hover:bg-emerald-200/90 text-emerald-950 border border-emerald-300/80 flex items-center justify-center shadow-xs transition-all duration-200 active:scale-95 flex-shrink-0 group"
+              className={styles.cartBtn}
               aria-label="View Wholesale Quote Basket"
               title="View Quote Basket"
             >
-              <ShoppingBag className="w-4.0 h-4.0 sm:w-5 sm:h-5 text-emerald-900 group-hover:scale-105 transition-transform" strokeWidth={1.8} />
-              <span className="absolute -top-1 -right-1 flex items-center justify-center">
-                <Count className="bg-[#ea580c] text-white font-black text-[9.5px] sm:text-[10px] min-w-[17px] sm:min-w-[18px] h-[17px] sm:h-[18px] px-1 rounded-full ring-2 ring-white shadow-xs flex items-center justify-center" />
-              </span>
+              <ShoppingBag className="w-4 h-4 text-emerald-900" strokeWidth={2} />
+              <Count className={styles.cartBadge} />
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Hamburger Toggle Button - Visible at <= 980px */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/80 bg-white/80 transition-all cursor-pointer shadow-2xs active:scale-95 flex-shrink-0"
+              className={styles.menuBtn}
               aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
               aria-expanded={mobileMenuOpen}
             >
@@ -199,7 +233,7 @@ function NavbarInner({ canManageSeo = false }) {
         </div>
       </header>
 
-      {/* MOBILE DRAWER */}
+      {/* MOBILE DRAWER (Existing Drawer Preserved Intact) */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
@@ -251,213 +285,146 @@ function NavbarInner({ canManageSeo = false }) {
                         logout?.();
                         setMobileMenuOpen(false);
                       }}
-                      className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-white transition-colors"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                       title="Sign Out"
                     >
                       <LogOut className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5 shadow-2xs">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center border border-emerald-200 flex-shrink-0">
-                        <User className="w-4.5 h-4.5 text-emerald-700" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 block leading-tight">
-                          Corporate B2B Desk
-                        </span>
-                        <span className="text-[11px] text-slate-500 block leading-tight">
-                          Unlock wholesale tier pricing &amp; GST invoices
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 pt-0.5">
-                      <Link
-                        href="/login"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="py-2 px-3 rounded-xl border border-slate-200 bg-white text-slate-800 hover:bg-slate-50 font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-2xs"
-                      >
-                        <User className="w-3.5 h-3.5 text-slate-600" />
-                        <span>Sign In</span>
-                      </Link>
-                      <Link
-                        href="/signup"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="py-2 px-3 rounded-xl border border-emerald-300 bg-emerald-600 text-white hover:bg-emerald-700 font-bold text-xs text-center flex items-center justify-center gap-1.5 shadow-xs"
-                      >
-                        <Building className="w-3.5 h-3.5 text-white" />
-                        <span>Register B2B</span>
-                      </Link>
-                    </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors"
+                    >
+                      <User className="w-3.5 h-3.5 text-slate-600" />
+                      <span>Sign In</span>
+                    </Link>
+                    <Link
+                      href="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold transition-colors shadow-xs"
+                    >
+                      <Building className="w-3.5 h-3.5" />
+                      <span>Register B2B</span>
+                    </Link>
                   </div>
                 )}
               </div>
 
-              {/* Sidebar Search Bar */}
-              <div className="px-4 pb-2">
+              {/* Mobile Search Bar inside Drawer */}
+              <div className="px-4 py-2">
                 <form onSubmit={handleMobileSearchSubmit} className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
-                    type="text"
+                    type="search"
                     value={mobileSearchQuery}
                     onChange={(e) => setMobileSearchQuery(e.target.value)}
-                    placeholder="Search eco tableware catalog..."
-                    className="w-full h-10 text-xs font-medium pl-9 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:bg-white focus:border-brand-500 focus:ring-2 focus:ring-brand-500/15 flex items-center"
+                    placeholder="Search wholesale products..."
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-100 border-none text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
-                  {mobileSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setMobileSearchQuery("")}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
                 </form>
               </div>
 
-              {/* Navigation Menu */}
-              <div className="p-4 pt-1 space-y-1.5">
-                <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Menu Navigation
-                </div>
-
-                {isSeoAdmin && <Link href="/status" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 text-emerald-900 font-semibold">Status <ChevronRight className="w-4 h-4" /></Link>}
-                {/* All Products */}
+              {/* Navigation Links inside Drawer */}
+              <nav className="p-4 space-y-1" aria-label="Mobile Navigation">
                 <Link
                   href="/products"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isAllProductsActive
-                    ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                    }`}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    isAllProductsActive
+                      ? "bg-brand-50 text-brand-800 font-bold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isAllProductsActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      <Package className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-semibold">All Products</span>
+                  <div className="flex items-center gap-2.5">
+                    <Package className="w-4 h-4 text-brand-600" />
+                    <span>All Products</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>
 
-                {/* Gifts & Hampers */}
                 <Link
                   href="/category/gift-boxes-hampers"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isGiftingActive
-                    ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                    }`}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    isGiftingActive
+                      ? "bg-brand-50 text-brand-800 font-bold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      <Gift className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-semibold">Gifts &amp; Hampers</span>
+                  <div className="flex items-center gap-2.5">
+                    <Gift className="w-4 h-4 text-brand-600" />
+                    <span>Gifts &amp; Hampers</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>
 
-                {/* Corporate Gifting Solutions */}
                 <Link
                   href="/corporate-gifting"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isCorporateGiftingActive
-                    ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                    }`}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    isCorporateGiftingActive
+                      ? "bg-brand-50 text-brand-800 font-bold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isCorporateGiftingActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-semibold">Corporate Gifting</span>
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-brand-600" />
+                    <span>Corporate Gifting</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>
 
-                {/* Quote Basket */}
-                <Link
-                  href="/quote"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between p-3 rounded-xl transition-all text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-100 text-emerald-800">
-                      <ShoppingBag className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-semibold">Quote Basket</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Count className="bg-emerald-600 text-white font-extrabold shadow-xs text-[10px] px-1.5 py-0.5 rounded-full" />
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </div>
-                </Link>
-
-                {/* Our Story */}
                 <Link
                   href="/story"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${isStoryActive
-                    ? "bg-brand-50 text-brand-900 font-bold border border-brand-200/80"
-                    : "text-slate-700 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
-                    }`}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    isStoryActive
+                      ? "bg-brand-50 text-brand-800 font-bold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isStoryActive ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-600"}`}>
-                      <Sprout className="w-4 h-4" />
-                    </div>
-                    <span className="text-sm font-semibold">Our Story</span>
+                  <div className="flex items-center gap-2.5">
+                    <Sprout className="w-4 h-4 text-brand-600" />
+                    <span>Our Story</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </Link>
-              </div>
 
-              {/* Factory highlights */}
-              <div className="p-4 mx-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2 text-xs">
-                <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-brand-700" />
-                  <span>Enterprise B2B Supply</span>
+                {isSeoAdmin && (
+                  <Link
+                    href="/status"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  >
+                    <span>SEO Admin Status</span>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </Link>
+                )}
+              </nav>
+
+              {/* B2B Benefits Snippet */}
+              <div className="mx-4 mt-2 p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-1.5 text-[11px] text-slate-600">
+                <div className="font-bold text-slate-800 text-xs">
+                  Wholesale Procurement
                 </div>
-                <ul className="space-y-1.5 text-slate-600 text-[11px]">
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-600" />
-                    <span>100% Upcycled Agricultural Rice Husk</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-600" />
-                    <span>In-House Precision Laser Engraving</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 rounded-full bg-brand-600" />
-                    <span>Pan-India Bulk Logistics Fulfillment</span>
-                  </li>
-                </ul>
+                <div>✓ 10 units Minimum Order Quantity</div>
+                <div>✓ Free 3D Branding Visual Proof</div>
+                <div>✓ GST Input Tax Credit Invoices</div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/50 space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-600">
-                <span className="font-medium">Direct B2B Desk:</span>
-                <a
-                  href="tel:+919217328777"
-                  className="font-bold text-brand-800 flex items-center gap-1 hover:underline"
-                >
-                  <Phone className="w-3.5 h-3.5" />
-                  <span>+91 92173 28777</span>
-                </a>
-              </div>
+            {/* Drawer Footer with Quote CTA */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
               <Link
                 href="/quote"
                 onClick={() => setMobileMenuOpen(false)}
-                className="btn-primary w-full py-2.5 flex items-center justify-center gap-2 text-xs font-bold rounded-xl shadow-sm"
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-700 hover:bg-brand-800 text-white text-xs font-bold transition-colors shadow-xs"
               >
-                <span>Request Custom Quote</span>
-                <ArrowRight className="w-4 h-4" />
+                <ShoppingBag className="w-4 h-4" />
+                <span>View Wholesale Quote Basket</span>
               </Link>
             </div>
           </div>
@@ -467,13 +434,10 @@ function NavbarInner({ canManageSeo = false }) {
   );
 }
 
-export default function Navbar({ canManageSeo = false }) {
+export default function Navbar(props) {
   return (
-    <Suspense fallback={<div className="h-18 sm:h-20 bg-white border-b border-slate-200" />}>
-      <NavbarInner canManageSeo={canManageSeo} />
+    <Suspense fallback={<div className="h-16 w-full" />}>
+      <NavbarInner {...props} />
     </Suspense>
   );
 }
-
-
-

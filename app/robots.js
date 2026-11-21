@@ -5,10 +5,10 @@ export default function robots() {
         userAgent: "*",
         allow: [
           "/",
+          "/products",
           "/products/",
           "/category/",
           "/story",
-          "/our-story",
           "/contact",
           "/terms",
           "/privacy",
@@ -30,10 +30,6 @@ export default function robots() {
           "/admin",
           "/status"
         ]
-      },
-      {
-        userAgent: "Googlebot",
-        allow: "/"
       }
     ],
     sitemap: "https://trade.greenfibre.org/sitemap.xml",

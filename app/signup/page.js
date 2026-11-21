@@ -5,7 +5,8 @@ import AuthSkeleton from "@/components/AuthSkeleton";
 export const metadata = {
   title: "Create Enterprise B2B Account",
   description: "Register for a Green Fibre direct manufacturer account to unlock wholesale tier pricing, permanent laser branding, and pan-India bulk delivery.",
-  robots: { index: false, follow: false }
+  robots: { index: false, follow: false },
+  alternates: { canonical: "https://trade.greenfibre.org/signup" }
 };
 
 export default function SignUpPage() {

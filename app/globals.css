@@ -235,3 +235,15 @@
   width: 100% !important;
   height: 100% !important;
 }
+
+/* Hero Swiper Full Bleed Container & Luxury Easing */
+.hero-swiper-container .swiper,
+.hero-swiper-container .swiper-wrapper,
+.hero-swiper-container .swiper-slide {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.hero-swiper-container .swiper-wrapper {
+  transition-timing-function: cubic-bezier(0.25, 1, 0.5, 1) !important;
+}

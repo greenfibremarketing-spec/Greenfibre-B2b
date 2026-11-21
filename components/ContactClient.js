@@ -19,7 +19,8 @@ import {
   HeadphonesIcon,
   ChevronDown,
   Check,
-  RotateCcw
+  RotateCcw,
+  Loader2
 } from "lucide-react";
 import {
   validateEmail,
@@ -154,11 +155,38 @@ export default function ContactClient() {
       {/* 2-Column Main Section: Form & Direct Contact Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         {/* Left Column: Interactive Contact Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 md:p-10 shadow-sm relative overflow-hidden">
+        <div className="lg:col-span-7 bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 md:p-10 shadow-sm relative overflow-hidden min-h-[460px] flex flex-col justify-center">
           {/* Subtle Top Accent */}
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-emerald-600 to-brand-500" />
 
-          {submitted ? (
+          {loading ? (
+            <div className="text-center py-14 sm:py-20 space-y-6 flex flex-col items-center justify-center animate-in fade-in duration-200">
+              {/* Animated Dual Pulse & Spin Ring */}
+              <div className="relative w-20 h-20 flex items-center justify-center">
+                <div className="absolute inset-0 rounded-full border-4 border-emerald-400/20 animate-ping opacity-60" />
+                <div className="w-16 h-16 rounded-full border-4 border-emerald-100 border-t-[#15803d] animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center text-[#15803d]">
+                  <Loader2 className="w-7 h-7 animate-spin text-[#15803d]" />
+                </div>
+              </div>
+
+              {/* Informative Status Text */}
+              <div className="space-y-2 max-w-md mx-auto">
+                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+                  Submitting Your Inquiry...
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Connecting to Green Fibre factory desk. We are forwarding your requirements securely to our engineering managers.
+                </p>
+              </div>
+
+              {/* Animated Progress Pill */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-[#14532d] text-xs font-semibold border border-emerald-200 shadow-2xs">
+                <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse" />
+                <span>Processing project specifications &amp; quantities</span>
+              </div>
+            </div>
+          ) : submitted ? (
             <div className="text-center py-10 sm:py-14 space-y-6">
               <div className="w-16 h-16 bg-emerald-100 text-brand-700 rounded-full flex items-center justify-center mx-auto shadow-sm">
                 <CheckCircle2 className="w-9 h-9" />

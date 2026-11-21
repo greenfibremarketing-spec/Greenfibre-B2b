@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 import { getSeoAdmin } from "@/lib/seo-admin";
 import SeoEditor from "@/components/SeoEditor";
 
-export const metadata = { title: "Status | SEO Settings", robots: { index: false, follow: false } };
+export const metadata = {
+  title: "Status | SEO Settings",
+  robots: { index: false, follow: false },
+  alternates: { canonical: "https://trade.greenfibre.org/status" }
+};
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {

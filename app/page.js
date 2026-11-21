@@ -3,7 +3,7 @@ import { staticSeoDefaults } from "@/lib/seo-defaults";
 import Link from "next/link";
 import Card from "@/components/Card";
 import GreeneryShowcase from "@/components/GreeneryShowcase";
-import HeroSwiper from "@/components/HeroSwiper";
+import Hero from "@/components/Hero";
 import BottleModelViewer from "@/components/BottleModelViewer";
 import JsonLd from "@/components/JsonLd";
 import { categories, getProducts } from "@/lib/products";
@@ -35,9 +35,9 @@ export default async function Home() {
     <>
       <JsonLd data={itemListSchema} />
       <div className="bg-slate-100 space-y-8 sm:space-y-10 pb-12 overflow-x-hidden w-full max-w-full">
-        {/* Full Width Hero Swiper */}
-        <section className="w-full max-w-full overflow-hidden max-h-[91vh]">
-          <HeroSwiper />
+        {/* Full Width Redesigned Hero */}
+        <section className="w-full max-w-full overflow-hidden">
+          <Hero />
         </section>
 
         {/* Featured Products Catalog */}
@@ -121,10 +121,10 @@ export default async function Home() {
           {/* Section Header */}
           <div className="text-left max-w-3xl mb-8 sm:mb-10 space-y-1.5 sm:space-y-2">
             <h2 className="section-title">
-              Eco Bottle Engineering &amp; Custom Corporate Branding
+              Custom Bottles With Your Logo
             </h2>
             <p className="section-desc">
-              Explore our rice-husk thermal bottle in 3D. We handle permanent laser engraving in-house for crisp detail, zero chemical inks, and fast turnaround.
+              Look at our rice husk and bamboo fibre bottle in 3D. We do the laser engraving ourselves, so your logo or name comes out sharp.
             </p>
           </div>
 
@@ -137,10 +137,10 @@ export default async function Home() {
                   <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                     01
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900">Upcycled Rice Husk Shell</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Rice Husk and Bamboo Fibre</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  65% natural agricultural crop stubble composite diverts open-field burning and replaces single-use plastics.
+                  Natural fibre shell with a soft, speckled finish.
                 </p>
               </div>
 
@@ -149,10 +149,10 @@ export default async function Home() {
                   <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                     02
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900">Double-Wall Thermal Insulation</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Double-Wall Body</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Maintains beverage heat for 4+ hours and keeps cold drinks chilled for 8+ hours with zero exterior condensation.
+                  Built to keep drinks hot or cold for longer.
                 </p>
               </div>
 
@@ -161,10 +161,10 @@ export default async function Home() {
                   <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                     03
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900">100% Food-Safe & BPA-Free</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Made for Daily Drinks</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  US FDA 21 CFR and LFGB certified. Odor-resistant, non-leaching, and safe for hot tea, coffee, and water.
+                  Suits tea, coffee and water at home, in the office or on the move.
                 </p>
               </div>
             </div>
@@ -184,10 +184,10 @@ export default async function Home() {
                   <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                     04
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900">360° Fiber Laser Etching</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Laser Engraving</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Permanent micrometric corporate logos and personalized employee names that never peel or wash off.
+                  Your logo or employee names engraved on the bottle.
                 </p>
               </div>
 
@@ -196,10 +196,10 @@ export default async function Home() {
                   <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                     05
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900">Leak-Proof Cap & Jute Loop</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Silicone-Sealed Cap</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Precision threaded airtight silicone seal with durable natural jute carrying strap for daily commutes.
+                  A screw cap with a silicone seal and a carry loop.
                 </p>
               </div>
 
@@ -208,10 +208,10 @@ export default async function Home() {
                   <span className="w-7 h-7 rounded-lg bg-brand-100 text-brand-800 font-bold text-xs flex items-center justify-center border border-brand-200">
                     06
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900">Custom Packaging & 4h Proof</h3>
+                  <h3 className="text-sm font-bold text-slate-900">Gift Box and Bulk Orders</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Recycled FSC kraft gift box with debossed wrap. Free 3D visual proof in 4 hours and Pan-India dispatch.
+                  Packed in a gift box for corporate orders. Send us your quantity and logo on WhatsApp.
                 </p>
               </div>
             </div>
